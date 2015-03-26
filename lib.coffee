@@ -1,3 +1,48 @@
+# We override the original lookup method with a similar one, which supports components as well.
+#
+# Now the order of the lookup will be, in order:
+#   a helper of the current template
+#   a property of the current component
+#   global helper
+#   the name of a template
+#   a property of the data context
+#
+# Returns a function, a non-function value, or null. If a function is found, it is bound appropriately.
+#
+# NOTE: This function must not establish any reactive dependencies itself.  If there is any reactivity
+# in the value, lookup should return a function.
+#
+# TODO: Should we also lookup for a property of the component-level data context (and template-level data context)?
+
+Blaze._getTemplateHelper = (template, name, templateInstance) ->
+  isKnownOldStyleHelper = false
+  if template.__helpers.has name
+    helper = template.__helpers.get name
+    if helper is Blaze._OLDSTYLE_HELPER
+      isKnownOldStyleHelper = true
+    else
+      return helper
+
+  # Old-style helper.
+  if name of template
+    # Only warn once per helper.
+    unless isKnownOldStyleHelper
+      template.__helpers.set name, Blaze._OLDSTYLE_HELPER
+      unless template._NOWARN_OLDSTYLE_HELPERS
+        Blaze._warn "Assigning helper with `" + template.viewName + "." + name + " = ...` is deprecated.  Use `" + template.viewName + ".helpers(...)` instead."
+    return template[name]
+
+  # TODO: Can we simply ignore reactivity here? Can this template instance or parent template instances change without reconstructing the component as well? I don't think so. Only data context is changing and this is why templateInstance or .get() are reactive and we do not care about data context here.
+  component = Tracker.nonreactive ->
+    templateInstance = templateInstance()
+    templateInstance.get 'component'
+
+  # Component.
+  if component and name of component
+    return _.bind component[name], component
+
+  null
+
 addEvents = (view, component) ->
   for events in component.events()
     eventMap = {}
@@ -19,26 +64,7 @@ addEvents = (view, component) ->
 
     Blaze._addEventMap view, eventMap
 
-ignoreHelper = (methodName, method) ->
-  return true unless _.isFunction method
-
-  # Ignore life cycle methods and events map defined on the base class.
-  methodName in ['onCreated', 'onRendered', 'onDestroyed', 'events']
-
-helpers = (template, componentClass) ->
-  helpers = {}
-
-  for methodName, method of (componentClass::) when not ignoreHelper methodName, method
-    do (methodName, method) ->
-      helpers[methodName] = (args...) ->
-        # TODO: Are we sure this always gives the template instance of this component? Even when it is called from the included template?
-        templateInstance = Template.instance()
-        # We re-read the method from the component to allow possible monkey-patching of the component.
-        # But this allows only overriding existing methods, not adding new ones. They will not be
-        # available as helpers.
-        templateInstance.component[methodName] args...
-
-  helpers
+  return
 
 class BlazeComponent
   @template: (template) ->
@@ -47,12 +73,6 @@ class BlazeComponent
     template = Template[template] if _.isString template
 
     template.onCreated ->
-      # Set helpers the first time the template is created. This allows component
-      # class to be completely defined instead of being partially defined if we
-      # would set helpers directly from the @template call.
-      template.helpers helpers template, componentClass unless template._componentHelpersAdded
-      template._componentHelpersAdded = true
-
       @view._onViewRendered =>
         # Attach events the first time template instance renders.
         addEvents @view, @component if @view.renderCount is 1
@@ -87,7 +107,7 @@ class BlazeComponent
   # Caller-level data context. Reactive. Use this to get in event handlers the data
   # context at the place where event originated (target context). In template helpers
   # the data context where template helpers were called. In onCreated, onRendered,
-  # or onDestroyed, the same as @data().
+  # or onDestroyed, the same as @data(). Inside a template this is the same as this.
   currentData: ->
     Blaze.getData()
 
