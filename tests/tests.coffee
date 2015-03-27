@@ -17,7 +17,7 @@ class MainComponent extends BlazeComponent
     @constructor is MainComponent
 
   onClick: (event) ->
-    @constructor.calls.push @componentName(), 'MainComponent.onClick', @data(), @currentData(), @currentComponent().componentName()
+    @constructor.calls.push [@componentName(), 'MainComponent.onClick', @data(), @currentData(), @currentComponent().componentName()]
 
   events: ->
     super.concat
@@ -47,7 +47,7 @@ class SubComponent extends MainComponent
   # We on purpose do not override foobar3.
 
   onClick: (event) ->
-    @constructor.calls.push @componentName(), 'SubComponent.onClick', @data(), @currentData(), @currentComponent().componentName()
+    @constructor.calls.push [@componentName(), 'SubComponent.onClick', @data(), @currentData(), @currentComponent().componentName()]
 
 BlazeComponent.register 'SubComponent', SubComponent
 
@@ -204,5 +204,40 @@ class BasicTestCase extends ClassyTestCase
       WithUnknownTemplateComponent.getComponentTemplate()
     ,
       /Template 'TemplateWhichDoesNotExist' cannot be found/
+
+  testEvents: =>
+    MainComponent.calls = []
+    SubComponent.calls = []
+
+    renderedComponent = Blaze.render Template.eventsTestTemplate, $('body').get(0)
+
+    $('.eventsTestTemplate button').each (i, button) =>
+      $(button).click()
+
+    @assertEqual MainComponent.calls, [
+      ['MainComponent', 'MainComponent.onClick', {top: '42'}, {top: '42'}, 'MainComponent']
+      ['MainComponent', 'MainComponent.onClick', {top: '42'}, {a: '1', b: '2'}, 'MainComponent']
+      ['MainComponent', 'MainComponent.onClick', {top: '42'}, {top: '42'}, 'MainComponent']
+      ['MainComponent', 'MainComponent.onClick', {top: '42'}, {a: '3', b: '4'}, 'MainComponent']
+      ['MainComponent', 'MainComponent.onClick', {top: '42'}, {top: '42'}, 'FooComponent']
+      ['MainComponent', 'MainComponent.onClick', {top: '42'}, {a: '5', b: '6'}, 'FooComponent']
+      ['MainComponent', 'MainComponent.onClick', {top: '42'}, {top: '42'}, 'SubComponent']
+      ['MainComponent', 'MainComponent.onClick', {top: '42'}, {a: '1', b: '2'}, 'SubComponent']
+      ['MainComponent', 'MainComponent.onClick', {top: '42'}, {top: '42'}, 'SubComponent']
+      ['MainComponent', 'MainComponent.onClick', {top: '42'}, {a: '3', b: '4'}, 'SubComponent']
+      ['MainComponent', 'MainComponent.onClick', {top: '42'}, {top: '42'}, 'FooComponent']
+      ['MainComponent', 'MainComponent.onClick', {top: '42'}, {a: '5', b: '6'}, 'FooComponent']
+    ]
+    
+    @assertEqual SubComponent.calls, [
+      ['SubComponent', 'SubComponent.onClick', {top: '42'}, {top: '42'}, 'SubComponent']
+      ['SubComponent', 'SubComponent.onClick', {top: '42'}, {a: '1', b: '2'}, 'SubComponent']
+      ['SubComponent', 'SubComponent.onClick', {top: '42'}, {top: '42'}, 'SubComponent']
+      ['SubComponent', 'SubComponent.onClick', {top: '42'}, {a: '3', b: '4'}, 'SubComponent']
+      ['SubComponent', 'SubComponent.onClick', {top: '42'}, {top: '42'}, 'FooComponent']
+      ['SubComponent', 'SubComponent.onClick', {top: '42'}, {a: '5', b: '6'}, 'FooComponent']
+    ]
+
+    Blaze.remove renderedComponent
 
 ClassyTestCase.addTest new BasicTestCase()

@@ -36,7 +36,8 @@ Package.onTest(function (api) {
   // Core dependencies.
   api.use([
     'coffeescript',
-    'templating'
+    'templating',
+    'jquery'
   ]);
 
   // Internal dependencies.
@@ -50,7 +51,8 @@ Package.onTest(function (api) {
   ]);
 
   api.addFiles([
-    'tests.html',
-    'tests.coffee'
+    'tests/tests.html',
+    'tests/tests.coffee',
+    'tests/tests.css'
    ], 'client');
 });
