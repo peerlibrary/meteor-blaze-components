@@ -40,7 +40,7 @@ class SubComponent extends MainComponent
   foobar2: ->
     "#{ @componentName() }/SubComponent.foobar2/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
 
-  # We on purpose to not override foobar3.
+  # We on purpose do not override foobar3.
 
   onClick: (event) ->
     @constructor.calls.push @componentName(), 'SubComponent.onClick', @data(), @currentData(), @currentComponent().componentName()
