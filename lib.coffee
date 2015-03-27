@@ -44,6 +44,18 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
 
   null
 
+viewToTemplateInstance = (view) ->
+  # We skip contentBlock views which are injected by Meteor when using
+  # block helpers (in addition to block helper view). This matches more
+  # the visual structure of templates and not the internal implementation.
+  while view and (not view.template or view.name is '(contentBlock)')
+    view = view.originalParentView or view.parentView
+
+  # Body view has template field, but not templateInstance. We return null in that case.
+  return null unless view?.templateInstance
+
+  _.bind view.templateInstance, view
+
 addEvents = (view, component) ->
   for events in component.events()
     eventMap = {}
@@ -53,11 +65,17 @@ addEvents = (view, component) ->
         eventMap[spec] = (args...) ->
           event = args[0]
 
-          # We set view based on the current target so that inside event handlers
-          # BlazeComponent.currentData() (and Blaze.getData() and Template.currentData())
-          # returns data context of event target and not component/template.
-          Blaze._withCurrentView Blaze.getView(event.currentTarget), ->
-            handler.apply component, args
+          currentView = Blaze.getView event.currentTarget
+          templateInstance = viewToTemplateInstance currentView
+
+          # We set template instance based on the current target so that inside event handlers
+          # BlazeComponent.currentComponent() returns the component of event target.
+          Template._withTemplateInstanceFunc templateInstance, ->
+            # We set view based on the current target so that inside event handlers
+            # BlazeComponent.currentData() (and Blaze.getData() and Template.currentData())
+            # returns data context of event target and not component/template.
+            Blaze._withCurrentView currentView, ->
+              handler.apply component, args
 
           # Make sure CoffeeScript does not return anything. Returning from event
           # handlers is deprecated.
@@ -167,14 +185,19 @@ class BlazeComponent
   # Component-level data context. Reactive. Use this to always get the
   # top-level data context used to render the component.
   data: ->
-    Blaze.getData @templateInstance.view
+    Blaze.getData(@templateInstance.view) or null
 
   # Caller-level data context. Reactive. Use this to get in event handlers the data
   # context at the place where event originated (target context). In template helpers
   # the data context where template helpers were called. In onCreated, onRendered,
   # or onDestroyed, the same as @data(). Inside a template this is the same as this.
   currentData: ->
-    Blaze.getData()
+    Blaze.getData() or null
+
+  # Caller-level component. Reactive. In most cases the same as @, but in event handlers
+  # it returns the component at the place where event originated (target component).
+  currentComponent: ->
+    Template.instance()?.get('component') or null
 
 # We copy utility methods ($, findAll, autorun, subscribe, etc.) from the template instance prototype.
 for methodName, method of Blaze.TemplateInstance::
