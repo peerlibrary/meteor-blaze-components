@@ -110,6 +110,9 @@ class BlazeComponent
 
     @components[componentName] = componentClass
 
+  @getComponent: (componentName) ->
+    @components[componentName] or null
+
   @getComponentTemplate: (componentClass) ->
     # To allow calling component.getComponentTemplate() on an unregistered component.
     componentClass ?= @
@@ -167,7 +170,7 @@ class BlazeComponent
     @_componentName = componentName if componentName
 
     # Getter.
-    @_componentName
+    @_componentName or null
 
   # We allow access to the component name through a method so that it can be accessed in templates in an easy way.
   componentName: ->

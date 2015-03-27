@@ -1,4 +1,6 @@
 class MainComponent extends BlazeComponent
+  @calls: []
+
   @template: ->
     'MainComponent'
 
@@ -30,6 +32,8 @@ class @FooComponent extends BlazeComponent
 BlazeComponent.register 'FooComponent', FooComponent
 
 class SubComponent extends MainComponent
+  @calls: []
+
   foobar: ->
     "#{ @componentName() }/SubComponent.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
 
@@ -119,5 +123,17 @@ class BasicTestCase extends ClassyTestCase
       top: '42'
 
     @assertEqual @trim(output), @trim SUB_COMPONENT_CONTENT
+
+  testGetComponent: =>
+    @assertEqual BlazeComponent.getComponent('MainComponent'), MainComponent
+    @assertEqual BlazeComponent.getComponent('FooComponent'), FooComponent
+    @assertEqual BlazeComponent.getComponent('SubComponent'), SubComponent
+    @assertEqual BlazeComponent.getComponent('unknown'), null
+
+  testComponentName: =>
+    @assertEqual MainComponent.componentName(), 'MainComponent'
+    @assertEqual FooComponent.componentName(), 'FooComponent'
+    @assertEqual SubComponent.componentName(), 'SubComponent'
+    @assertEqual BlazeComponent.componentName(), null
 
 ClassyTestCase.addTest new BasicTestCase()
