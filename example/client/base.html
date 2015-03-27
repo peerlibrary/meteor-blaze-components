@@ -1,0 +1,35 @@
+<body>
+  {{> MainComponent top='42'}}
+</body>
+
+<template name="MainComponent">
+  <p>FooBar</p>
+  <button>Foo1</button>
+  <p>{{foobar}}</p>
+  {{#with a='1' b='2'}}
+    <button>Foo2</button>
+    <p>{{foobar2}}</p>
+  {{/with}}
+  {{> normalSubtemplate}}
+  {{> FooComponent}}
+</template>
+
+<template name="normalSubtemplate">
+  <p>Subtemplate</p>
+  <button>Foo1</button>
+  <p>{{foobar}}</p>
+  {{#with a='3' b='4'}}
+    <button>Foo2</button>
+    <p>{{foobar2}}</p>
+  {{/with}}
+</template>
+
+<template name="FooComponent">
+  <p>Subcomponent</p>
+  <button>Foo1</button>
+  <p>{{foobar}}</p>
+  {{#with a='5' b='6'}}
+    <button>Foo2</button>
+    <p>{{foobar2}}</p>
+  {{/with}}
+</template>
