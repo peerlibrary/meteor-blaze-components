@@ -171,4 +171,38 @@ class BasicTestCase extends ClassyTestCase
     # We have not extended any helper on purpose, so they should still use "UnregisteredComponent".
     @assertEqual @trim(output), @trim COMPONENT_CONTENT 'SelfNameUnregisteredComponent', 'UnregisteredComponent'
 
+  testErrors: =>
+    @assertThrows =>
+      BlazeComponent.register()
+    ,
+      /Component name is required for registration/
+
+    @assertThrows =>
+      BlazeComponent.register 'MainComponent', null
+    ,
+      /Component 'MainComponent' already registered/
+
+    @assertThrows =>
+      BlazeComponent.register 'OtherMainComponent', MainComponent
+    ,
+      /Component 'OtherMainComponent' already registered under the name 'MainComponent/
+
+    class WithoutTemplateComponent extends BlazeComponent
+      @componentName 'WithoutTemplateComponent'
+
+    @assertThrows =>
+      WithoutTemplateComponent.getComponentTemplate()
+    ,
+      /Component class method 'template' not overridden/
+
+    class WithUnknownTemplateComponent extends BlazeComponent
+      @componentName 'WithoutTemplateComponent'
+      @template: ->
+        'TemplateWhichDoesNotExist'
+
+    @assertThrows =>
+      WithUnknownTemplateComponent.getComponentTemplate()
+    ,
+      /Template 'TemplateWhichDoesNotExist' cannot be found/
+
 ClassyTestCase.addTest new BasicTestCase()

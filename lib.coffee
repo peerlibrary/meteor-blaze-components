@@ -158,7 +158,8 @@ class BlazeComponent
     template
 
   @template: ->
-    throw new Error "Not implemented."
+    # You have to override this method with a method which returns a template name or template itself.
+    throw new Error "Component class method 'template' not overridden."
 
   # Component name is set in the BlazeComponent.register. If not using a registered component and a component name is
   # wanted, component name has to be set manually or this class method should be overridden with a custom implementation.
