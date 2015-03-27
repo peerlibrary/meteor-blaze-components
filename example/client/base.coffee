@@ -3,18 +3,19 @@ class MainComponent extends BlazeComponent
     'MainComponent'
 
   foobar: ->
-    console.log "foobar", @data(), @currentData(), @currentComponent()
-    "Works"
+    "#{ @componentName() }/MainComponent.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
 
   foobar2: ->
-    console.log "foobar2", @data(), @currentData(), @currentComponent()
-    "Works2"
+    "#{ @componentName() }/MainComponent.foobar2/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+
+  foobar3: ->
+    "#{ @componentName() }/MainComponent.foobar3/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
 
   isMainComponent: ->
     @constructor is MainComponent
 
   onClick: (event) ->
-    console.log "onClick", @data(), @currentData(), @currentComponent()
+    console.log @componentName(), 'MainComponent.onClick', @data(), @currentData(), @currentComponent().componentName()
 
   events: ->
     super.concat
@@ -30,14 +31,14 @@ BlazeComponent.register 'FooComponent', FooComponent
 
 class SubComponent extends MainComponent
   foobar: ->
-    console.log "sub-foobar", @data(), @currentData(), @currentComponent()
-    "sub-Works"
+    "#{ @componentName() }/SubComponent.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
 
   foobar2: ->
-    console.log "sub-foobar2", @data(), @currentData(), @currentComponent()
-    "sub-Works2"
+    "#{ @componentName() }/SubComponent.foobar2/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+
+  # We on purpose to not override foobar3.
 
   onClick: (event) ->
-    console.log "onClick2", @data(), @currentData(), @currentComponent()
+    console.log @componentName(), 'SubComponent.onClick', @data(), @currentData(), @currentComponent().componentName()
 
 BlazeComponent.register 'SubComponent', SubComponent

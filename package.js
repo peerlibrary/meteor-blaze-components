@@ -31,3 +31,26 @@ Package.onUse(function (api) {
     'lib.coffee'
   ], 'client');
 });
+
+Package.onTest(function (api) {
+  // Core dependencies.
+  api.use([
+    'coffeescript',
+    'templating'
+  ]);
+
+  // Internal dependencies.
+  api.use([
+    'peerlibrary:blaze-components'
+  ]);
+
+  // 3rd party dependencies.
+  api.use([
+    'peerlibrary:classy-test@0.2.9'
+  ]);
+
+  api.addFiles([
+    'tests.html',
+    'tests.coffee'
+   ], 'client');
+});
