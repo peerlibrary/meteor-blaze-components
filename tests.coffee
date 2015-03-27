@@ -31,6 +31,10 @@ class @FooComponent extends BlazeComponent
 
 BlazeComponent.register 'FooComponent', FooComponent
 
+class @SelfRegisterComponent extends BlazeComponent
+  # Alternative way of registering components.
+  @register 'SelfRegisterComponent'
+
 class SubComponent extends MainComponent
   @calls: []
 
@@ -47,33 +51,53 @@ class SubComponent extends MainComponent
 
 BlazeComponent.register 'SubComponent', SubComponent
 
+class UnregisteredComponent extends SubComponent
+  foobar: ->
+    "#{ @componentName() }/UnregisteredComponent.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+
+  foobar2: ->
+    "#{ @componentName() }/UnregisteredComponent.foobar2/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+
+# Name has to be set manually.
+UnregisteredComponent.componentName 'UnregisteredComponent'
+
+class SelfNameUnregisteredComponent extends UnregisteredComponent
+  # Alternative way of setting the name manually.
+  @componentName 'SelfNameUnregisteredComponent'
+
+  # We do not extend any helper on purpose. So they should all use "UnregisteredComponent".
+
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
 
-  FOO_COMPONENT_CONTENT = """
-    <p>Other component: FooComponent</p>
-    <button>Foo1</button>
-    <p></p>
-    <button>Foo2</button>
-    <p></p>
-    <p></p>
-  """
+  FOO_COMPONENT_CONTENT = ->
+    """
+      <p>Other component: FooComponent</p>
+      <button>Foo1</button>
+      <p></p>
+      <button>Foo2</button>
+      <p></p>
+      <p></p>
+    """
 
-  SUB_COMPONENT_CONTENT = """
-    <p>Main component: SubComponent</p>
-    <button>Foo1</button>
-    <p>SubComponent/SubComponent.foobar/{"top":"42"}/{"top":"42"}/SubComponent</p>
-    <button>Foo2</button>
-    <p>SubComponent/SubComponent.foobar2/{"top":"42"}/{"a":"1","b":"2"}/SubComponent</p>
-    <p>SubComponent/MainComponent.foobar3/{"top":"42"}/{"top":"42"}/SubComponent</p>
-    <p>Subtemplate</p>
-    <button>Foo1</button>
-    <p>SubComponent/SubComponent.foobar/{"top":"42"}/{"top":"42"}/SubComponent</p>
-    <button>Foo2</button>
-    <p>SubComponent/SubComponent.foobar2/{"top":"42"}/{"a":"3","b":"4"}/SubComponent</p>
-    <p>SubComponent/MainComponent.foobar3/{"top":"42"}/{"top":"42"}/SubComponent</p>
-    #{ FOO_COMPONENT_CONTENT }
-  """
+  COMPONENT_CONTENT = (componentName, helperComponentName) ->
+    helperComponentName ?= componentName
+
+    """
+      <p>Main component: #{ componentName }</p>
+      <button>Foo1</button>
+      <p>#{ componentName }/#{ helperComponentName }.foobar/{"top":"42"}/{"top":"42"}/#{ componentName }</p>
+      <button>Foo2</button>
+      <p>#{ componentName }/#{ helperComponentName }.foobar2/{"top":"42"}/{"a":"1","b":"2"}/#{ componentName }</p>
+      <p>#{ componentName }/MainComponent.foobar3/{"top":"42"}/{"top":"42"}/#{ componentName }</p>
+      <p>Subtemplate</p>
+      <button>Foo1</button>
+      <p>#{ componentName }/#{ helperComponentName }.foobar/{"top":"42"}/{"top":"42"}/#{ componentName }</p>
+      <button>Foo2</button>
+      <p>#{ componentName }/#{ helperComponentName }.foobar2/{"top":"42"}/{"a":"3","b":"4"}/#{ componentName }</p>
+      <p>#{ componentName }/MainComponent.foobar3/{"top":"42"}/{"top":"42"}/#{ componentName }</p>
+      #{ FOO_COMPONENT_CONTENT() }
+    """
 
   trim: (html) =>
     html = html.replace />\s+/g, '>'
@@ -89,21 +113,9 @@ class BasicTestCase extends ClassyTestCase
       top: '42'
 
     @assertEqual @trim(output), @trim """
-      <p>Main component: MainComponent</p>
-      <button>Foo1</button>
-      <p>MainComponent/MainComponent.foobar/{"top":"42"}/{"top":"42"}/MainComponent</p>
-      <button>Foo2</button>
-      <p>MainComponent/MainComponent.foobar2/{"top":"42"}/{"a":"1","b":"2"}/MainComponent</p>
-      <p>MainComponent/MainComponent.foobar3/{"top":"42"}/{"top":"42"}/MainComponent</p>
-      <p>Subtemplate</p>
-      <button>Foo1</button>
-      <p>MainComponent/MainComponent.foobar/{"top":"42"}/{"top":"42"}/MainComponent</p>
-      <button>Foo2</button>
-      <p>MainComponent/MainComponent.foobar2/{"top":"42"}/{"a":"3","b":"4"}/MainComponent</p>
-      <p>MainComponent/MainComponent.foobar3/{"top":"42"}/{"top":"42"}/MainComponent</p>
-      #{ FOO_COMPONENT_CONTENT }
+      #{ COMPONENT_CONTENT 'MainComponent' }
       <hr>
-      #{ SUB_COMPONENT_CONTENT }
+      #{ COMPONENT_CONTENT 'SubComponent' }
     """
 
     componentTemplate = BlazeComponent.getComponentTemplate 'FooComponent'
@@ -113,7 +125,7 @@ class BasicTestCase extends ClassyTestCase
     output = Blaze.toHTMLWithData componentTemplate,
       top: '42'
 
-    @assertEqual @trim(output), @trim FOO_COMPONENT_CONTENT
+    @assertEqual @trim(output), @trim FOO_COMPONENT_CONTENT()
 
     componentTemplate = BlazeComponent.getComponentTemplate 'SubComponent'
 
@@ -122,7 +134,7 @@ class BasicTestCase extends ClassyTestCase
     output = Blaze.toHTMLWithData componentTemplate,
       top: '42'
 
-    @assertEqual @trim(output), @trim SUB_COMPONENT_CONTENT
+    @assertEqual @trim(output), @trim COMPONENT_CONTENT 'SubComponent'
 
   testGetComponent: =>
     @assertEqual BlazeComponent.getComponent('MainComponent'), MainComponent
@@ -135,5 +147,28 @@ class BasicTestCase extends ClassyTestCase
     @assertEqual FooComponent.componentName(), 'FooComponent'
     @assertEqual SubComponent.componentName(), 'SubComponent'
     @assertEqual BlazeComponent.componentName(), null
+
+  testSelfRegister: =>
+    @assertTrue BlazeComponent.getComponent 'SelfRegisterComponent'
+
+  testUnregisteredComponent: =>
+    componentTemplate = UnregisteredComponent.getComponentTemplate()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    @assertEqual @trim(output), @trim COMPONENT_CONTENT 'UnregisteredComponent'
+
+    componentTemplate = SelfNameUnregisteredComponent.getComponentTemplate()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    # We have not extended any helper on purpose, so they should still use "UnregisteredComponent".
+    @assertEqual @trim(output), @trim COMPONENT_CONTENT 'SelfNameUnregisteredComponent', 'UnregisteredComponent'
 
 ClassyTestCase.addTest new BasicTestCase()
