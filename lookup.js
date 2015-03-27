@@ -1,5 +1,6 @@
-/* This file is a direct copy of Blaze lookup.js without any modifications except for
-   the one in this pull request: https://github.com/meteor/meteor/pull/4036
+/* This file is a direct copy of Blaze lookup.js with two modifications:
+     one in this pull request: https://github.com/meteor/meteor/pull/4036
+     adding call to the Blaze._getComponent before checking the template name
 
    TODO: Remove this file once the pull request is merged in.
  */
@@ -68,6 +69,7 @@ Blaze.View.prototype.lookup = function (name, _options) {
   var lookupTemplate = _options && _options.template;
   var helper;
   var boundTmplInstance;
+  var componentTemplate;
 
   if (this.templateInstance) {
     boundTmplInstance = _.bind(this.templateInstance, this);
@@ -84,6 +86,9 @@ Blaze.View.prototype.lookup = function (name, _options) {
   } else if (template &&
              ((helper = Blaze._getTemplateHelper(template, name, boundTmplInstance)) != null)) {
     return wrapHelper(bindDataContext(helper), boundTmplInstance);
+  } else if (lookupTemplate && (componentTemplate = Blaze._getComponent(name)) &&
+             (componentTemplate instanceof Blaze.Template)) {
+    return componentTemplate;
   } else if (lookupTemplate && (name in Blaze.Template) &&
              (Blaze.Template[name] instanceof Blaze.Template)) {
     return Blaze.Template[name];

@@ -3,8 +3,9 @@
 # Now the order of the lookup will be, in order:
 #   a helper of the current template
 #   a property of the current component
-#   global helper
+#   the name of a component
 #   the name of a template
+#   global helper
 #   a property of the data context
 #
 # Returns a function, a non-function value, or null. If a function is found, it is bound appropriately.
@@ -66,10 +67,25 @@ addEvents = (view, component) ->
 
   return
 
-class BlazeComponent
-  @template: (template) ->
-    componentClass = @
+Blaze._getComponent = (componentName) ->
+  BlazeComponent.getComponentTemplate componentName
 
+class BlazeComponent
+  @components: {}
+
+  @register: (componentName, componentClass) ->
+    componentClass ?= @
+
+    throw new Error "Component '#{ componentName }' already registered." if componentName of @components
+
+    @components[componentName] = componentClass
+
+  @getComponentTemplate: (componentName) ->
+    return null unless componentName of @components
+
+    componentClass = @components[componentName]
+
+    template = componentClass.template()
     template = Template[template] if _.isString template
 
     template.onCreated ->
@@ -89,6 +105,11 @@ class BlazeComponent
     template.onDestroyed ->
       # @ is a template instance.
       @component.onDestroyed()
+
+    template
+
+  @template: ->
+    throw new Error "Not implemented."
 
   onCreated: ->
 
