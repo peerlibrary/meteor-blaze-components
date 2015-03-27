@@ -46,6 +46,31 @@ BlazeComponent.register 'SubComponent', SubComponent
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
 
+  FOO_COMPONENT_CONTENT = """
+    <p>Other component: FooComponent</p>
+    <button>Foo1</button>
+    <p></p>
+    <button>Foo2</button>
+    <p></p>
+    <p></p>
+  """
+
+  SUB_COMPONENT_CONTENT = """
+    <p>Main component: SubComponent</p>
+    <button>Foo1</button>
+    <p>SubComponent/SubComponent.foobar/{"top":"42"}/{"top":"42"}/SubComponent</p>
+    <button>Foo2</button>
+    <p>SubComponent/SubComponent.foobar2/{"top":"42"}/{"a":"1","b":"2"}/SubComponent</p>
+    <p>SubComponent/MainComponent.foobar3/{"top":"42"}/{"top":"42"}/SubComponent</p>
+    <p>Subtemplate</p>
+    <button>Foo1</button>
+    <p>SubComponent/SubComponent.foobar/{"top":"42"}/{"top":"42"}/SubComponent</p>
+    <button>Foo2</button>
+    <p>SubComponent/SubComponent.foobar2/{"top":"42"}/{"a":"3","b":"4"}/SubComponent</p>
+    <p>SubComponent/MainComponent.foobar3/{"top":"42"}/{"top":"42"}/SubComponent</p>
+    #{ FOO_COMPONENT_CONTENT }
+  """
+
   trim: (html) =>
     html = html.replace />\s+/g, '>'
     html = html.replace /\s+</g, '<'
@@ -72,31 +97,27 @@ class BasicTestCase extends ClassyTestCase
       <button>Foo2</button>
       <p>MainComponent/MainComponent.foobar2/{"top":"42"}/{"a":"3","b":"4"}/MainComponent</p>
       <p>MainComponent/MainComponent.foobar3/{"top":"42"}/{"top":"42"}/MainComponent</p>
-      <p>Other component: FooComponent</p>
-      <button>Foo1</button>
-      <p></p>
-      <button>Foo2</button>
-      <p></p>
-      <p></p>
+      #{ FOO_COMPONENT_CONTENT }
       <hr>
-      <p>Main component: SubComponent</p>
-      <button>Foo1</button>
-      <p>SubComponent/SubComponent.foobar/{"top":"42"}/{"top":"42"}/SubComponent</p>
-      <button>Foo2</button>
-      <p>SubComponent/SubComponent.foobar2/{"top":"42"}/{"a":"1","b":"2"}/SubComponent</p>
-      <p>SubComponent/MainComponent.foobar3/{"top":"42"}/{"top":"42"}/SubComponent</p>
-      <p>Subtemplate</p>
-      <button>Foo1</button>
-      <p>SubComponent/SubComponent.foobar/{"top":"42"}/{"top":"42"}/SubComponent</p>
-      <button>Foo2</button>
-      <p>SubComponent/SubComponent.foobar2/{"top":"42"}/{"a":"3","b":"4"}/SubComponent</p>
-      <p>SubComponent/MainComponent.foobar3/{"top":"42"}/{"top":"42"}/SubComponent</p>
-      <p>Other component: FooComponent</p>
-      <button>Foo1</button>
-      <p></p>
-      <button>Foo2</button>
-      <p></p>
-      <p></p>
+      #{ SUB_COMPONENT_CONTENT }
     """
+
+    componentTemplate = BlazeComponent.getComponentTemplate 'FooComponent'
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    @assertEqual @trim(output), @trim FOO_COMPONENT_CONTENT
+
+    componentTemplate = BlazeComponent.getComponentTemplate 'SubComponent'
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    @assertEqual @trim(output), @trim SUB_COMPONENT_CONTENT
 
 ClassyTestCase.addTest new BasicTestCase()
