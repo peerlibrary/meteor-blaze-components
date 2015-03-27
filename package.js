@@ -1,10 +1,12 @@
 Package.describe({
-  name: 'blaze-components',
-  version: '0.1.0'
+  name: 'peerlibrary:blaze-components',
+  summary: "Components for Blaze",
+  version: '0.1.0',
+  git: 'https://github.com/peerlibrary/meteor-blaze-components.git'
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom('1.0.3.1');
+  api.versionsFrom('METEOR@1.0.3.1');
 
   // Core dependencies.
   api.use([
