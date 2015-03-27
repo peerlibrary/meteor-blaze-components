@@ -12,23 +12,31 @@
   {{/with}}
   {{> normalSubtemplate}}
   {{> FooComponent}}
+  {{#if isMainComponent}}
+    <hr/>
+    {{> SubComponent}}
+  {{/if}}
 </template>
 
 <template name="normalSubtemplate">
+  {{! Helpers here should resolve to MainComponent methods. }}
   <p>Subtemplate</p>
   <button>Foo1</button>
   <p>{{foobar}}</p>
   {{#with a='3' b='4'}}
+    {{! Event handling should be done by MainComponent as well. }}
     <button>Foo2</button>
     <p>{{foobar2}}</p>
   {{/with}}
 </template>
 
 <template name="FooComponent">
-  <p>Subcomponent</p>
+  {{! Helpers here should not resolve becasue ther are defined in another component. }}
+  <p>Other component</p>
   <button>Foo1</button>
   <p>{{foobar}}</p>
   {{#with a='5' b='6'}}
+    {{! But event handler from the MainComponent should still handle the click here. }}
     <button>Foo2</button>
     <p>{{foobar2}}</p>
   {{/with}}
