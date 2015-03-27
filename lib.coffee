@@ -74,24 +74,39 @@ class BlazeComponent
   @components: {}
 
   @register: (componentName, componentClass) ->
+    # To allow calling @register 'name' from inside a class body.
     componentClass ?= @
 
     throw new Error "Component '#{ componentName }' already registered." if componentName of @components
 
+    throw new Error "Component '#{ componentName }' already registered under the name '#{ componentClass.componentName() }'." if componentClass.componentName() and componentClass.componentName() isnt componentName
+
+    componentClass._componentName = componentName
+    assert componentClass.componentName() is componentName
+
     @components[componentName] = componentClass
 
-  @getComponentTemplate: (componentName) ->
-    return null unless componentName of @components
+  @getComponentTemplate: (componentClass) ->
+    # To allow calling component.getComponentTemplate() on an unregistered component.
+    componentClass ?= @
 
-    componentClass = @components[componentName]
+    if _.isString componentClass
+      return null unless componentClass of @components
 
-    templateBase = componentClass.template()
-    templateBase = Template[templateBase] if _.isString templateBase
+      componentClass = @components[componentClass]
+
+    componentClassTemplate = componentClass.template()
+    if _.isString componentClassTemplate
+      templateBase = Template[componentClassTemplate]
+      throw new Error "Template '#{ componentClassTemplate }' cannot be found." unless templateBase
+    else
+      templateBase = componentClassTemplate
+      assert templateBase
 
     # Create a new component template based on the Blaze template. We want our own template
     # because the same Blaze template could be reused between multiple components.
     # TODO: Should we cache these templates based on (componentName, templateBase) pair? We could use tow-level of ES6 Maps, componentName -> templateBase -> template.
-    template = new Blaze.Template "BlazeComponent.#{ componentName }", templateBase.renderFunction
+    template = new Blaze.Template "BlazeComponent.#{ componentClass.componentName() or 'unnamed' }", templateBase.renderFunction
 
     # We on purpose do not reuse helpers, events, and hooks. Templates are used only for HTML rendering.
 
@@ -117,6 +132,15 @@ class BlazeComponent
 
   @template: ->
     throw new Error "Not implemented."
+
+  # _componentName is set in the BlazeComponent.register. If not using a registered component and a component name is
+  # wanted, _componentName has to be set manually or this class method should be overridden with a custom implementation.
+  @componentName: ->
+    @_componentName
+
+  # We allow access to the component name through a method so that it can be accessed in templates in an easy way.
+  componentName: ->
+    @constructor.componentName()
 
   onCreated: ->
 

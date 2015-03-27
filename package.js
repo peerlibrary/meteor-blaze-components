@@ -19,6 +19,7 @@ Package.onUse(function (api) {
 
   // 3rd party dependencies.
   api.use([
+    'peerlibrary:assert@0.2.5',
     'aldeed:template-extension@3.4.3'
   ]);
 
