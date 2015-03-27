@@ -8,6 +8,7 @@ Package.onUse(function (api) {
 
   // Core dependencies.
   api.use([
+    'blaze',
     'templating',
     'coffeescript',
     'underscore',
