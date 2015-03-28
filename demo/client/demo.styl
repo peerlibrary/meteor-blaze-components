@@ -1,0 +1,90 @@
+@import url('http://fonts.googleapis.com/css?family=Slabo+27px');
+@import url(http://fonts.googleapis.com/css?family=Roboto:300,300italic);
+
+*
+  box-sizing border-box
+
+input, textarea
+  font inherit
+
+body
+  margin 30px
+  font-family 'Roboto', sans-serif
+  font-size 14px
+
+  > *
+    width 60%
+
+  > hr
+    margin 2em auto 2em 0
+    border none
+    height 1px
+    display block
+    background #e6e3e1
+
+h1, h2, h3
+  font-family 'Slabo 27px', serif
+
+aside
+  position relative
+  float right
+  width 30%
+  font-size 12px
+  border 1px solid #e6e3e1
+  padding 0 10px
+  margin 0 5%
+  border-radius 3px
+
+  &::before
+    content ""
+    display block
+    width 18%
+    border-top inherit
+    position absolute
+    z-index -1
+    left 0
+    margin-left -18%
+    top 35px
+
+.comment
+  font-style italic
+
+.demo
+  display table
+  table-layout fixed
+  width 100%
+  border-collapse separate
+  border-spacing 10px
+  background #e6e3e1
+  border-radius 3px
+
+  .live
+    display table-cell
+    vertical-align middle
+    text-align center
+
+  .code
+    display table-cell
+    padding-left 5px
+    width 40%
+    font-size 12px
+
+    pre
+      margin 0 0 10px 0
+
+      &:last-child
+        margin 0
+
+      &::before
+        display block
+        background #726f6c
+        color white
+        margin -11px -12px 10px -12px
+        border-radius 2px 2px 0 0
+        padding 1px 10px
+
+      &.html::before
+        content "html"
+
+      &.coffee::before
+        content "coffeescript"
