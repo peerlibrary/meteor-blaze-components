@@ -33,7 +33,7 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
         Blaze._warn "Assigning helper with `" + template.viewName + "." + name + " = ...` is deprecated.  Use `" + template.viewName + ".helpers(...)` instead."
     return template[name]
 
-  # TODO: Can we simply ignore reactivity here? Can this template instance or parent template instances change without reconstructing the component as well? I don't think so. Only data context is changing and this is why templateInstance or .get() are reactive and we do not care about data context here.
+  # TODO: Blaze.View::lookup should not introduce any reactive dependencies. Can we simply ignore reactivity here? Can this template instance or parent template instances change without reconstructing the component as well? I don't think so. Only data context is changing and this is why templateInstance or .get() are reactive and we do not care about data context here.
   component = Tracker.nonreactive ->
     templateInstance = templateInstance()
     templateInstance.get 'component'
@@ -86,7 +86,9 @@ addEvents = (view, component) ->
   return
 
 Blaze._getComponent = (componentName) ->
-  BlazeComponent.getComponent(componentName)?.renderComponent() or null
+  # Blaze.View::lookup should not introduce any reactive dependencies, so we are making sure.
+  Tracker.nonreactive =>
+    BlazeComponent.getComponent(componentName)?.renderComponent() or null
 
 createUIHooks = (component, parentNode) ->
   insertElement: (node, before) =>
@@ -174,6 +176,22 @@ class BlazeComponent extends BaseComponent
       templateBase = componentClassTemplate
       assert templateBase
 
+    try
+      data = Template.currentData()
+    catch error
+      # The exception can be thrown when there is no current view which happens when
+      # there is no data context yet, thus also no arguments were provided through
+      # "args" template helper, so we just continue normally.
+      data = null
+
+    if data?.constructor is argumentsConstructor
+      argumentsProvided = true
+      # Arguments were provided through "args" template helper, use them with the constructor.
+      component = new componentClass data._arguments...
+    else
+      argumentsProvided = false
+      component = new componentClass()
+
     # Create a new component template based on the Blaze template. We want our own template
     # because the same Blaze template could be reused between multiple components.
     # TODO: Should we cache these templates based on (componentName, templateBase) pair? We could use tow levels of ES6 Maps, componentName -> templateBase -> template.
@@ -182,12 +200,13 @@ class BlazeComponent extends BaseComponent
     # We on purpose do not reuse helpers, events, and hooks. Templates are used only for HTML rendering.
 
     template.onCreated ->
+      # @ is a template instance.
+
       @view._onViewRendered =>
         # Attach events the first time template instance renders.
         addEvents @view, @component if @view.renderCount is 1
 
-      # @ is a template instance.
-      @component = new componentClass()
+      @component = component
       @component.templateInstance = @
       @component.onCreated()
 
@@ -199,7 +218,12 @@ class BlazeComponent extends BaseComponent
       # @ is a template instance.
       @component.onDestroyed()
 
-    template
+    return template unless argumentsProvided
+
+    # Arguments were provided through "args" template helper and passed in as a data
+    # context. Restore original (parent) data context and render the component in it.
+    new Blaze.Template ->
+      Blaze._TemplateWith (-> Template.parentData()), (-> template)
 
   @template: ->
     # You have to override this method with a method which returns a template name or template itself.
@@ -244,3 +268,14 @@ class BlazeComponent extends BaseComponent
 for methodName, method of Blaze.TemplateInstance::
   BlazeComponent::[methodName] = (args...) ->
     @templateInstance[methodName] args...
+
+argumentsConstructor = ->
+  # This class should never really be created.
+  assert false
+
+Template.registerHelper 'args', ->
+  obj = {}
+  # We use custom constructor to know that it is not a real data context.
+  obj.constructor = argumentsConstructor
+  obj._arguments = arguments
+  obj
