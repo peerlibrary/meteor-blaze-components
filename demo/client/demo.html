@@ -1,0 +1,277 @@
+<head>
+  <title>Meteor Blaze Components</title>
+</head>
+
+<body>
+<h1>Meteor Blaze Components</h1>
+
+<p>Blaze Components for Meteor are a system for easily developing
+  complex UI elements that need to be reused around your webpage.</p>
+
+<h2>The Problem</h2>
+
+<p>Let's say we have an input box that auto-selects the text on click for easier changing. Its value is read from the
+database and is written to it when the user changes it.</p>
+
+<p>In plain Meteor this looks something like this:</p>
+
+<div class="demo">
+  <div class="live">
+    {{> autoSelectInput id='demo1'}}
+    {{> autoSelectDemo id='demo1'}}
+  </div>
+
+  <div class="code">
+    <pre class="html"><code class="language-handlebars">{{|&gt; autoSelectInput id='demo1'}}
+
+&lt;template name=&quot;autoSelectInput&quot;&gt;
+  &lt;input value="{{|value}}"/&gt;
+&lt;/template&gt;</code></pre>
+
+    <pre class="coffee"><code class="language-coffeescript">Template.autoSelectInput.helpers
+  value: -&gt;
+    # Read value from collection.
+    Values.findOne(@id)?.value
+
+Template.autoSelectInput.events
+  # Save value to collection when it changes.
+  'change input': (event, template) -&gt;
+    Values.upsert @id,
+      value: event.target.value
+
+  # Auto-select text when user clicks in the input.
+  'click input': (event, template) -&gt;
+    $(event.target).select()</code></pre>
+  </div>
+</div>
+
+<p>What if we now want the same functionality on another template?</p>
+
+<p>Our options are:</p>
+<ul>
+  <li>
+    <p>Duplicate the code to the other template.</p>
+  </li>
+  <li>
+    <p>Refactor the template to <code class="language-handlebars">{{|> include}}</code> another template, or create
+      a <code class="language-handlebars">{{|#block}}</code> helper that provides the functionality.</p>
+  </li>
+  <li>
+    <p>Refactor the code instead. We save the reusable helpers and event handlers into variables and apply them on
+      multiple templates.</p>
+  </li>
+  <li>
+    <p>Create a helper class that does the same as above in an organized way and also provides inheritance, so you can
+    create modified versions or extend the functionality.</p>
+  </li>
+</ul>
+<p>What if the last option didn't require separate helper classes, but it was simply how templates worked?</p>
+<p>That's what Blaze Components are!</p>
+
+<h2>The Solution</h2>
+
+<p>Let's make our auto-select input into a Blaze Component. You can think of a component, just like you would of a
+  template, except the functionality (helpers and events) are defined through a class.</p>
+
+<div class="demo">
+  <div class="live">
+    {{> AutoSelectInputComponent id='demo2'}}
+    {{> autoSelectDemo id='demo2'}}
+  </div>
+
+  <div class="code">
+    <pre class="html"><code class="language-handlebars">{{|&gt; AutoSelectInputComponent id='demo2'}}</code></pre>
+
+    <pre class="coffee"><code class="language-coffeescript">class AutoSelectInputComponent extends BlazeComponent
+  @template: -&gt;
+    'autoSelectInput'
+
+  value: -&gt;
+    Values.findOne(@data().id)?.value
+
+  events: -&gt;
+    super.concat
+      'change input': @onChange
+      'click input': @onClick
+
+  onChange: (event) -&gt;
+    Values.upsert @data().id, value: event.target.value
+
+  onClick: (event) -&gt;
+    $(event.target).select()
+
+BlazeComponent.register 'AutoSelectInputComponent', AutoSelectInputComponent</code></pre>
+  </div>
+</div>
+<p>Let's look at the code part by part.</p>
+
+<pre class="coffee"><code class="language-coffeescript">class AutoSelectInputComponent extends BlazeComponent
+  @template: -&gt;
+    'autoSelectInput'</code></pre>
+
+<p>We have created an <code class="language-coffeescript">AutoSelectInputComponent</code> that simply re-uses the markup
+  of the <code class="language-coffeescript">autoSelectInput</code> template we provided earlier.</p>
+<p>However, all the helpers and events will be provided through the component class.</p>
+
+<p>
+  Helpers are simply instance methods.
+</p>
+
+<aside>
+  <p>
+    Notice that to get the data context, we need to call the <code class="language-coffeescript">@data()</code> function,
+    similar to how we call <code class="language-coffeescript">@data</code> in template hooks and
+    <code class="language-coffeescript">template.data</code> in event handlers.
+  </p>
+  <p>
+    In normal template helpers <code class="language-coffeescript">@</code> refers to the data context, but is not
+    reactive. Neither is <code class="language-coffeescript">@data</code> or
+    <code class="language-coffeescript">template.data</code>, so we had to call
+    <code class="language-coffeescript">Template.currentData()</code> when we wanted to register a dependency.
+  </p>
+  <p>
+    In Blaze Components, things are consistent: <code class="language-coffeescript">@</code> always refers to the
+    component instance and <code class="language-coffeescript">@data()</code> is always a reactive reference to the data
+    context.
+  </p>
+</aside>
+
+<pre class="coffee"><code class="language-coffeescript">  value: -&gt;
+    Values.findOne(@data().id)?.value</code></pre>
+
+<p>
+  Events are returned with the <code class="language-coffeescript">events</code> method like before, although instead of
+  defining the handlers inline, we rather have them as instance methods, so we can override them from child classes
+  later.
+</p>
+
+<pre class="coffee"><code class="language-coffeescript">  events: -&gt;
+    super.concat
+      'change input': @onChange
+      'click input': @onClick
+
+  onChange: (event) -&gt;
+    Values.upsert @data().id, value: event.target.value
+
+  onClick: (event) -&gt;
+    $(event.target).select()</code></pre>
+
+<p>At the end we register the component so we can include it just as any other template in our HTML.</p>
+
+<pre class="coffee"><code class="language-coffeescript">BlazeComponent.register 'AutoSelectInputComponent', AutoSelectInputComponent</code></pre>
+
+<h2>The Beauty</h2>
+
+<p>Components allow us to create new components that share code simply through inheritance.</p>
+<p>Let's say we want to provide the same functionality to a textarea template.</p>
+
+<div class="demo">
+  <div class="live">
+    {{> AutoSelectTextareaComponent id='demo3'}}
+    {{> autoSelectDemo id='demo3'}}
+  </div>
+
+  <div class="code">
+    <pre class="html"><code class="language-handlebars">{{|&gt; AutoSelectCanvasComponent id='demo3'}}</code></pre>
+
+    <pre class="coffee"><code class="language-coffeescript">class AutoSelectTextareaComponent extends AutoSelectInputComponent
+  @template: -&gt;
+    'autoSelectTextarea'
+
+  events: -&gt;
+    super.concat
+      'change textarea': @onChange
+      'click textarea': @onClick
+
+BlazeComponent.register 'AutoSelectTextareaComponent', AutoSelectTextareaComponent</code></pre>
+  </div>
+</div>
+
+<p>Now we only need to inherit from the parent template, override which template to use and hook the event handlers for
+textarea as well.</p>
+<p>This could be made even simpler if our original component already hooked the events in a generic way, like</p>
+
+<pre class="coffee"><code class="language-coffeescript">events: -&gt;
+  super.concat
+    'change *': @onChange
+    'click *': @onClick</code></pre>
+
+<hr/>
+
+<p>An input form element will only update once we press enter or click outside it. Since Meteor's great strength is its
+  reactivity, it would be nice if inputs updated in real-time as we type.</p>
+<p>We'll call this extension real-time input. All we need to do is add in the code that calls the change event on
+  each keypress.</p>
+
+<div class="demo">
+  <div class="live">
+    {{> RealTimeInputComponent id='demo4'}}
+    {{> autoSelectDemo id='demo4'}}
+  </div>
+
+  <div class="code">
+    <pre class="html"><code class="language-handlebars">{{|&gt; RealTimeInputComponent id='demo4'}}</code></pre>
+
+    <pre class="coffee"><code class="language-coffeescript">class RealTimeInputComponent extends AutoSelectInputComponent
+  events: -&gt;
+    super.concat
+      'keyup input': @onKeyup
+
+  onKeyup: (event) -&gt;
+    $(event.target).change()
+
+BlazeComponent.register 'RealTimeInputComponent', RealTimeInputComponent</code></pre>
+  </div>
+</div>
+<p>You might have experienced so far, that the input randomly updated while you were typing. This is because the value
+in the input boxes come from a single database. If any other user has changed the text in the input, the value is
+  reactively propagated to everywhere else in the world where this page is opened!</p>
+  <p>Try opening another browser side by side and observe as the values change in both windows. In the example below,
+we are simulating a change every 3 second for convenience.</p>
+<p>In such collaborative environments, we need to make sure that the value in the input box doesn't change while you're
+editing it. To enable this, we'll remember the current value when we enter the input box and return it to the rendering
+engine while we're editing. This will trick it to think that nothing has changed and will not cause re-rendering.</p>
+
+<div class="demo">
+  <div class="live">
+    {{> FrozenInputComponent id='demo5'}}
+    {{> autoSelectDemo id='demo5'}}
+  </div>
+
+  <div class="code">
+    <pre class="html"><code class="language-handlebars">{{|&gt; FrozenInputComponent id='demo5'}}</code></pre>
+
+    <pre class="coffee"><code class="language-coffeescript"># TODO</code></pre>
+  </div>
+</div>
+
+{{!
+<div class="demo">
+  <div class="live">
+  </div>
+
+  <div class="code">
+    <pre class="html"><code class="language-handlebars"></code></pre>
+
+    <pre class="coffee"><code class="language-coffeescript"></code></pre>
+  </div>
+</div>
+}}
+
+</body>
+
+<template name="autoSelectDemo">
+  {{#if value}}
+    <p>The stored value is {{value}}.</p>
+  {{else}}
+    <p>Please type in something.</p>
+  {{/if}}
+</template>
+
+<template name="autoSelectInput">
+  <input value="{{value}}"/>
+</template>
+
+<template name="autoSelectTextarea">
+  <textarea>{{value}}</textarea>
+</template>
