@@ -39,10 +39,23 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
     templateInstance.get 'component'
 
   # Component.
-  if component and name of component
-    return _.bind component[name], component
+  if component
+    if name of component
+      return wrapHelper component, component[name]
+
+    # We manually go over _mixins instead of using getMixin because we want to
+    # distinguish between attribute existing on a mixin with the undefined value,
+    # and no attribute existing with a given name at all on any mixin.
+    for mixin in component._mixins when name of mixin
+      return wrapHelper component, mixin[name]
 
   null
+
+wrapHelper = (component, helper) ->
+  if _.isFunction helper
+    _.bind helper, component
+  else
+    helper
 
 viewToTemplateInstance = (view) ->
   # We skip contentBlock views which are injected by Meteor when using
@@ -224,6 +237,14 @@ class BlazeComponent extends BaseComponent
         return mixin[attributeName]
 
     # TODO: Should we throw an error here? Something like calling a function which does not exist?
+    return
+
+  getFirstMixin: (attributeName) ->
+    assert @_mixins
+
+    for mixin in @_mixins when attributeName of mixin
+      return mixin[attributeName]
+
     return
 
   # Calls all mixins in order and gives initial arguments to the first, and then results of that
