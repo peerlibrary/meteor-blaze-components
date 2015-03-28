@@ -86,9 +86,7 @@ addEvents = (view, component) ->
   return
 
 Blaze._getComponent = (componentName) ->
-  # Blaze.View::lookup should not introduce any reactive dependencies, so we are making sure.
-  Tracker.nonreactive =>
-    BlazeComponent.getComponent(componentName)?.renderComponent() or null
+  BlazeComponent.getComponent(componentName)?.renderComponent() or null
 
 createUIHooks = (component, parentNode) ->
   insertElement: (node, before) =>
@@ -168,62 +166,77 @@ class BlazeComponent extends BaseComponent
 
       componentClass = @components[componentClass]
 
-    componentClassTemplate = componentClass.template()
-    if _.isString componentClassTemplate
-      templateBase = Template[componentClassTemplate]
-      throw new Error "Template '#{ componentClassTemplate }' cannot be found." unless templateBase
-    else
-      templateBase = componentClassTemplate
-      assert templateBase
+    # Blaze.View::lookup should not introduce any reactive dependencies, so we are returning
+    # a function which can then be run in a reactive context. This allows template method to
+    # be reactive, together with reactivity of component arguments.
+    new Blaze.Template "BlazeComponent.#{ componentClass.componentName() or 'unnamed' } (reactive wrapper)", ->
+      componentClassTemplate = componentClass.template()
+      if _.isString componentClassTemplate
+        templateBase = Template[componentClassTemplate]
+        throw new Error "Template '#{ componentClassTemplate }' cannot be found." unless templateBase
+      else
+        templateBase = componentClassTemplate
+        assert templateBase
 
-    try
-      data = Template.currentData()
-    catch error
-      # The exception can be thrown when there is no current view which happens when
-      # there is no data context yet, thus also no arguments were provided through
-      # "args" template helper, so we just continue normally.
-      data = null
+      try
+        # We check data context in a non-reactive way, because we want just to peek into it
+        # and determine if data context contains component arguments or not. We do not want
+        # to register a reactive dependency unnecessary because then the component would be
+        # recreated every time data context changes. We want that it is recreated only when
+        # component arguments change, if there are any.
+        data = Tracker.nonreactive ->
+          Template.currentData()
+      catch error
+        # The exception can be thrown when there is no current view which happens when
+        # there is no data context yet, thus also no arguments were provided through
+        # "args" template helper, so we just continue normally.
+        data = null
 
-    if data?.constructor is argumentsConstructor
-      argumentsProvided = true
-      # Arguments were provided through "args" template helper, use them with the constructor.
-      component = new componentClass data._arguments...
-    else
-      argumentsProvided = false
-      component = new componentClass()
+      if data?.constructor is argumentsConstructor
+        argumentsProvided = true
+        # Arguments were provided through "args" template helper, use them with the constructor.
+        component = new componentClass data._arguments...
+      else
+        argumentsProvided = false
+        component = new componentClass()
 
-    # Create a new component template based on the Blaze template. We want our own template
-    # because the same Blaze template could be reused between multiple components.
-    # TODO: Should we cache these templates based on (componentName, templateBase) pair? We could use tow levels of ES6 Maps, componentName -> templateBase -> template.
-    template = new Blaze.Template "BlazeComponent.#{ componentClass.componentName() or 'unnamed' }", templateBase.renderFunction
+      # Create a new component template based on the Blaze template. We want our own template
+      # because the same Blaze template could be reused between multiple components.
+      # TODO: Should we cache these templates based on (componentName, templateBase) pair? We could use tow levels of ES6 Maps, componentName -> templateBase -> template. What about component arguments changing?
+      template = new Blaze.Template "BlazeComponent.#{ componentClass.componentName() or 'unnamed' }", templateBase.renderFunction
 
-    # We on purpose do not reuse helpers, events, and hooks. Templates are used only for HTML rendering.
+      # We on purpose do not reuse helpers, events, and hooks. Templates are used only for HTML rendering.
 
-    template.onCreated ->
-      # @ is a template instance.
+      template.onCreated ->
+        # @ is a template instance.
 
-      @view._onViewRendered =>
-        # Attach events the first time template instance renders.
-        addEvents @view, @component if @view.renderCount is 1
+        @view._onViewRendered =>
+          # Attach events the first time template instance renders.
+          addEvents @view, @component if @view.renderCount is 1
 
-      @component = component
-      @component.templateInstance = @
-      @component.onCreated()
+        @component = component
+        @component.templateInstance = @
+        @component.onCreated()
 
-    template.onRendered ->
-      # @ is a template instance.
-      @component.onRendered()
+      template.onRendered ->
+        # @ is a template instance.
+        @component.onRendered()
 
-    template.onDestroyed ->
-      # @ is a template instance.
-      @component.onDestroyed()
+      template.onDestroyed ->
+        # @ is a template instance.
+        @component.onDestroyed()
 
-    return template unless argumentsProvided
+      return template unless argumentsProvided
 
-    # Arguments were provided through "args" template helper and passed in as a data
-    # context. Restore original (parent) data context and render the component in it.
-    new Blaze.Template ->
-      Blaze._TemplateWith (-> Template.parentData()), (-> template)
+      if Tracker.active
+        # Register a dependency on the data context, component arguments.
+        # TODO: This dependency makes component be recreated when its data context changes. We should recreate a component only when component arguments change. Probably by not passing component arguments through intermediary data context.
+        Template.currentData()
+
+      # Arguments were provided through "args" template helper and passed in as a data
+      # context. Restore original (parent) data context and render the component in it.
+      new Blaze.Template ->
+        Blaze._TemplateWith (-> Template.parentData()), (-> template)
 
   @template: ->
     # You have to override this method with a method which returns a template name or template itself.
@@ -273,6 +286,7 @@ argumentsConstructor = ->
   # This class should never really be created.
   assert false
 
+# TODO: Find a way to pass arguments to the component without having to introduce one intermediary data context into the data context hierarchy (in fact two data contexts, because we add one more when restoring the original one).
 Template.registerHelper 'args', ->
   obj = {}
   # We use custom constructor to know that it is not a real data context.
