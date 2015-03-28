@@ -17,6 +17,11 @@ Package.onUse(function (api) {
     'tracker'
   ]);
 
+  // Internal dependencies.
+  api.use([
+    'peerlibrary:base-component'
+  ]);
+
   // 3rd party dependencies.
   api.use([
     'peerlibrary:assert@0.2.5',
