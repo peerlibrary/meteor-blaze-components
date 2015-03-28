@@ -30,13 +30,13 @@ class MainComponent extends BlazeComponent
 
 BlazeComponent.register 'MainComponent', MainComponent
 
-class @FooComponent extends BlazeComponent
+class FooComponent extends BlazeComponent
   template: ->
     'FooComponent'
 
 BlazeComponent.register 'FooComponent', FooComponent
 
-class @SelfRegisterComponent extends BlazeComponent
+class SelfRegisterComponent extends BlazeComponent
   # Alternative way of registering components.
   @register 'SelfRegisterComponent'
 
@@ -298,7 +298,7 @@ class BasicTestCase extends ClassyTestCase
     @assertThrows =>
       BlazeComponent.register 'OtherMainComponent', MainComponent
     ,
-      /Component 'OtherMainComponent' already registered under the name 'MainComponent/
+      /Component 'OtherMainComponent' already registered under the name 'MainComponent'/
 
     class WithoutTemplateComponent extends BlazeComponent
       @componentName 'WithoutTemplateComponent'
