@@ -103,7 +103,7 @@ createUIHooks = (component, parentNode) ->
 
   removeElement: (node) =>
     node._uihooks ?= createUIHooks component, node
-    component.removeDOMElement node
+    component.removeDOMElement node.parentNode, node
 
 originalDOMRangeAttach = Blaze._DOMRange::attach
 Blaze._DOMRange::attach = (parentElement, nextNode, _isMove, _isReplace) ->
@@ -202,6 +202,7 @@ class BlazeComponent extends BaseComponent
 
     return null
 
+  # Calls all mixins in order and collect all results into an array.
   callMixins: (attributeName, args...) ->
     assert @_mixins
 
@@ -211,6 +212,39 @@ class BlazeComponent extends BaseComponent
         mixin[attributeName] args...
       else
         mixin[attributeName]
+
+  # Calls the first mixin it finds, and returns the result.
+  callFirstMixin: (attributeName, args...) ->
+    assert @_mixins
+
+    for mixin in @_mixins when attributeName of mixin
+      if _.isFunction mixin[attributeName]
+        return mixin[attributeName] args...
+      else
+        return mixin[attributeName]
+
+    # TODO: Should we throw an error here? Something like calling a function which does not exist?
+    return
+
+  # Calls all mixins in order and gives initial arguments to the first, and then results of that
+  # call to the second, and so on, until all mixins were called, when the result is returned. If
+  # there are no mixins matching, initial arguments are returned. Mixins should always return an
+  # array to pass to the next mixin.
+  foldMixins: (attributeName, args...) ->
+    assert @_mixins
+
+    currentArguments = args
+
+    for mixin in @_mixins when attributeName of mixin
+      if _.isFunction mixin[attributeName]
+        currentArguments = mixin[attributeName] currentArguments...
+      else
+        currentArguments = mixin[attributeName]
+
+      # We ignore results if there were not an array.
+      currentArguments = [] unless _.isArray currentArguments
+
+    currentArguments
 
   # This class method more or less just creates an instance of a component and calls its renderComponent
   # method. But because we want to allow passing arguments to the component in templates, we have some
@@ -307,25 +341,43 @@ class BlazeComponent extends BaseComponent
     throw new Error "Component method 'template' not overridden."
 
   onCreated: ->
+    @callMixins 'onCreated'
 
   onRendered: ->
+    @callMixins 'onRendered'
 
   onDestroyed: ->
+    @callMixins 'onDestroyed'
 
-  insertDOMElement: (parent, node, before) ->
-    parent.insertBefore node, before
-    return
+  insertDOMElement: (parent, node, before, alreadyInserted=false) ->
+    [parent, node, before, alreadyInserted] = @foldMixins 'insertDOMElement', parent, node, before, alreadyInserted
 
-  moveDOMElement: (parent, node, before) ->
-    parent.insertBefore node, before
-    return
+    if not alreadyInserted and parent and node
+      parent.insertBefore node, (before or null)
+      return [parent, node, before, true]
 
-  removeDOMElement: (node) ->
-    node.parentNode.removeChild node
-    return
+    [parent, node, before, alreadyInserted]
+
+  moveDOMElement: (parent, node, before, alreadyMoved=false) ->
+    [parent, node, before, alreadyMoved] = @foldMixins 'moveDOMElement', parent, node, before, alreadyMoved
+
+    if not alreadyMoved and parent and node
+      parent.insertBefore node, (before or null)
+      return [parent, node, before, true]
+
+    [parent, node, before, alreadyMoved]
+
+  removeDOMElement: (parent, node, alreadyRemoved=false) ->
+    [parent, node, alreadyRemoved] = @foldMixins 'removeDOMElement', parent, node, alreadyRemoved
+
+    if not alreadyRemoved and parent and node
+      parent.removeChild node
+      return [parent, node, true]
+
+    [parent, node, alreadyRemoved]
 
   events: ->
-    []
+    [].concat @callMixins('events')...
 
   # Component-level data context. Reactive. Use this to always get the
   # top-level data context used to render the component.

@@ -98,8 +98,8 @@ class AnimatedListComponent extends BlazeComponent
     @constructor.calls.push ['moveDOMElement', @componentName(), trim(parent.outerHTML), trim(node.outerHTML), trim(before?.outerHTML or '')]
     super
 
-  removeDOMElement: (node) ->
-    @constructor.calls.push ['removeDOMElement', @componentName(), trim(node.outerHTML)]
+  removeDOMElement: (parent, node) ->
+    @constructor.calls.push ['removeDOMElement', @componentName(), trim(parent.outerHTML), trim(node.outerHTML)]
     super
 
 BlazeComponent.register 'AnimatedListComponent', AnimatedListComponent
@@ -411,10 +411,10 @@ class BasicTestCase extends ClassyTestCase
 
       expectedCalls = [
         ['insertDOMElement', 'AnimatedListComponent', '<div class="animationTestTemplate"></div>', '<ul><li>0</li><li>1</li><li>2</li><li>3</li><li>4</li></ul>', '']
-        ['removeDOMElement', 'AnimatedListComponent', '<li>0</li>']
+        ['removeDOMElement', 'AnimatedListComponent', '<ul><li>0</li><li>1</li><li>2</li><li>3</li><li>4</li></ul>', '<li>0</li>']
         ['moveDOMElement', 'AnimatedListComponent', '<ul><li>1</li><li>2</li><li>3</li><li>4</li></ul>', '<li>4</li>', '']
         ['insertDOMElement', 'AnimatedListComponent', '<ul><li>4</li><li>1</li><li>2</li><li>3</li></ul>', '<li>1</li>', '']
-        ['removeDOMElement', 'AnimatedListComponent', '<li>1</li>']
+        ['removeDOMElement', 'AnimatedListComponent', '<ul><li>4</li><li>0</li><li>1</li><li>2</li><li>3</li></ul>', '<li>1</li>']
         ['moveDOMElement', 'AnimatedListComponent', '<ul><li>4</li><li>0</li><li>2</li><li>3</li></ul>', '<li>3</li>', '']
         ['moveDOMElement', 'AnimatedListComponent', '<ul><li>3</li><li>4</li><li>0</li><li>2</li></ul>', '<li>2</li>', '']
         ['insertDOMElement', 'AnimatedListComponent', '<ul><li>3</li><li>4</li><li>2</li><li>0</li></ul>', '<li>2</li>', '']
