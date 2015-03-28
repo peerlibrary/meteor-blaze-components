@@ -113,7 +113,7 @@ Blaze._DOMRange::attach = (parentElement, nextNode, _isMove, _isReplace) ->
 
   originalDOMRangeAttach.apply @, arguments
 
-class BlazeComponent
+class BaseComponent
   @components: {}
 
   @register: (componentName, componentClass) ->
@@ -138,6 +138,26 @@ class BlazeComponent
   @getComponent: (componentName) ->
     @components[componentName] or null
 
+  # Component name is set in the register class method. If not using a registered component and a component name is
+  # wanted, component name has to be set manually or this class method should be overridden with a custom implementation.
+  # Care should be taken that unregistered components have their own name and not the name of their parent class, which
+  # they would have by default. Probably component name should be set in the constructor for such classes, or by calling
+  # componentName class method manually on the new class of this new component.
+  @componentName: (componentName) ->
+    # Setter.
+    @_componentName = componentName if componentName
+
+    # Getter.
+    @_componentName or null
+
+  # We allow access to the component name through a method so that it can be accessed in templates in an easy way.
+  componentName: ->
+    @constructor.componentName()
+
+  @renderComponent: ->
+    throw new Error "Not implemented."
+
+class BlazeComponent extends BaseComponent
   @renderComponent: (componentClass) ->
     # To allow calling component.renderComponent() on an unregistered component.
     componentClass ?= @
@@ -185,22 +205,6 @@ class BlazeComponent
   @template: ->
     # You have to override this method with a method which returns a template name or template itself.
     throw new Error "Component class method 'template' not overridden."
-
-  # Component name is set in the BlazeComponent.register. If not using a registered component and a component name is
-  # wanted, component name has to be set manually or this class method should be overridden with a custom implementation.
-  # Care should be taken that unregistered components have their own name and not the name of their parent class, which
-  # they would have by default. Probably component name should be set in the constructor for such classes, or by calling
-  # componentName class method manually on the new class of this new component.
-  @componentName: (componentName) ->
-    # Setter.
-    @_componentName = componentName if componentName
-
-    # Getter.
-    @_componentName or null
-
-  # We allow access to the component name through a method so that it can be accessed in templates in an easy way.
-  componentName: ->
-    @constructor.componentName()
 
   onCreated: ->
 
