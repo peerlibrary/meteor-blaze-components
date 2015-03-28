@@ -137,7 +137,7 @@ class BasicTestCase extends ClassyTestCase
     """
 
   testComponents: =>
-    componentTemplate = BlazeComponent.renderComponent 'MainComponent'
+    componentTemplate = BlazeComponent.getComponent('MainComponent').renderComponent()
 
     @assertTrue componentTemplate
 
@@ -150,7 +150,7 @@ class BasicTestCase extends ClassyTestCase
       #{ COMPONENT_CONTENT 'SubComponent' }
     """
 
-    componentTemplate = BlazeComponent.renderComponent 'FooComponent'
+    componentTemplate = BlazeComponent.getComponent('FooComponent').renderComponent()
 
     @assertTrue componentTemplate
 
@@ -159,7 +159,7 @@ class BasicTestCase extends ClassyTestCase
 
     @assertEqual trim(output), trim FOO_COMPONENT_CONTENT()
 
-    componentTemplate = BlazeComponent.renderComponent 'SubComponent'
+    componentTemplate = BlazeComponent.getComponent('SubComponent').renderComponent()
 
     @assertTrue componentTemplate
 

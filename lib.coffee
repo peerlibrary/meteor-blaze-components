@@ -86,7 +86,7 @@ addEvents = (view, component) ->
   return
 
 Blaze._getComponent = (componentName) ->
-  BlazeComponent.renderComponent componentName
+  BlazeComponent.getComponent(componentName)?.renderComponent() or null
 
 createUIHooks = (component, parentNode) ->
   insertElement: (node, before) =>
@@ -158,9 +158,8 @@ class BaseComponent
     throw new Error "Not implemented."
 
 class BlazeComponent extends BaseComponent
-  @renderComponent: (componentClass) ->
-    # To allow calling component.renderComponent() on an unregistered component.
-    componentClass ?= @
+  @renderComponent: ->
+    componentClass = @
 
     if _.isString componentClass
       return null unless componentClass of @components
