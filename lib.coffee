@@ -157,7 +157,14 @@ class BaseComponent
   @renderComponent: ->
     throw new Error "Not implemented."
 
+  renderComponent: ->
+    throw new Error "Not implemented."
+
 class BlazeComponent extends BaseComponent
+  # This class method more or less just creates an instance of a component and calls its renderComponent
+  # method. But because we want to allow passing arguments to the component in templates, we have some
+  # complicated code around to extract and pass those arguments.
+  # TODO: This should be really made less hacky. See https://github.com/meteor/meteor/issues/3913
   @renderComponent: ->
     componentClass = @
 
@@ -187,39 +194,7 @@ class BlazeComponent extends BaseComponent
         argumentsProvided = false
         component = new componentClass()
 
-      componentTemplate = component.template()
-      if _.isString componentTemplate
-        templateBase = Template[componentTemplate]
-        throw new Error "Template '#{ componentTemplate }' cannot be found." unless templateBase
-      else
-        templateBase = componentTemplate
-        assert templateBase
-
-      # Create a new component template based on the Blaze template. We want our own template
-      # because the same Blaze template could be reused between multiple components.
-      # TODO: Should we cache these templates based on (componentName, templateBase) pair? We could use tow levels of ES6 Maps, componentName -> templateBase -> template. What about component arguments changing?
-      template = new Blaze.Template "BlazeComponent.#{ component.componentName() or 'unnamed' }", templateBase.renderFunction
-
-      # We on purpose do not reuse helpers, events, and hooks. Templates are used only for HTML rendering.
-
-      template.onCreated ->
-        # @ is a template instance.
-
-        @view._onViewRendered =>
-          # Attach events the first time template instance renders.
-          addEvents @view, @component if @view.renderCount is 1
-
-        @component = component
-        @component.templateInstance = @
-        @component.onCreated()
-
-      template.onRendered ->
-        # @ is a template instance.
-        @component.onRendered()
-
-      template.onDestroyed ->
-        # @ is a template instance.
-        @component.onDestroyed()
+      template = component.renderComponent()
 
       return template unless argumentsProvided
 
@@ -232,6 +207,46 @@ class BlazeComponent extends BaseComponent
       # context. Restore original (parent) data context and render the component in it.
       new Blaze.Template ->
         Blaze._TemplateWith (-> Template.parentData()), (-> template)
+
+  # This method potentially registers a reactive dependency if template method registers a reactive dependency.
+  renderComponent: ->
+    component = @
+
+    componentTemplate = component.template()
+    if _.isString componentTemplate
+      templateBase = Template[componentTemplate]
+      throw new Error "Template '#{ componentTemplate }' cannot be found." unless templateBase
+    else
+      templateBase = componentTemplate
+      assert templateBase
+
+    # Create a new component template based on the Blaze template. We want our own template
+    # because the same Blaze template could be reused between multiple components.
+    # TODO: Should we cache these templates based on (componentName, templateBase) pair? We could use tow levels of ES6 Maps, componentName -> templateBase -> template. What about component arguments changing?
+    template = new Blaze.Template "BlazeComponent.#{ component.componentName() or 'unnamed' }", templateBase.renderFunction
+
+    # We on purpose do not reuse helpers, events, and hooks. Templates are used only for HTML rendering.
+
+    template.onCreated ->
+      # @ is a template instance.
+
+      @view._onViewRendered =>
+        # Attach events the first time template instance renders.
+        addEvents @view, @component if @view.renderCount is 1
+
+      @component = component
+      @component.templateInstance = @
+      @component.onCreated()
+
+    template.onRendered ->
+      # @ is a template instance.
+      @component.onRendered()
+
+    template.onDestroyed ->
+      # @ is a template instance.
+      @component.onDestroyed()
+
+    template
 
   template: ->
     # You have to override this method with a method which returns a template name or template itself.

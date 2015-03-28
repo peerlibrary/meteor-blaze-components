@@ -181,6 +181,19 @@ class BasicTestCase extends ClassyTestCase
       #{ COMPONENT_CONTENT 'SubComponent' }
     """
 
+    componentTemplate = new (BlazeComponent.getComponent('MainComponent'))().renderComponent()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    @assertEqual trim(output), trim """
+      #{ COMPONENT_CONTENT 'MainComponent' }
+      <hr>
+      #{ COMPONENT_CONTENT 'SubComponent' }
+    """
+
     componentTemplate = BlazeComponent.getComponent('FooComponent').renderComponent()
 
     @assertTrue componentTemplate
@@ -190,7 +203,25 @@ class BasicTestCase extends ClassyTestCase
 
     @assertEqual trim(output), trim FOO_COMPONENT_CONTENT()
 
+    componentTemplate = new (BlazeComponent.getComponent('FooComponent'))().renderComponent()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    @assertEqual trim(output), trim FOO_COMPONENT_CONTENT()
+
     componentTemplate = BlazeComponent.getComponent('SubComponent').renderComponent()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    @assertEqual trim(output), trim COMPONENT_CONTENT 'SubComponent'
+
+    componentTemplate = new (BlazeComponent.getComponent('SubComponent'))().renderComponent()
 
     @assertTrue componentTemplate
 
@@ -224,7 +255,26 @@ class BasicTestCase extends ClassyTestCase
 
     @assertEqual trim(output), trim COMPONENT_CONTENT 'UnregisteredComponent'
 
+    componentTemplate = new UnregisteredComponent().renderComponent()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    @assertEqual trim(output), trim COMPONENT_CONTENT 'UnregisteredComponent'
+
     componentTemplate = SelfNameUnregisteredComponent.renderComponent()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    # We have not extended any helper on purpose, so they should still use "UnregisteredComponent".
+    @assertEqual trim(output), trim COMPONENT_CONTENT 'SelfNameUnregisteredComponent', 'UnregisteredComponent'
+
+    componentTemplate = new SelfNameUnregisteredComponent().renderComponent()
 
     @assertTrue componentTemplate
 
@@ -258,6 +308,11 @@ class BasicTestCase extends ClassyTestCase
     ,
       /Component method 'template' not overridden/
 
+    @assertThrows =>
+      Blaze.toHTML new WithoutTemplateComponent().renderComponent()
+    ,
+      /Component method 'template' not overridden/
+
     class WithUnknownTemplateComponent extends BlazeComponent
       @componentName 'WithoutTemplateComponent'
 
@@ -266,6 +321,11 @@ class BasicTestCase extends ClassyTestCase
 
     @assertThrows =>
       Blaze.toHTML WithUnknownTemplateComponent.renderComponent()
+    ,
+      /Template 'TemplateWhichDoesNotExist' cannot be found/
+
+    @assertThrows =>
+      Blaze.toHTML new WithUnknownTemplateComponent().renderComponent()
     ,
       /Template 'TemplateWhichDoesNotExist' cannot be found/
 
