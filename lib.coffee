@@ -47,7 +47,7 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
     # distinguish between attribute existing on a mixin with the undefined value,
     # and no attribute existing with a given name at all on any mixin.
     for mixin in component._mixins when name of mixin
-      return wrapHelper component, mixin[name]
+      return wrapHelper mixin, mixin[name]
 
   null
 
@@ -403,7 +403,13 @@ class BlazeComponent extends BaseComponent
   # Component-level data context. Reactive. Use this to always get the
   # top-level data context used to render the component.
   data: ->
-    Blaze.getData(@templateInstance.view) or null
+    # Only components themselves have template instance. If we are called from inside a
+    # mixin, find a component.
+    component = @
+    while component.mixinParent()
+      component = component.mixinParent()
+
+    Blaze.getData(component.templateInstance.view) or null
 
   # Caller-level data context. Reactive. Use this to get in event handlers the data
   # context at the place where event originated (target context). In template helpers

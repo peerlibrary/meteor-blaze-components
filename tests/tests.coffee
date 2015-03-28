@@ -166,6 +166,51 @@ class ExistingClassHierarchyComponent extends ExistingClassHierarchyBaseComponen
 
 ExistingClassHierarchyComponent.register 'ExistingClassHierarchyComponent', ExistingClassHierarchyComponent
 
+class FirstMixin extends BlazeComponent
+  @calls: []
+
+  foobar: ->
+    "#{ @mixinParent().componentName() }/FirstMixin.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+
+  foobar2: ->
+    "#{ @mixinParent().componentName() }/FirstMixin.foobar2/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+
+  foobar3: ->
+    "#{ @mixinParent().componentName() }/FirstMixin.foobar3/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+
+  isMainComponent: ->
+    @mixinParent().constructor is WithMixinsComponent
+
+  onClick: (event) ->
+    @constructor.calls.push [@mixinParent().componentName(), 'FirstMixin.onClick', @data(), @currentData(), @currentComponent().componentName()]
+
+  events: ->
+    super.concat
+      'click': @onClick
+
+class SecondMixin extends BlazeComponent
+  @calls: []
+
+  foobar: ->
+    "#{ @mixinParent().componentName() }/SecondMixin.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+
+  foobar2: ->
+    "#{ @mixinParent().componentName() }/SecondMixin.foobar2/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+
+  # We on purpose do not provide foobar3.
+
+  onClick: (event) ->
+    @constructor.calls.push [@mixinParent().componentName(), 'SecondMixin.onClick', @data(), @currentData(), @currentComponent().componentName()]
+
+class WithMixinsComponent extends BlazeComponent
+  template: ->
+    'MainComponent'
+
+  mixins: ->
+    [SecondMixin, FirstMixin]
+
+BlazeComponent.register 'WithMixinsComponent', WithMixinsComponent
+
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
 
@@ -513,5 +558,32 @@ class BasicTestCase extends ClassyTestCase
       top: '42'
 
     @assertEqual trim(output), trim COMPONENT_CONTENT 'ExistingClassHierarchyComponent', 'ExistingClassHierarchyComponent', 'ExistingClassHierarchyBase'
+
+  testMixins: =>
+    componentTemplate = BlazeComponent.getComponent('WithMixinsComponent').renderComponent()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    @assertEqual trim(output), trim """
+      #{ COMPONENT_CONTENT 'WithMixinsComponent', 'SecondMixin', 'FirstMixin' }
+      <hr>
+      #{ COMPONENT_CONTENT 'SubComponent' }
+    """
+
+    componentTemplate = new (BlazeComponent.getComponent('WithMixinsComponent'))().renderComponent()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    @assertEqual trim(output), trim """
+      #{ COMPONENT_CONTENT 'WithMixinsComponent', 'SecondMixin', 'FirstMixin' }
+      <hr>
+      #{ COMPONENT_CONTENT 'SubComponent' }
+    """
 
 ClassyTestCase.addTest new BasicTestCase()
