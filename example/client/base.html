@@ -6,6 +6,11 @@
   <p>Main component: {{componentName}}</p>
   <button>Foo1</button>
   <p>{{foobar}}</p>
+  <ul>
+    {{#each list}}
+      <li>{{_id}}</li>
+    {{/each}}
+  </ul>
   {{#with a='1' b='2'}}
     <button>Foo2</button>
     <p>{{foobar2}}</p>

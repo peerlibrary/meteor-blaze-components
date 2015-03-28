@@ -88,6 +88,31 @@ addEvents = (view, component) ->
 Blaze._getComponent = (componentName) ->
   BlazeComponent.getComponentTemplate componentName
 
+createUIHooks = (component, parentNode) ->
+  insertElement: (node, before) =>
+    node._uihooks ?= createUIHooks component, node
+    component.insertDOMElement parentNode, node, before
+
+  moveElement: (node, before) =>
+    node._uihooks ?= createUIHooks component, node
+    component.moveDOMElement parentNode, node, before
+
+  removeElement: (node) =>
+    node._uihooks ?= createUIHooks component, node
+    component.removeDOMElement node
+
+originalDOMRangeAttach = Blaze._DOMRange::attach
+Blaze._DOMRange::attach = (parentElement, nextNode, _isMove, _isReplace) ->
+  if component = @view._templateInstance?.component
+    oldUIHooks = parentElement._uihooks
+    try
+      parentElement._uihooks = createUIHooks component, parentElement
+      return originalDOMRangeAttach.apply @, arguments
+    finally
+      parentElement._uihooks = oldUIHooks if oldUIHooks
+
+  originalDOMRangeAttach.apply @, arguments
+
 class BlazeComponent
   @components: {}
 
@@ -182,6 +207,15 @@ class BlazeComponent
   onRendered: ->
 
   onDestroyed: ->
+
+  insertDOMElement: (parent, node, before) ->
+    parent.insertBefore node, before
+
+  moveDOMElement: (parent, node, before) ->
+    parent.insertBefore node, before
+
+  removeDOMElement: (node) ->
+    node.parentNode.removeChild node
 
   events: ->
     []

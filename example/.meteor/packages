@@ -9,3 +9,5 @@ autopublish
 insecure
 coffeescript
 peerlibrary:blaze-components
+reactive-var
+underscore

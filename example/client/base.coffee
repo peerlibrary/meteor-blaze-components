@@ -2,6 +2,20 @@ class MainComponent extends BlazeComponent
   @template: ->
     'MainComponent'
 
+  onCreated: ->
+    @_seconds = new ReactiveVar parseInt new Date().valueOf() / 1000
+    @_handle = Meteor.setInterval =>
+      @_seconds.set parseInt new Date().valueOf() / 1000
+    , 5000 # ms
+
+  onDestroyed: ->
+    Meteor.clearInterval @_handle
+
+  list: ->
+    # To register dependency.
+    @_seconds.get()
+    _.shuffle (_id: i for i in [0...5])
+
   foobar: ->
     "#{ @componentName() }/MainComponent.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
 
