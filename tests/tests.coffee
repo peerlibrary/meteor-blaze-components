@@ -135,6 +135,37 @@ Template.argumentsTestTemplate.helpers
   reactiveArguments: ->
     reactiveArguments.get()
 
+class ExistingClassHierarchyBase
+  foobar: ->
+    "#{ @componentName() }/ExistingClassHierarchyBase.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+
+  foobar2: ->
+    "#{ @componentName() }/ExistingClassHierarchyBase.foobar2/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+
+  foobar3: ->
+    "#{ @componentName() }/ExistingClassHierarchyBase.foobar3/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+
+class ExistingClassHierarchyChild extends ExistingClassHierarchyBase
+
+class ExistingClassHierarchyBaseComponent extends ExistingClassHierarchyChild
+
+_.extend ExistingClassHierarchyBaseComponent, BlazeComponent
+_.extend ExistingClassHierarchyBaseComponent::, BlazeComponent::
+
+class ExistingClassHierarchyComponent extends ExistingClassHierarchyBaseComponent
+  template: ->
+    'MainComponent'
+
+  foobar: ->
+    "#{ @componentName() }/ExistingClassHierarchyComponent.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+
+  foobar2: ->
+    "#{ @componentName() }/ExistingClassHierarchyComponent.foobar2/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+
+  # We on purpose do not override foobar3.
+
+ExistingClassHierarchyComponent.register 'ExistingClassHierarchyComponent', ExistingClassHierarchyComponent
+
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
 
@@ -148,8 +179,9 @@ class BasicTestCase extends ClassyTestCase
       <p></p>
     """
 
-  COMPONENT_CONTENT = (componentName, helperComponentName) ->
+  COMPONENT_CONTENT = (componentName, helperComponentName, mainComponent) ->
     helperComponentName ?= componentName
+    mainComponent ?= 'MainComponent'
 
     """
       <p>Main component: #{ componentName }</p>
@@ -157,13 +189,13 @@ class BasicTestCase extends ClassyTestCase
       <p>#{ componentName }/#{ helperComponentName }.foobar/{"top":"42"}/{"top":"42"}/#{ componentName }</p>
       <button>Foo2</button>
       <p>#{ componentName }/#{ helperComponentName }.foobar2/{"top":"42"}/{"a":"1","b":"2"}/#{ componentName }</p>
-      <p>#{ componentName }/MainComponent.foobar3/{"top":"42"}/{"top":"42"}/#{ componentName }</p>
+      <p>#{ componentName }/#{ mainComponent }.foobar3/{"top":"42"}/{"top":"42"}/#{ componentName }</p>
       <p>Subtemplate</p>
       <button>Foo1</button>
       <p>#{ componentName }/#{ helperComponentName }.foobar/{"top":"42"}/{"top":"42"}/#{ componentName }</p>
       <button>Foo2</button>
       <p>#{ componentName }/#{ helperComponentName }.foobar2/{"top":"42"}/{"a":"3","b":"4"}/#{ componentName }</p>
-      <p>#{ componentName }/MainComponent.foobar3/{"top":"42"}/{"top":"42"}/#{ componentName }</p>
+      <p>#{ componentName }/#{ mainComponent }.foobar3/{"top":"42"}/{"top":"42"}/#{ componentName }</p>
       #{ FOO_COMPONENT_CONTENT() }
     """
 
@@ -468,5 +500,18 @@ class BasicTestCase extends ClassyTestCase
       # TODO: This should be 5, not 6, because we have 3 components with static arguments, and we change arguments twice. But because we are passing arguments through a data context, component is created once more.
       @assertEqual ArgumentsComponent.calls.length, 6
   ]
+
+  testExistingClassHierarchy: =>
+    # We want to allow one to reuse existing class hierarchy they might already have and only
+    # add the Meteor components "nature" to it. This is simply done by extending the base class
+    # and base class prototype with those from a wanted base class and prototype.
+    componentTemplate = BlazeComponent.getComponent('ExistingClassHierarchyComponent').renderComponent()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    @assertEqual trim(output), trim COMPONENT_CONTENT 'ExistingClassHierarchyComponent', 'ExistingClassHierarchyComponent', 'ExistingClassHierarchyBase'
 
 ClassyTestCase.addTest new BasicTestCase()

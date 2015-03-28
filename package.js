@@ -43,7 +43,8 @@ Package.onTest(function (api) {
     'coffeescript',
     'templating',
     'jquery',
-    'reactive-var'
+    'reactive-var',
+    'underscore'
   ]);
 
   // Internal dependencies.
