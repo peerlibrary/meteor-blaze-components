@@ -118,6 +118,100 @@ Blaze._DOMRange::attach = (parentElement, nextNode, _isMove, _isReplace) ->
   originalDOMRangeAttach.apply @, arguments
 
 class BlazeComponent extends BaseComponent
+  mixins: ->
+    []
+
+  # When a component is used as a mixin, createMixins will call this method to set the parent
+  # component using this mixin. Extend this method if you want to do any action when parent is
+  # set, for example, add dependency mixins to the parent. Make sure you call super as well.
+  # TODO: Should this be a list of parents? So that the same mixin instance could be reused across components? And serve to communicate across them?
+  mixinParent: (mixinParent) ->
+    # Setter.
+    if mixinParent
+      @_mixinParent = mixinParent
+      # To allow chaining.
+      return @
+
+    # Getter.
+    @_mixinParent or null
+
+  addMixin: (nameOrComponent) ->
+    # Do not do anything if mixin is already added. This allows multiple mixins to call addMixin in
+    # mixinParent method to add dependencies, but if dependencies are already there, nothing happens.
+    # TODO: For mixins with components this prevents having multiple mixins of the same class but with different arguments, because component name is the same. Is this a problem?
+    return if @getMixin nameOrComponent
+
+    if _.isString nameOrComponent
+      mixinInstanceComponent = @constructor.getComponent nameOrComponent
+      throw new Error "Unknown mixin '#{ nameOrComponent }'." unless mixinInstanceComponent
+      mixinInstance = new mixinInstanceComponent()
+    else if _.isFunction nameOrComponent
+      mixinInstance = new nameOrComponent()
+    else
+      mixinInstance = nameOrComponent
+
+    # We add mixin before we call mixinParent so that dependencies come after this mixin,
+    # and that we prevent possible loops because of circular dependencies.
+    # TODO: For now we do not provide an official API to add dependencies before the mixin itself.
+    @_mixins.push mixinInstance
+
+    # We allow mixins to not be components, so methods are not necessary available.
+
+    # Set mixin parent.
+    mixinInstance.mixinParent? @
+
+    # Maybe mixin has its own mixins as well.
+    mixinInstance.createMixins?()
+
+    # To allow chaining.
+    @
+
+  # Method to instantiate all mixins.
+  createMixins: ->
+    # To allow calling it multiple times, but non-first calls are simply ignored.
+    return if @_mixins
+    @_mixins = []
+
+    for mixin in @mixins()
+      @addMixin mixin
+
+    # To allow chaining.
+    @
+
+  getMixin: (nameOrComponent) ->
+    assert @_mixins
+
+    for mixin in @_mixins
+      # We do not require mixins to be components, but if they are, they can
+      # be referenced based on their component name.
+      mixinComponentName = mixin.componentName?() or null
+      if _.isString nameOrComponent
+        return mixin if mixinComponentName and mixinComponentName is nameOrComponent
+
+      # componentName works both on the component class and instance, so one can pass in either.
+      else if mixinComponentName and nameOrComponent.componentName?() and mixinComponentName is nameOrComponent.componentName()
+        return mixin
+
+      # Mixin is not a component. But nameOrComponent is a class.
+      else if mixin.constructor is nameOrComponent
+        return mixin
+
+      # nameOrComponent is an instance.
+      else if mixin is nameOrComponent
+        return mixin
+
+    return null
+
+  callMixins: (attributeName, args...) ->
+    assert @_mixins
+
+    # We return an array of results from each mixin.
+    for mixin in @_mixins when attributeName of mixin
+      if _.isFunction mixin[attributeName]
+        mixin[attributeName] args...
+      else
+        mixin[attributeName]
+
   # This class method more or less just creates an instance of a component and calls its renderComponent
   # method. But because we want to allow passing arguments to the component in templates, we have some
   # complicated code around to extract and pass those arguments.
@@ -169,6 +263,9 @@ class BlazeComponent extends BaseComponent
   renderComponent: ->
     component = @
 
+    # If mixins have not yet been created.
+    component.createMixins()
+
     componentTemplate = component.template()
     if _.isString componentTemplate
       templateBase = Template[componentTemplate]
@@ -217,12 +314,15 @@ class BlazeComponent extends BaseComponent
 
   insertDOMElement: (parent, node, before) ->
     parent.insertBefore node, before
+    return
 
   moveDOMElement: (parent, node, before) ->
     parent.insertBefore node, before
+    return
 
   removeDOMElement: (node) ->
     node.parentNode.removeChild node
+    return
 
   events: ->
     []
