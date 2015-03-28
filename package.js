@@ -37,7 +37,8 @@ Package.onTest(function (api) {
   api.use([
     'coffeescript',
     'templating',
-    'jquery'
+    'jquery',
+    'reactive-var'
   ]);
 
   // Internal dependencies.

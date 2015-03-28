@@ -43,7 +43,6 @@ class SubComponent extends MainComponent
 
 BlazeComponent.register 'SubComponent', SubComponent
 
-
 class AnimatedListComponent extends BlazeComponent
   @template: ->
     'AnimatedListComponent'
@@ -78,4 +77,5 @@ class AnimatedListComponent extends BlazeComponent
       complete: =>
         $(node).remove()
     )
+
 BlazeComponent.register 'AnimatedListComponent', AnimatedListComponent

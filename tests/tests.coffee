@@ -1,3 +1,8 @@
+trim = (html) =>
+  html = html.replace />\s+/g, '>'
+  html = html.replace /\s+</g, '<'
+  html.trim()
+
 class MainComponent extends BlazeComponent
   @calls: []
 
@@ -67,6 +72,38 @@ class SelfNameUnregisteredComponent extends UnregisteredComponent
 
   # We do not extend any helper on purpose. So they should all use "UnregisteredComponent".
 
+class AnimatedListComponent extends BlazeComponent
+  @calls: []
+
+  @template: ->
+    'AnimatedListComponent'
+
+  onCreated: ->
+    @_list = new ReactiveVar [0, 1, 2, 3, 4]
+    @_handle = Meteor.setInterval =>
+      @_list.set [@_list.get()[4]].concat @_list.get()[0...4]
+    , 1000 # ms
+
+  onDestroyed: ->
+    Meteor.clearInterval @_handle
+
+  list: ->
+    _id: i for i in @_list.get()
+
+  insertDOMElement: (parent, node, before) ->
+    @constructor.calls.push ['insertDOMElement', @componentName(), trim(parent.outerHTML), trim(node.outerHTML), trim(before?.outerHTML or '')]
+    super
+
+  moveDOMElement: (parent, node, before) ->
+    @constructor.calls.push ['moveDOMElement', @componentName(), trim(parent.outerHTML), trim(node.outerHTML), trim(before?.outerHTML or '')]
+    super
+
+  removeDOMElement: (node) ->
+    @constructor.calls.push ['removeDOMElement', @componentName(), trim(node.outerHTML)]
+    super
+
+BlazeComponent.register 'AnimatedListComponent', AnimatedListComponent
+
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
 
@@ -99,11 +136,6 @@ class BasicTestCase extends ClassyTestCase
       #{ FOO_COMPONENT_CONTENT() }
     """
 
-  trim: (html) =>
-    html = html.replace />\s+/g, '>'
-    html = html.replace /\s+</g, '<'
-    html.trim()
-
   testComponents: =>
     componentTemplate = BlazeComponent.getComponentTemplate 'MainComponent'
 
@@ -112,7 +144,7 @@ class BasicTestCase extends ClassyTestCase
     output = Blaze.toHTMLWithData componentTemplate,
       top: '42'
 
-    @assertEqual @trim(output), @trim """
+    @assertEqual trim(output), trim """
       #{ COMPONENT_CONTENT 'MainComponent' }
       <hr>
       #{ COMPONENT_CONTENT 'SubComponent' }
@@ -125,7 +157,7 @@ class BasicTestCase extends ClassyTestCase
     output = Blaze.toHTMLWithData componentTemplate,
       top: '42'
 
-    @assertEqual @trim(output), @trim FOO_COMPONENT_CONTENT()
+    @assertEqual trim(output), trim FOO_COMPONENT_CONTENT()
 
     componentTemplate = BlazeComponent.getComponentTemplate 'SubComponent'
 
@@ -134,7 +166,7 @@ class BasicTestCase extends ClassyTestCase
     output = Blaze.toHTMLWithData componentTemplate,
       top: '42'
 
-    @assertEqual @trim(output), @trim COMPONENT_CONTENT 'SubComponent'
+    @assertEqual trim(output), trim COMPONENT_CONTENT 'SubComponent'
 
   testGetComponent: =>
     @assertEqual BlazeComponent.getComponent('MainComponent'), MainComponent
@@ -159,7 +191,7 @@ class BasicTestCase extends ClassyTestCase
     output = Blaze.toHTMLWithData componentTemplate,
       top: '42'
 
-    @assertEqual @trim(output), @trim COMPONENT_CONTENT 'UnregisteredComponent'
+    @assertEqual trim(output), trim COMPONENT_CONTENT 'UnregisteredComponent'
 
     componentTemplate = SelfNameUnregisteredComponent.getComponentTemplate()
 
@@ -169,7 +201,7 @@ class BasicTestCase extends ClassyTestCase
       top: '42'
 
     # We have not extended any helper on purpose, so they should still use "UnregisteredComponent".
-    @assertEqual @trim(output), @trim COMPONENT_CONTENT 'SelfNameUnregisteredComponent', 'UnregisteredComponent'
+    @assertEqual trim(output), trim COMPONENT_CONTENT 'SelfNameUnregisteredComponent', 'UnregisteredComponent'
 
   testErrors: =>
     @assertThrows =>
@@ -239,5 +271,40 @@ class BasicTestCase extends ClassyTestCase
     ]
 
     Blaze.remove renderedComponent
+
+  testAnimation: [
+    ->
+      AnimatedListComponent.calls = []
+
+      @renderedComponent = Blaze.render Template.animationTestTemplate, $('body').get(0)
+
+      Meteor.setTimeout @expect(), 2500 # ms
+  ,
+    ->
+      Blaze.remove @renderedComponent
+      calls = AnimatedListComponent.calls
+      AnimatedListComponent.calls = []
+
+      expectedCalls = [
+        ['insertDOMElement', 'AnimatedListComponent', '<div class="animationTestTemplate"></div>', '<ul><li>0</li><li>1</li><li>2</li><li>3</li><li>4</li></ul>', '']
+        ['removeDOMElement', 'AnimatedListComponent', '<li>0</li>']
+        ['moveDOMElement', 'AnimatedListComponent', '<ul><li>1</li><li>2</li><li>3</li><li>4</li></ul>', '<li>4</li>', '']
+        ['insertDOMElement', 'AnimatedListComponent', '<ul><li>4</li><li>1</li><li>2</li><li>3</li></ul>', '<li>1</li>', '']
+        ['removeDOMElement', 'AnimatedListComponent', '<li>1</li>']
+        ['moveDOMElement', 'AnimatedListComponent', '<ul><li>4</li><li>0</li><li>2</li><li>3</li></ul>', '<li>3</li>', '']
+        ['moveDOMElement', 'AnimatedListComponent', '<ul><li>3</li><li>4</li><li>0</li><li>2</li></ul>', '<li>2</li>', '']
+        ['insertDOMElement', 'AnimatedListComponent', '<ul><li>3</li><li>4</li><li>2</li><li>0</li></ul>', '<li>2</li>', '']
+      ]
+
+      # There could be some more calls made, we ignore them and just take the first 8.
+      @assertEqual calls[0...8], expectedCalls
+
+      Meteor.setTimeout @expect(), 2000 # ms
+  ,
+    ->
+      # After we removed the component no more calls should be made.
+
+      @assertEqual AnimatedListComponent.calls, []
+  ]
 
 ClassyTestCase.addTest new BasicTestCase()

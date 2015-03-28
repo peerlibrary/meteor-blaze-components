@@ -4,6 +4,12 @@
   </div>
 </template>
 
+<template name="animationTestTemplate">
+  <div class="animationTestTemplate">
+    {{> AnimatedListComponent}}
+  </div>
+</template>
+
 <template name="MainComponent">
   <p>Main component: {{componentName}}</p>
   <button>Foo1</button>
@@ -45,4 +51,12 @@
     <p>{{foobar2}}</p>
   {{/with}}
   <p>{{foobar3}}</p>
+</template>
+
+<template name="AnimatedListComponent">
+  <ul>
+    {{#each list}}
+      <li>{{_id}}</li>
+    {{/each}}
+  </ul>
 </template>
