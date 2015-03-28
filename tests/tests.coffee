@@ -137,7 +137,7 @@ class BasicTestCase extends ClassyTestCase
     """
 
   testComponents: =>
-    componentTemplate = BlazeComponent.getComponentTemplate 'MainComponent'
+    componentTemplate = BlazeComponent.renderComponent 'MainComponent'
 
     @assertTrue componentTemplate
 
@@ -150,7 +150,7 @@ class BasicTestCase extends ClassyTestCase
       #{ COMPONENT_CONTENT 'SubComponent' }
     """
 
-    componentTemplate = BlazeComponent.getComponentTemplate 'FooComponent'
+    componentTemplate = BlazeComponent.renderComponent 'FooComponent'
 
     @assertTrue componentTemplate
 
@@ -159,7 +159,7 @@ class BasicTestCase extends ClassyTestCase
 
     @assertEqual trim(output), trim FOO_COMPONENT_CONTENT()
 
-    componentTemplate = BlazeComponent.getComponentTemplate 'SubComponent'
+    componentTemplate = BlazeComponent.renderComponent 'SubComponent'
 
     @assertTrue componentTemplate
 
@@ -184,7 +184,7 @@ class BasicTestCase extends ClassyTestCase
     @assertTrue BlazeComponent.getComponent 'SelfRegisterComponent'
 
   testUnregisteredComponent: =>
-    componentTemplate = UnregisteredComponent.getComponentTemplate()
+    componentTemplate = UnregisteredComponent.renderComponent()
 
     @assertTrue componentTemplate
 
@@ -193,7 +193,7 @@ class BasicTestCase extends ClassyTestCase
 
     @assertEqual trim(output), trim COMPONENT_CONTENT 'UnregisteredComponent'
 
-    componentTemplate = SelfNameUnregisteredComponent.getComponentTemplate()
+    componentTemplate = SelfNameUnregisteredComponent.renderComponent()
 
     @assertTrue componentTemplate
 
@@ -223,7 +223,7 @@ class BasicTestCase extends ClassyTestCase
       @componentName 'WithoutTemplateComponent'
 
     @assertThrows =>
-      WithoutTemplateComponent.getComponentTemplate()
+      WithoutTemplateComponent.renderComponent()
     ,
       /Component class method 'template' not overridden/
 
@@ -233,7 +233,7 @@ class BasicTestCase extends ClassyTestCase
         'TemplateWhichDoesNotExist'
 
     @assertThrows =>
-      WithUnknownTemplateComponent.getComponentTemplate()
+      WithUnknownTemplateComponent.renderComponent()
     ,
       /Template 'TemplateWhichDoesNotExist' cannot be found/
 

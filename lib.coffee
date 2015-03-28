@@ -86,7 +86,7 @@ addEvents = (view, component) ->
   return
 
 Blaze._getComponent = (componentName) ->
-  BlazeComponent.getComponentTemplate componentName
+  BlazeComponent.renderComponent componentName
 
 createUIHooks = (component, parentNode) ->
   insertElement: (node, before) =>
@@ -138,8 +138,8 @@ class BlazeComponent
   @getComponent: (componentName) ->
     @components[componentName] or null
 
-  @getComponentTemplate: (componentClass) ->
-    # To allow calling component.getComponentTemplate() on an unregistered component.
+  @renderComponent: (componentClass) ->
+    # To allow calling component.renderComponent() on an unregistered component.
     componentClass ?= @
 
     if _.isString componentClass
