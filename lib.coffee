@@ -85,8 +85,12 @@ addEvents = (view, component) ->
 
   return
 
-Blaze._getComponent = (componentName) ->
-  BlazeComponent.getComponent(componentName)?.renderComponent() or null
+originalGetTemplate = Blaze._getTemplate
+Blaze._getTemplate = (name) ->
+  if component = BaseComponent.getComponent(name)?.renderComponent()
+    return component
+
+  originalGetTemplate name
 
 createUIHooks = (component, parentNode) ->
   insertElement: (node, before) =>

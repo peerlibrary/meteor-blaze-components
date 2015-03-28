@@ -1,6 +1,5 @@
-/* This file is a direct copy of Blaze lookup.js with two modifications:
-     one in this pull request: https://github.com/meteor/meteor/pull/4036
-     adding call to the Blaze._getComponent before checking the template name
+/* This file is a direct copy of Blaze lookup.js with modifications described
+   in this pull request: https://github.com/meteor/meteor/pull/4036
 
    TODO: Remove this file once the pull request is merged in.
  */
@@ -64,12 +63,19 @@ var wrapHelper = function (f, templateFunc) {
   };
 };
 
+Blaze._getTemplate = function (name) {
+  if (name in Blaze.Template) {
+    return Blaze.Template[name];
+  }
+  return null;
+};
+
 Blaze.View.prototype.lookup = function (name, _options) {
   var template = this.template;
   var lookupTemplate = _options && _options.template;
   var helper;
   var boundTmplInstance;
-  var componentTemplate;
+  var foundTemplate;
 
   if (this.templateInstance) {
     boundTmplInstance = _.bind(this.templateInstance, this);
@@ -86,12 +92,9 @@ Blaze.View.prototype.lookup = function (name, _options) {
   } else if (template &&
              ((helper = Blaze._getTemplateHelper(template, name, boundTmplInstance)) != null)) {
     return wrapHelper(bindDataContext(helper), boundTmplInstance);
-  } else if (lookupTemplate && (componentTemplate = Blaze._getComponent(name)) &&
-             (componentTemplate instanceof Blaze.Template)) {
-    return componentTemplate;
-  } else if (lookupTemplate && (name in Blaze.Template) &&
-             (Blaze.Template[name] instanceof Blaze.Template)) {
-    return Blaze.Template[name];
+  } else if (lookupTemplate && (foundTemplate = Blaze._getTemplate(name)) &&
+             (foundTemplate instanceof Blaze.Template)) {
+    return foundTemplate;
   } else if (Blaze._globalHelpers[name] != null) {
     return wrapHelper(bindDataContext(Blaze._globalHelpers[name]),
       boundTmplInstance);
