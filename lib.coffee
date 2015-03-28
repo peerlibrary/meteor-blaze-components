@@ -161,11 +161,6 @@ class BlazeComponent extends BaseComponent
   @renderComponent: ->
     componentClass = @
 
-    if _.isString componentClass
-      return null unless componentClass of @components
-
-      componentClass = @components[componentClass]
-
     # Blaze.View::lookup should not introduce any reactive dependencies, so we are returning
     # a function which can then be run in a reactive context. This allows template method to
     # be reactive, together with reactivity of component arguments.
