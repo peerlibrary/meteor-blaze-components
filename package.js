@@ -19,6 +19,7 @@ Package.onUse(function (api) {
 
   // 3rd party dependencies.
   api.use([
+    'peerlibrary:assert@0.2.5',
     'aldeed:template-extension@3.4.3'
   ]);
 
@@ -29,4 +30,29 @@ Package.onUse(function (api) {
     'lookup.js',
     'lib.coffee'
   ], 'client');
+});
+
+Package.onTest(function (api) {
+  // Core dependencies.
+  api.use([
+    'coffeescript',
+    'templating',
+    'jquery'
+  ]);
+
+  // Internal dependencies.
+  api.use([
+    'peerlibrary:blaze-components'
+  ]);
+
+  // 3rd party dependencies.
+  api.use([
+    'peerlibrary:classy-test@0.2.9'
+  ]);
+
+  api.addFiles([
+    'tests/tests.html',
+    'tests/tests.coffee',
+    'tests/tests.css'
+   ], 'client');
 });
