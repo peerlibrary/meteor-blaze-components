@@ -104,6 +104,37 @@ class AnimatedListComponent extends BlazeComponent
 
 BlazeComponent.register 'AnimatedListComponent', AnimatedListComponent
 
+class ArgumentsComponent extends BlazeComponent
+  @calls: []
+
+  @template: ->
+    'ArgumentsComponent'
+
+  constructor: ->
+    @constructor.calls.push 'ArgumentsComponent constructor'
+    @arguments = arguments
+
+  dataContext: ->
+    EJSON.stringify @data()
+
+  currentDataContext: ->
+    EJSON.stringify @currentData()
+
+  constructorArguments: ->
+    EJSON.stringify @arguments
+
+BlazeComponent.register 'ArgumentsComponent', ArgumentsComponent
+
+reactiveContext = new ReactiveVar {}
+reactiveArguments = new ReactiveVar {}
+
+Template.argumentsTestTemplate.helpers
+  reactiveContext: ->
+    reactiveContext.get()
+
+  reactiveArguments: ->
+    reactiveArguments.get()
+
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
 
@@ -223,7 +254,7 @@ class BasicTestCase extends ClassyTestCase
       @componentName 'WithoutTemplateComponent'
 
     @assertThrows =>
-      WithoutTemplateComponent.renderComponent()
+      Blaze.toHTML WithoutTemplateComponent.renderComponent()
     ,
       /Component class method 'template' not overridden/
 
@@ -233,7 +264,7 @@ class BasicTestCase extends ClassyTestCase
         'TemplateWhichDoesNotExist'
 
     @assertThrows =>
-      WithUnknownTemplateComponent.renderComponent()
+      Blaze.toHTML WithUnknownTemplateComponent.renderComponent()
     ,
       /Template 'TemplateWhichDoesNotExist' cannot be found/
 
@@ -305,6 +336,76 @@ class BasicTestCase extends ClassyTestCase
       # After we removed the component no more calls should be made.
 
       @assertEqual AnimatedListComponent.calls, []
+  ]
+
+  testArguments: [
+    ->
+      ArgumentsComponent.calls = []
+
+      @renderedComponent = Blaze.render Template.argumentsTestTemplate, $('body').get(0)
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.argumentsTestTemplate').html()), trim """
+        <p>Component data context: {"a":"1","b":"2"}</p>
+        <p>Current data context: {"a":"1","b":"2"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"3a","b":"4a"}</p>
+        <p>Current data context: {"a":"3a","b":"4a"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"5","b":"6"}</p>
+        <p>Current data context: {"a":"5","b":"6"}</p>
+        <p>Arguments: ["7",{"hash":{"a":"8","b":"9"}}]</p>
+        <p>Component data context: {}</p>
+        <p>Current data context: {}</p>
+        <p>Arguments: [{},{"hash":{}}]</p>
+      """
+
+      reactiveContext.set {a: '10', b: '11'}
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.argumentsTestTemplate').html()), trim """
+        <p>Component data context: {"a":"1","b":"2"}</p>
+        <p>Current data context: {"a":"1","b":"2"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"3a","b":"4a"}</p>
+        <p>Current data context: {"a":"3a","b":"4a"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"5","b":"6"}</p>
+        <p>Current data context: {"a":"5","b":"6"}</p>
+        <p>Arguments: ["7",{"hash":{"a":"8","b":"9"}}]</p>
+        <p>Component data context: {"a":"10","b":"11"}</p>
+        <p>Current data context: {"a":"10","b":"11"}</p>
+        <p>Arguments: [{},{"hash":{}}]</p>
+      """
+
+      reactiveArguments.set {a: '12', b: '13'}
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.argumentsTestTemplate').html()), trim """
+        <p>Component data context: {"a":"1","b":"2"}</p>
+        <p>Current data context: {"a":"1","b":"2"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"3a","b":"4a"}</p>
+        <p>Current data context: {"a":"3a","b":"4a"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"5","b":"6"}</p>
+        <p>Current data context: {"a":"5","b":"6"}</p>
+        <p>Arguments: ["7",{"hash":{"a":"8","b":"9"}}]</p>
+        <p>Component data context: {"a":"10","b":"11"}</p>
+        <p>Current data context: {"a":"10","b":"11"}</p>
+        <p>Arguments: [{"a":"12","b":"13"},{"hash":{}}]</p>
+      """
+
+      Blaze.remove @renderedComponent
+
+      # TODO: This should be 5, not 6, because we have 3 components with static arguments, and we change arguments twice. But because we are passing arguments through a data context, component is created once more.
+      @assertEqual ArgumentsComponent.calls.length, 6
   ]
 
 ClassyTestCase.addTest new BasicTestCase()

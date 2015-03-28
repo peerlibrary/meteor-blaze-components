@@ -10,6 +10,23 @@
   </div>
 </template>
 
+<template name="argumentsTestTemplate">
+  <div class="argumentsTestTemplate">
+    {{#with a='1' b='2'}}
+      {{> ArgumentsComponent}}
+    {{/with}}
+    {{#with a='3' b='4'}}
+      {{> ArgumentsComponent a='3a' b='4a'}}
+    {{/with}}
+    {{#with a='5' b='6'}}
+      {{> ArgumentsComponent args '7' a='8' b='9'}}
+    {{/with}}
+    {{#with reactiveContext}}
+      {{> ArgumentsComponent args reactiveArguments}}
+    {{/with}}
+  </div>
+</template>
+
 <template name="MainComponent">
   <p>Main component: {{componentName}}</p>
   <button>Foo1</button>
@@ -59,4 +76,10 @@
       <li>{{_id}}</li>
     {{/each}}
   </ul>
+</template>
+
+<template name="ArgumentsComponent">
+  <p>Component data context: {{dataContext}}</p>
+  <p>Current data context: {{currentDataContext}}</p>
+  <p>Arguments: {{constructorArguments}}</p>
 </template>
