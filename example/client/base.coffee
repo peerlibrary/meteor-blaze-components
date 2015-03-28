@@ -1,5 +1,5 @@
 class MainComponent extends BlazeComponent
-  @template: ->
+  template: ->
     'MainComponent'
 
   foobar: ->
@@ -24,7 +24,7 @@ class MainComponent extends BlazeComponent
 BlazeComponent.register 'MainComponent', MainComponent
 
 class @FooComponent extends BlazeComponent
-  @template: ->
+  template: ->
     'FooComponent'
 
 BlazeComponent.register 'FooComponent', FooComponent
@@ -44,7 +44,7 @@ class SubComponent extends MainComponent
 BlazeComponent.register 'SubComponent', SubComponent
 
 class AnimatedListComponent extends BlazeComponent
-  @template: ->
+  template: ->
     'AnimatedListComponent'
 
   onCreated: ->

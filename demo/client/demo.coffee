@@ -25,7 +25,7 @@ Template.autoSelectInput.events
 ### Auto-select input component ###
 
 class AutoSelectInputComponent extends BlazeComponent
-  @template: ->
+  template: ->
     'autoSelectInput'
 
   value: ->
@@ -48,7 +48,7 @@ BlazeComponent.register 'AutoSelectInputComponent', AutoSelectInputComponent
 ### Auto-select textarea component ###
 
 class AutoSelectTextareaComponent extends AutoSelectInputComponent
-  @template: ->
+  template: ->
     'autoSelectTextarea'
 
   events: ->

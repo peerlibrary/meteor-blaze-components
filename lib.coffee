@@ -170,14 +170,6 @@ class BlazeComponent extends BaseComponent
     # a function which can then be run in a reactive context. This allows template method to
     # be reactive, together with reactivity of component arguments.
     new Blaze.Template "BlazeComponent.#{ componentClass.componentName() or 'unnamed' } (reactive wrapper)", ->
-      componentClassTemplate = componentClass.template()
-      if _.isString componentClassTemplate
-        templateBase = Template[componentClassTemplate]
-        throw new Error "Template '#{ componentClassTemplate }' cannot be found." unless templateBase
-      else
-        templateBase = componentClassTemplate
-        assert templateBase
-
       try
         # We check data context in a non-reactive way, because we want just to peek into it
         # and determine if data context contains component arguments or not. We do not want
@@ -200,10 +192,18 @@ class BlazeComponent extends BaseComponent
         argumentsProvided = false
         component = new componentClass()
 
+      componentTemplate = component.template()
+      if _.isString componentTemplate
+        templateBase = Template[componentTemplate]
+        throw new Error "Template '#{ componentTemplate }' cannot be found." unless templateBase
+      else
+        templateBase = componentTemplate
+        assert templateBase
+
       # Create a new component template based on the Blaze template. We want our own template
       # because the same Blaze template could be reused between multiple components.
       # TODO: Should we cache these templates based on (componentName, templateBase) pair? We could use tow levels of ES6 Maps, componentName -> templateBase -> template. What about component arguments changing?
-      template = new Blaze.Template "BlazeComponent.#{ componentClass.componentName() or 'unnamed' }", templateBase.renderFunction
+      template = new Blaze.Template "BlazeComponent.#{ component.componentName() or 'unnamed' }", templateBase.renderFunction
 
       # We on purpose do not reuse helpers, events, and hooks. Templates are used only for HTML rendering.
 
@@ -238,9 +238,9 @@ class BlazeComponent extends BaseComponent
       new Blaze.Template ->
         Blaze._TemplateWith (-> Template.parentData()), (-> template)
 
-  @template: ->
+  template: ->
     # You have to override this method with a method which returns a template name or template itself.
-    throw new Error "Component class method 'template' not overridden."
+    throw new Error "Component method 'template' not overridden."
 
   onCreated: ->
 

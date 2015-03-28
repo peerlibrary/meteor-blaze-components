@@ -6,7 +6,7 @@ trim = (html) =>
 class MainComponent extends BlazeComponent
   @calls: []
 
-  @template: ->
+  template: ->
     'MainComponent'
 
   foobar: ->
@@ -31,7 +31,7 @@ class MainComponent extends BlazeComponent
 BlazeComponent.register 'MainComponent', MainComponent
 
 class @FooComponent extends BlazeComponent
-  @template: ->
+  template: ->
     'FooComponent'
 
 BlazeComponent.register 'FooComponent', FooComponent
@@ -75,7 +75,7 @@ class SelfNameUnregisteredComponent extends UnregisteredComponent
 class AnimatedListComponent extends BlazeComponent
   @calls: []
 
-  @template: ->
+  template: ->
     'AnimatedListComponent'
 
   onCreated: ->
@@ -107,7 +107,7 @@ BlazeComponent.register 'AnimatedListComponent', AnimatedListComponent
 class ArgumentsComponent extends BlazeComponent
   @calls: []
 
-  @template: ->
+  template: ->
     'ArgumentsComponent'
 
   constructor: ->
@@ -256,11 +256,12 @@ class BasicTestCase extends ClassyTestCase
     @assertThrows =>
       Blaze.toHTML WithoutTemplateComponent.renderComponent()
     ,
-      /Component class method 'template' not overridden/
+      /Component method 'template' not overridden/
 
     class WithUnknownTemplateComponent extends BlazeComponent
       @componentName 'WithoutTemplateComponent'
-      @template: ->
+
+      template: ->
         'TemplateWhichDoesNotExist'
 
     @assertThrows =>

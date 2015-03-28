@@ -83,7 +83,7 @@ Template.autoSelectInput.events
     <pre class="html"><code class="language-handlebars">{{|&gt; AutoSelectInputComponent id='demo2'}}</code></pre>
 
     <pre class="coffee"><code class="language-coffeescript">class AutoSelectInputComponent extends BlazeComponent
-  @template: -&gt;
+  template: -&gt;
     'autoSelectInput'
 
   value: -&gt;
@@ -106,7 +106,7 @@ BlazeComponent.register 'AutoSelectInputComponent', AutoSelectInputComponent</co
 <p>Let's look at the code part by part.</p>
 
 <pre class="coffee"><code class="language-coffeescript">class AutoSelectInputComponent extends BlazeComponent
-  @template: -&gt;
+  template: -&gt;
     'autoSelectInput'</code></pre>
 
 <p>We have created an <code class="language-coffeescript">AutoSelectInputComponent</code> that simply re-uses the markup
@@ -175,7 +175,7 @@ BlazeComponent.register 'AutoSelectInputComponent', AutoSelectInputComponent</co
     <pre class="html"><code class="language-handlebars">{{|&gt; AutoSelectCanvasComponent id='demo3'}}</code></pre>
 
     <pre class="coffee"><code class="language-coffeescript">class AutoSelectTextareaComponent extends AutoSelectInputComponent
-  @template: -&gt;
+  template: -&gt;
     'autoSelectTextarea'
 
   events: -&gt;
