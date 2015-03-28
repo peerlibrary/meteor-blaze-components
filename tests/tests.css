@@ -1,3 +1,6 @@
-.eventsTestTemplate, .animationTestTemplate, .argumentsTestTemplate {
+.eventsTestTemplate,
+.animationTestTemplate,
+.argumentsTestTemplate,
+.mixinEventsTestTemplate {
   display: none;
 }

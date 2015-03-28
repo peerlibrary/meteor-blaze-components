@@ -341,7 +341,15 @@ class BlazeComponent extends BaseComponent
 
       @view._onViewRendered =>
         # Attach events the first time template instance renders.
-        addEvents @view, @component if @view.renderCount is 1
+        if @view.renderCount is 1
+          addEvents @view, @component
+
+          assert @component._mixins
+
+          # We manually go over _mixins instead of using getMixin because we also need
+          # the mixin itself so that we can bind events correctly.
+          for mixin in @component._mixins when 'events' of mixin
+            addEvents @view, mixin
 
       @component = component
       @component.templateInstance = @
@@ -398,7 +406,7 @@ class BlazeComponent extends BaseComponent
     [parent, node, alreadyRemoved]
 
   events: ->
-    [].concat @callMixins('events')...
+    []
 
   # Component-level data context. Reactive. Use this to always get the
   # top-level data context used to render the component.

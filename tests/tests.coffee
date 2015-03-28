@@ -202,6 +202,10 @@ class SecondMixin extends BlazeComponent
   onClick: (event) ->
     @constructor.calls.push [@mixinParent().componentName(), 'SecondMixin.onClick', @data(), @currentData(), @currentComponent().componentName()]
 
+  events: ->
+    super.concat
+      'click': @onClick
+
 class WithMixinsComponent extends BlazeComponent
   template: ->
     'MainComponent'
@@ -585,5 +589,58 @@ class BasicTestCase extends ClassyTestCase
       <hr>
       #{ COMPONENT_CONTENT 'SubComponent' }
     """
+
+  testMixinEvents: =>
+    FirstMixin.calls = []
+    SecondMixin.calls = []
+    SubComponent.calls = []
+
+    renderedComponent = Blaze.render Template.mixinEventsTestTemplate, $('body').get(0)
+
+    $('.mixinEventsTestTemplate button').each (i, button) =>
+      $(button).click()
+
+    @assertEqual FirstMixin.calls, [
+      ['WithMixinsComponent', 'FirstMixin.onClick', {top: '42'}, {top: '42'}, 'WithMixinsComponent']
+      ['WithMixinsComponent', 'FirstMixin.onClick', {top: '42'}, {a: '1', b: '2'}, 'WithMixinsComponent']
+      ['WithMixinsComponent', 'FirstMixin.onClick', {top: '42'}, {top: '42'}, 'WithMixinsComponent']
+      ['WithMixinsComponent', 'FirstMixin.onClick', {top: '42'}, {a: '3', b: '4'}, 'WithMixinsComponent']
+      ['WithMixinsComponent', 'FirstMixin.onClick', {top: '42'}, {top: '42'}, 'FooComponent']
+      ['WithMixinsComponent', 'FirstMixin.onClick', {top: '42'}, {a: '5', b: '6'}, 'FooComponent']
+      ['WithMixinsComponent', 'FirstMixin.onClick', {top: '42'}, {top: '42'}, 'SubComponent']
+      ['WithMixinsComponent', 'FirstMixin.onClick', {top: '42'}, {a: '1', b: '2'}, 'SubComponent']
+      ['WithMixinsComponent', 'FirstMixin.onClick', {top: '42'}, {top: '42'}, 'SubComponent']
+      ['WithMixinsComponent', 'FirstMixin.onClick', {top: '42'}, {a: '3', b: '4'}, 'SubComponent']
+      ['WithMixinsComponent', 'FirstMixin.onClick', {top: '42'}, {top: '42'}, 'FooComponent']
+      ['WithMixinsComponent', 'FirstMixin.onClick', {top: '42'}, {a: '5', b: '6'}, 'FooComponent']
+    ]
+
+    # Event handlers are independent from each other among mixins. SecondMixin has its own onClick
+    # handler registered, so it should be called as well.
+    @assertEqual SecondMixin.calls, [
+      ['WithMixinsComponent', 'SecondMixin.onClick', {top: '42'}, {top: '42'}, 'WithMixinsComponent']
+      ['WithMixinsComponent', 'SecondMixin.onClick', {top: '42'}, {a: '1', b: '2'}, 'WithMixinsComponent']
+      ['WithMixinsComponent', 'SecondMixin.onClick', {top: '42'}, {top: '42'}, 'WithMixinsComponent']
+      ['WithMixinsComponent', 'SecondMixin.onClick', {top: '42'}, {a: '3', b: '4'}, 'WithMixinsComponent']
+      ['WithMixinsComponent', 'SecondMixin.onClick', {top: '42'}, {top: '42'}, 'FooComponent']
+      ['WithMixinsComponent', 'SecondMixin.onClick', {top: '42'}, {a: '5', b: '6'}, 'FooComponent']
+      ['WithMixinsComponent', 'SecondMixin.onClick', {top: '42'}, {top: '42'}, 'SubComponent']
+      ['WithMixinsComponent', 'SecondMixin.onClick', {top: '42'}, {a: '1', b: '2'}, 'SubComponent']
+      ['WithMixinsComponent', 'SecondMixin.onClick', {top: '42'}, {top: '42'}, 'SubComponent']
+      ['WithMixinsComponent', 'SecondMixin.onClick', {top: '42'}, {a: '3', b: '4'}, 'SubComponent']
+      ['WithMixinsComponent', 'SecondMixin.onClick', {top: '42'}, {top: '42'}, 'FooComponent']
+      ['WithMixinsComponent', 'SecondMixin.onClick', {top: '42'}, {a: '5', b: '6'}, 'FooComponent']
+    ]
+
+    @assertEqual SubComponent.calls, [
+      ['SubComponent', 'SubComponent.onClick', {top: '42'}, {top: '42'}, 'SubComponent']
+      ['SubComponent', 'SubComponent.onClick', {top: '42'}, {a: '1', b: '2'}, 'SubComponent']
+      ['SubComponent', 'SubComponent.onClick', {top: '42'}, {top: '42'}, 'SubComponent']
+      ['SubComponent', 'SubComponent.onClick', {top: '42'}, {a: '3', b: '4'}, 'SubComponent']
+      ['SubComponent', 'SubComponent.onClick', {top: '42'}, {top: '42'}, 'FooComponent']
+      ['SubComponent', 'SubComponent.onClick', {top: '42'}, {a: '5', b: '6'}, 'FooComponent']
+    ]
+
+    Blaze.remove renderedComponent
 
 ClassyTestCase.addTest new BasicTestCase()
