@@ -9,14 +9,13 @@ Template.autoSelectDemo.helpers
 Template.autoSelectInput.helpers
   value: ->
     console.log @
-    # Read value from collection.
+    # Read value from the collection.
     Values.findOne(@id)?.value
 
 Template.autoSelectInput.events
-  # Save value to collection when it changes.
+  # Save value to the collection when it changes.
   'change input': (event, template) ->
-    Values.upsert @id,
-      value: event.target.value
+    Values.upsert @id, value: event.target.value
 
   # Auto-select text when user clicks in the input.
   'click input': (event, template) ->

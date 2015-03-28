@@ -5,8 +5,11 @@
 <body>
 <h1>Meteor Blaze Components</h1>
 
-<p>Blaze Components for Meteor are a system for easily developing
-  complex UI elements that need to be reused around your webpage.</p>
+<p>Blaze Components for <a href="https://meteor.com/">Meteor</a> are a system for easily developing
+  complex UI elements that need to be reused around your Meteor app.</p>
+
+{{! TODO: Put this link somewhere better. }}
+<p><a href="https://github.com/peerlibrary/meteor-blaze-components">Documentation and source code on GitHub</a>.</p>
 
 <h2>The Problem</h2>
 
@@ -30,14 +33,13 @@ database and is written to it when the user changes it.</p>
 
     <pre class="coffee"><code class="language-coffeescript">Template.autoSelectInput.helpers
   value: -&gt;
-    # Read value from collection.
+    # Read value from the collection.
     Values.findOne(@id)?.value
 
 Template.autoSelectInput.events
-  # Save value to collection when it changes.
+  # Save value to the collection when it changes.
   'change input': (event, template) -&gt;
-    Values.upsert @id,
-      value: event.target.value
+    Values.upsert @id, value: event.target.value
 
   # Auto-select text when user clicks in the input.
   'click input': (event, template) -&gt;
@@ -65,7 +67,7 @@ Template.autoSelectInput.events
     create modified versions or extend the functionality.</p>
   </li>
 </ul>
-<p>What if the last option didn't require separate helper classes, but it was simply how templates worked?</p>
+<p>What if the last option didn't require separate helper class, but it was simply how templates worked?</p>
 <p>That's what Blaze Components are!</p>
 
 <h2>The Solution</h2>
@@ -172,7 +174,11 @@ BlazeComponent.register 'AutoSelectInputComponent', AutoSelectInputComponent</co
   </div>
 
   <div class="code">
-    <pre class="html"><code class="language-handlebars">{{|&gt; AutoSelectCanvasComponent id='demo3'}}</code></pre>
+    <pre class="html"><code class="language-handlebars">{{|&gt; AutoSelectCanvasComponent id='demo3'}}
+
+&lt;template name="autoSelectTextarea"&gt;
+  &lt;textarea&gt;{{|value}}&lt;/textarea&gt;
+&lt;/template&gt;</code></pre>
 
     <pre class="coffee"><code class="language-coffeescript">class AutoSelectTextareaComponent extends AutoSelectInputComponent
   template: -&gt;
