@@ -1,16 +1,12 @@
 <body>
   {{> MainComponent top='42'}}
+  {{> AnimatedListComponent}}
 </body>
 
 <template name="MainComponent">
   <p>Main component: {{componentName}}</p>
   <button>Foo1</button>
   <p>{{foobar}}</p>
-  <ul>
-    {{#each list}}
-      <li>{{_id}}</li>
-    {{/each}}
-  </ul>
   {{#with a='1' b='2'}}
     <button>Foo2</button>
     <p>{{foobar2}}</p>
@@ -48,4 +44,12 @@
     <p>{{foobar2}}</p>
   {{/with}}
   <p>{{foobar3}}</p>
+</template>
+
+<template name="AnimatedListComponent">
+  <ul>
+    {{#each list}}
+      <li>{{_id}}</li>
+    {{/each}}
+  </ul>
 </template>

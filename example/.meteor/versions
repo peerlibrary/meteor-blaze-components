@@ -34,6 +34,7 @@ observe-sequence@1.0.5
 ordered-dict@1.0.3
 peerlibrary:assert@0.2.5
 peerlibrary:blaze-components@0.1.0
+percolate:velocityjs@1.2.1_1
 random@1.0.3
 reactive-dict@1.1.0
 reactive-var@1.0.5

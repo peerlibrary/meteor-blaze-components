@@ -2,20 +2,6 @@ class MainComponent extends BlazeComponent
   @template: ->
     'MainComponent'
 
-  onCreated: ->
-    @_seconds = new ReactiveVar parseInt new Date().valueOf() / 1000
-    @_handle = Meteor.setInterval =>
-      @_seconds.set parseInt new Date().valueOf() / 1000
-    , 5000 # ms
-
-  onDestroyed: ->
-    Meteor.clearInterval @_handle
-
-  list: ->
-    # To register dependency.
-    @_seconds.get()
-    _.shuffle (_id: i for i in [0...5])
-
   foobar: ->
     "#{ @componentName() }/MainComponent.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
 
@@ -56,3 +42,40 @@ class SubComponent extends MainComponent
     console.log @componentName(), 'SubComponent.onClick', @data(), @currentData(), @currentComponent().componentName()
 
 BlazeComponent.register 'SubComponent', SubComponent
+
+
+class AnimatedListComponent extends BlazeComponent
+  @template: ->
+    'AnimatedListComponent'
+
+  onCreated: ->
+    @_counter = new ReactiveVar 0
+    @_handle = Meteor.setInterval =>
+      @_counter.set @_counter.get() + 1
+    , 1000 # ms
+
+  onDestroyed: ->
+    Meteor.clearInterval @_handle
+
+  list: ->
+    # To register dependency.
+    @_counter.get()
+    _.shuffle (_id: i for i in [0...5])
+
+  insertDOMElement: (parent, node, before) ->
+    return super unless before
+
+    $(node).insertBefore(before).velocity('transition.slideLeftIn',
+      duration: 500
+    )
+
+  moveDOMElement: (parent, node, before) ->
+    @insertDOMElement parent, node, before
+
+  removeDOMElement: (node) ->
+    $(node).velocity('transition.slideRightOut',
+      duration: 500,
+      complete: =>
+        $(node).remove()
+    )
+BlazeComponent.register 'AnimatedListComponent', AnimatedListComponent
