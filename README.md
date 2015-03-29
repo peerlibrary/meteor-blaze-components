@@ -125,6 +125,8 @@ Returned values from event handlers are ignored. To control how events are propa
 methods like [`stopPropagation`](https://api.jquery.com/event.stopPropagation/) and
 [`stopImmediatePropagation`](https://api.jquery.com/event.stopImmediatePropagation/).
 
+When [mixins](#mixins-1) provide event handlers, they are attached in order of mixins, with the component last.
+
 *For more information about event maps, event handling, and `event` object, see [Blaze documentation](http://docs.meteor.com/#/full/eventmaps)
 and [jQuery documentation](https://api.jquery.com/category/events/event-object/).*
 
