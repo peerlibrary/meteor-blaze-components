@@ -148,7 +148,6 @@ class BlazeComponent extends BaseComponent
   addMixin: (nameOrMixin) ->
     # Do not do anything if mixin is already added. This allows multiple mixins to call addMixin in
     # mixinParent method to add dependencies, but if dependencies are already there, nothing happens.
-    # TODO: For mixins with components this prevents having multiple mixins of the same class but with different arguments, because component name is the same. Is this a problem?
     return if @getMixin nameOrMixin
 
     if _.isString nameOrMixin
@@ -168,7 +167,9 @@ class BlazeComponent extends BaseComponent
     # We allow mixins to not be components, so methods are not necessary available.
 
     # Set mixin parent.
-    mixinInstance.mixinParent? @
+    if mixinInstance.mixinParent
+      mixinInstance.mixinParent @
+      assert.equal mixinInstance.mixinParent(), @
 
     # Maybe mixin has its own mixins as well.
     mixinInstance.createMixins?()
@@ -191,19 +192,16 @@ class BlazeComponent extends BaseComponent
   getMixin: (nameOrMixin) ->
     assert @_mixins
 
-    for mixin in @_mixins
-      # We do not require mixins to be components, but if they are, they can
-      # be referenced based on their component name.
-      mixinComponentName = mixin.componentName?() or null
-      if _.isString nameOrMixin
+    if _.isString nameOrMixin
+      for mixin in @_mixins
+        # We do not require mixins to be components, but if they are, they can
+        # be referenced based on their component name.
+        mixinComponentName = mixin.componentName?() or null
         return mixin if mixinComponentName and mixinComponentName is nameOrMixin
 
-      # componentName works both on the component class and instance, so one can pass in either.
-      else if mixinComponentName and nameOrMixin.componentName?() and mixinComponentName is nameOrMixin.componentName()
-        return mixin
-
-      # Mixin is not a component. But nameOrMixin is a class.
-      else if mixin.constructor is nameOrMixin
+    else
+      # nameOrMixin is a class.
+      if mixin.constructor is nameOrMixin
         return mixin
 
       # nameOrMixin is an instance.
