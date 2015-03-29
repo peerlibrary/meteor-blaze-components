@@ -200,13 +200,14 @@ class BlazeComponent extends BaseComponent
         return mixin if mixinComponentName and mixinComponentName is nameOrMixin
 
     else
-      # nameOrMixin is a class.
-      if mixin.constructor is nameOrMixin
-        return mixin
+      for mixin in @_mixins
+        # nameOrMixin is a class.
+        if mixin.constructor is nameOrMixin
+          return mixin
 
-      # nameOrMixin is an instance.
-      else if mixin is nameOrMixin
-        return mixin
+        # nameOrMixin is an instance.
+        else if mixin is nameOrMixin
+          return mixin
 
     return null
 
