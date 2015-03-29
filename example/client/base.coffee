@@ -68,14 +68,20 @@ class AnimatedListComponent extends BlazeComponent
       duration: 500
     )
 
+    [parent, node, before, true]
+
   moveDOMElement: (parent, node, before) ->
     @insertDOMElement parent, node, before
 
-  removeDOMElement: (node) ->
+    [parent, node, before, true]
+
+  removeDOMElement: (parent, node) ->
     $(node).velocity('transition.slideRightOut',
       duration: 500,
       complete: =>
         $(node).remove()
     )
+
+    [parent, node, true]
 
 BlazeComponent.register 'AnimatedListComponent', AnimatedListComponent
