@@ -438,8 +438,9 @@ class BlazeComponent extends BaseComponent
 
 # We copy utility methods ($, findAll, autorun, subscribe, etc.) from the template instance prototype.
 for methodName, method of Blaze.TemplateInstance::
-  BlazeComponent::[methodName] = (args...) ->
-    @templateInstance[methodName] args...
+  do (methodName, method) ->
+    BlazeComponent::[methodName] = (args...) ->
+      @templateInstance[methodName] args...
 
 argumentsConstructor = ->
   # This class should never really be created.
