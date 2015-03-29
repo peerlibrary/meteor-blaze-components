@@ -12,3 +12,4 @@ peerlibrary:blaze-components
 reactive-var
 underscore
 percolate:velocityjs
+peerlibrary:assert
