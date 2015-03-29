@@ -1,6 +1,6 @@
 Package.describe({
   name: 'peerlibrary:blaze-components',
-  summary: "Components for Blaze",
+  summary: "Reusable components for Blaze",
   version: '0.1.0',
   git: 'https://github.com/peerlibrary/meteor-blaze-components.git'
 });
