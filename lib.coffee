@@ -213,33 +213,33 @@ class BlazeComponent extends BaseComponent
     return null
 
   # Calls all mixins in order and collect all results into an array.
-  callMixins: (attributeName, args...) ->
+  callMixins: (propertyName, args...) ->
     assert @_mixins
 
     # We return an array of results from each mixin.
-    for mixin in @_mixins when attributeName of mixin
-      if _.isFunction mixin[attributeName]
-        mixin[attributeName] args...
+    for mixin in @_mixins when propertyName of mixin
+      if _.isFunction mixin[propertyName]
+        mixin[propertyName] args...
       else
-        mixin[attributeName]
+        mixin[propertyName]
 
   # Calls the first mixin it finds, and returns the result.
-  callFirstMixin: (attributeName, args...) ->
+  callFirstMixin: (propertyName, args...) ->
     assert @_mixins
 
-    for mixin in @_mixins when attributeName of mixin
-      if _.isFunction mixin[attributeName]
-        return mixin[attributeName] args...
+    for mixin in @_mixins when propertyName of mixin
+      if _.isFunction mixin[propertyName]
+        return mixin[propertyName] args...
       else
-        return mixin[attributeName]
+        return mixin[propertyName]
 
     # TODO: Should we throw an error here? Something like calling a function which does not exist?
     return
 
-  getFirstMixin: (attributeName) ->
+  getFirstMixin: (propertyName) ->
     assert @_mixins
 
-    for mixin in @_mixins when attributeName of mixin
+    for mixin in @_mixins when propertyName of mixin
       return mixin
 
     return
@@ -248,16 +248,16 @@ class BlazeComponent extends BaseComponent
   # call to the second, and so on, until all mixins were called, when the result is returned. If
   # there are no mixins matching, initial arguments are returned. Mixins should always return an
   # array to pass to the next mixin.
-  foldMixins: (attributeName, args...) ->
+  foldMixins: (propertyName, args...) ->
     assert @_mixins
 
     currentArguments = args
 
-    for mixin in @_mixins when attributeName of mixin
-      if _.isFunction mixin[attributeName]
-        currentArguments = mixin[attributeName] currentArguments...
+    for mixin in @_mixins when propertyName of mixin
+      if _.isFunction mixin[propertyName]
+        currentArguments = mixin[propertyName] currentArguments...
       else
-        currentArguments = mixin[attributeName]
+        currentArguments = mixin[propertyName]
 
       # We ignore results if there were not an array.
       currentArguments = [] unless _.isArray currentArguments

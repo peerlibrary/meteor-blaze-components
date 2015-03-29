@@ -667,7 +667,7 @@ class BasicTestCase extends ClassyTestCase
     Blaze.remove renderedComponent
 
   testAfterCreateValue: =>
-    # We want to test that also attributes added in onCreated hook are available in the template.
+    # We want to test that also properties added in onCreated hook are available in the template.
     componentTemplate = BlazeComponent.getComponent('AfterCreateValueComponent').renderComponent()
 
     @assertTrue componentTemplate

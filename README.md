@@ -380,35 +380,35 @@ You can use it to check if a given mixin is used by a component.
 
 <a name="reference_instance_getFirstMixin"></a>
 ```coffee
-getFirstMixin: (attributeName) ->
+getFirstMixin: (propertyName) ->
 ```
 
-Returns the first component's mixin instance which has an attribute `attributeName`. Returns `null` if such mixin
+Returns the first component's mixin instance which has an property `propertyName`. Returns `null` if such mixin
 is not found.
 
 <a name="reference_instance_callFirstMixin"></a>
 ```coffee
-callFirstMixin: (attributeName, args...) ->
+callFirstMixin: (propertyName, args...) ->
 ```
 
-Finds the first component's mixin instance which has an attribute `attributeName` and if it is a function, calls
-it with `args...` as arguments, otherwise returns the value of the attribute. Returns `undefined` if such mixin
+Finds the first component's mixin instance which has an property `propertyName` and if it is a function, calls
+it with `args...` as arguments, otherwise returns the value of the property. Returns `undefined` if such mixin
 is not found.
 
 <a name="reference_instance_callMixins"></a>
 ```coffee
-callMixins: (attributeName, args...) ->
+callMixins: (propertyName, args...) ->
 ```
 
-Finds all component's mixin instances which have an attribute `attributeName` and calls them in order with `args...`
+Finds all component's mixin instances which have an property `propertyName` and calls them in order with `args...`
 as arguments, returning an array of values returned from those calls.
 
 <a name="reference_instance_foldMixins"></a>
 ```coffee
-foldMixins: (attributeName, args...) ->
+foldMixins: (propertyName, args...) ->
 ```
 
-Iterates over all component's mixin instances which have an attribute `attributeName` and calls them in order
+Iterates over all component's mixin instances which have an property `propertyName` and calls them in order
 passing `args...` as arguments to the first one, and results of that call to the second one as arguments, and so on
 until the last value returned is returned.
 
