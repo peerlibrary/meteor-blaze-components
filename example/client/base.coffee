@@ -59,7 +59,7 @@ class AnimatedListComponent extends BlazeComponent
   list: ->
     # To register dependency.
     @_counter.get()
-    _.shuffle (_id: i for i in [0...5])
+    _.shuffle (_id: i for i in [1...6])
 
   insertDOMElement: (parent, node, before) ->
     return super unless before

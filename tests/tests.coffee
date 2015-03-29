@@ -79,7 +79,7 @@ class AnimatedListComponent extends BlazeComponent
     'AnimatedListComponent'
 
   onCreated: ->
-    @_list = new ReactiveVar [0, 1, 2, 3, 4]
+    @_list = new ReactiveVar [1, 2, 3, 4, 5]
     @_handle = Meteor.setInterval =>
       @_list.set [@_list.get()[4]].concat @_list.get()[0...4]
     , 1000 # ms
@@ -471,14 +471,9 @@ class BasicTestCase extends ClassyTestCase
       AnimatedListComponent.calls = []
 
       expectedCalls = [
-        ['insertDOMElement', 'AnimatedListComponent', '<div class="animationTestTemplate"></div>', '<ul><li>0</li><li>1</li><li>2</li><li>3</li><li>4</li></ul>', '']
-        ['removeDOMElement', 'AnimatedListComponent', '<ul><li>0</li><li>1</li><li>2</li><li>3</li><li>4</li></ul>', '<li>0</li>']
-        ['moveDOMElement', 'AnimatedListComponent', '<ul><li>1</li><li>2</li><li>3</li><li>4</li></ul>', '<li>4</li>', '']
-        ['insertDOMElement', 'AnimatedListComponent', '<ul><li>4</li><li>1</li><li>2</li><li>3</li></ul>', '<li>1</li>', '']
-        ['removeDOMElement', 'AnimatedListComponent', '<ul><li>4</li><li>0</li><li>1</li><li>2</li><li>3</li></ul>', '<li>1</li>']
-        ['moveDOMElement', 'AnimatedListComponent', '<ul><li>4</li><li>0</li><li>2</li><li>3</li></ul>', '<li>3</li>', '']
-        ['moveDOMElement', 'AnimatedListComponent', '<ul><li>3</li><li>4</li><li>0</li><li>2</li></ul>', '<li>2</li>', '']
-        ['insertDOMElement', 'AnimatedListComponent', '<ul><li>3</li><li>4</li><li>2</li><li>0</li></ul>', '<li>2</li>', '']
+        ['insertDOMElement', 'AnimatedListComponent', '<div class="animationTestTemplate"></div>', '<ul><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li></ul>', '']
+        ['moveDOMElement', 'AnimatedListComponent', '<ul><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li></ul>', '<li>5</li>', '']
+        ['moveDOMElement', 'AnimatedListComponent', '<ul><li>5</li><li>1</li><li>2</li><li>3</li><li>4</li></ul>', '<li>4</li>', '']
       ]
 
       # There could be some more calls made, we ignore them and just take the first 8.
