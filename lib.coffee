@@ -43,10 +43,7 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
     if name of component
       return wrapHelper component, component[name]
 
-    # We manually go over _mixins instead of using getMixin because we want to
-    # distinguish between attribute existing on a mixin with the undefined value,
-    # and no attribute existing with a given name at all on any mixin.
-    for mixin in component._mixins when name of mixin
+    if mixin = component.getFirstMixin name
       return wrapHelper mixin, mixin[name]
 
   null
@@ -243,7 +240,7 @@ class BlazeComponent extends BaseComponent
     assert @_mixins
 
     for mixin in @_mixins when attributeName of mixin
-      return mixin[attributeName]
+      return mixin
 
     return
 
