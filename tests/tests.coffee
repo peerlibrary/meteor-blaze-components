@@ -215,6 +215,18 @@ class WithMixinsComponent extends BlazeComponent
 
 BlazeComponent.register 'WithMixinsComponent', WithMixinsComponent
 
+class AfterCreateValueComponent extends BlazeComponent
+  template: ->
+    'AfterCreateValueComponent'
+
+  onCreated: ->
+    super
+
+    @foobar = '42'
+    @_foobar = '43'
+
+BlazeComponent.register 'AfterCreateValueComponent', AfterCreateValueComponent
+
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
 
@@ -642,5 +654,18 @@ class BasicTestCase extends ClassyTestCase
     ]
 
     Blaze.remove renderedComponent
+
+  testAfterCreateValue: =>
+    # We want to test that also attributes added in onCreated hook are available in the template.
+    componentTemplate = BlazeComponent.getComponent('AfterCreateValueComponent').renderComponent()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTML componentTemplate
+
+    @assertEqual trim(output), trim """
+      <p>42</p>
+      <p>43</p>
+    """
 
 ClassyTestCase.addTest new BasicTestCase()
