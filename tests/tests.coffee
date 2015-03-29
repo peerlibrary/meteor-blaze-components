@@ -79,9 +79,21 @@ class AnimatedListComponent extends BlazeComponent
     'AnimatedListComponent'
 
   onCreated: ->
+    # To test inserts, moves, and removals.
     @_list = new ReactiveVar [1, 2, 3, 4, 5]
     @_handle = Meteor.setInterval =>
-      @_list.set [@_list.get()[4]].concat @_list.get()[0...4]
+      list = @_list.get()
+
+      # Moves the last number to the first place.
+      list = [list[4]].concat list[0...4]
+
+      # Removes the smallest number.
+      list = _.without list, _.min list
+
+      # Adds one more number, one larger than the current largest.
+      list = list.concat [_.max(list) + 1]
+
+      @_list.set list
     , 1000 # ms
 
   onDestroyed: ->
@@ -472,8 +484,12 @@ class BasicTestCase extends ClassyTestCase
 
       expectedCalls = [
         ['insertDOMElement', 'AnimatedListComponent', '<div class="animationTestTemplate"></div>', '<ul><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li></ul>', '']
-        ['moveDOMElement', 'AnimatedListComponent', '<ul><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li></ul>', '<li>5</li>', '']
-        ['moveDOMElement', 'AnimatedListComponent', '<ul><li>5</li><li>1</li><li>2</li><li>3</li><li>4</li></ul>', '<li>4</li>', '']
+        ['removeDOMElement', 'AnimatedListComponent', '<ul><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li></ul>', '<li>1</li>']
+        ['moveDOMElement', 'AnimatedListComponent', '<ul><li>2</li><li>3</li><li>4</li><li>5</li></ul>', '<li>5</li>', '']
+        ['insertDOMElement', 'AnimatedListComponent', '<ul><li>5</li><li>2</li><li>3</li><li>4</li></ul>', '<li>6</li>', '']
+        ['removeDOMElement', 'AnimatedListComponent', '<ul><li>5</li><li>2</li><li>3</li><li>4</li><li>6</li></ul>', '<li>2</li>']
+        ['moveDOMElement', 'AnimatedListComponent', '<ul><li>5</li><li>3</li><li>4</li><li>6</li></ul>', '<li>6</li>', '']
+        ['insertDOMElement', 'AnimatedListComponent', '<ul><li>6</li><li>5</li><li>3</li><li>4</li></ul>', '<li>7</li>', '']
       ]
 
       # There could be some more calls made, we ignore them and just take the first 8.
