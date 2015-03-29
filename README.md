@@ -42,7 +42,7 @@ Reference
 
 <a name="reference_class_register"></a>
 ```coffee
-@register: (componentName[, componentClass]) ->
+@register: (componentName, [componentClass]) ->
 ```
 
 Registers a new component with the name `componentName`. This makes it available in templates and elsewhere
@@ -228,8 +228,9 @@ currentData: ->
 Returns current caller-level data context. A reactive data source.
 
 In [event handlers](#event-handlers) use `currentData` to get the data context at the place where the event originated (target context).
-In template helpers `currentData` returns the data context where a template helper was called. In life cycle
-hooks `onCreated`, `onRendered`, and `onDestroyed`, it is the same as [`data`](#user-content-reference_instance_data).
+In template helpers `currentData` returns the data context where a template helper was called. In life-cycle
+hooks [`onCreated`](#user-content-reference_instance_onCreated), [`onRendered`](user-content-reference_instance_onRendered),
+and [`onDestroyed`](user-content-reference_instance_onDestroyed), it is the same as [`data`](#user-content-reference_instance_data).
 Inside a template accessing the method as a template helper `currentData` is the same as `this`/`@`.
 
 Example:
@@ -267,6 +268,34 @@ componentName: ->
 ```
 
 This is just a helpful instance method which calls `@componentName` class method.
+
+#### Utilities ####
+
+<a name="reference_instance_autorun"></a>
+```coffee
+autorun: (runFunc) ->
+```
+
+A version of [`Tracker.autorun`](http://docs.meteor.com/#/full/tracker_autorun) that is stopped when the component is
+destroyed. You can use `autorun` from an [`onCreated`](#user-content-reference_instance_onCreated) or
+[`onRendered`](user-content-reference_instance_onRendered) life-cycle hooks to reactively update the DOM or the component.
+
+<a name="reference_instance_subscribe"></a>
+```coffee
+subscribe: (name, [args...], [callbacks]) ->
+```
+
+A version of [`Meteor.subscribe`](http://docs.meteor.com/#meteor_subscribe) that is stopped when the component is
+destroyed. You can use `subscribe` from an [`onCreated`](#user-content-reference_instance_onCreated) life-cycle hook to
+specify which data publications this component depends on.
+
+<a name="reference_instance_subscriptionsReady"></a>
+```coffee
+subscriptionsReady: ->
+```
+
+This method returns `true` when all of the subscriptions called with [`subscribe`](#user-content-reference_instance_subscribe)
+are ready. Same as with all other methods, you can use it as a template helper in the component's template.
 
 Related projects
 ----------------
