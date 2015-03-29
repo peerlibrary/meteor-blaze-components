@@ -148,20 +148,20 @@ class BlazeComponent extends BaseComponent
     # Getter.
     @_mixinParent or null
 
-  addMixin: (nameOrComponent) ->
+  addMixin: (nameOrMixin) ->
     # Do not do anything if mixin is already added. This allows multiple mixins to call addMixin in
     # mixinParent method to add dependencies, but if dependencies are already there, nothing happens.
     # TODO: For mixins with components this prevents having multiple mixins of the same class but with different arguments, because component name is the same. Is this a problem?
-    return if @getMixin nameOrComponent
+    return if @getMixin nameOrMixin
 
-    if _.isString nameOrComponent
-      mixinInstanceComponent = @constructor.getComponent nameOrComponent
-      throw new Error "Unknown mixin '#{ nameOrComponent }'." unless mixinInstanceComponent
+    if _.isString nameOrMixin
+      mixinInstanceComponent = @constructor.getComponent nameOrMixin
+      throw new Error "Unknown mixin '#{ nameOrMixin }'." unless mixinInstanceComponent
       mixinInstance = new mixinInstanceComponent()
-    else if _.isFunction nameOrComponent
-      mixinInstance = new nameOrComponent()
+    else if _.isFunction nameOrMixin
+      mixinInstance = new nameOrMixin()
     else
-      mixinInstance = nameOrComponent
+      mixinInstance = nameOrMixin
 
     # We add mixin before we call mixinParent so that dependencies come after this mixin,
     # and that we prevent possible loops because of circular dependencies.
@@ -191,26 +191,26 @@ class BlazeComponent extends BaseComponent
     # To allow chaining.
     @
 
-  getMixin: (nameOrComponent) ->
+  getMixin: (nameOrMixin) ->
     assert @_mixins
 
     for mixin in @_mixins
       # We do not require mixins to be components, but if they are, they can
       # be referenced based on their component name.
       mixinComponentName = mixin.componentName?() or null
-      if _.isString nameOrComponent
-        return mixin if mixinComponentName and mixinComponentName is nameOrComponent
+      if _.isString nameOrMixin
+        return mixin if mixinComponentName and mixinComponentName is nameOrMixin
 
       # componentName works both on the component class and instance, so one can pass in either.
-      else if mixinComponentName and nameOrComponent.componentName?() and mixinComponentName is nameOrComponent.componentName()
+      else if mixinComponentName and nameOrMixin.componentName?() and mixinComponentName is nameOrMixin.componentName()
         return mixin
 
-      # Mixin is not a component. But nameOrComponent is a class.
-      else if mixin.constructor is nameOrComponent
+      # Mixin is not a component. But nameOrMixin is a class.
+      else if mixin.constructor is nameOrMixin
         return mixin
 
-      # nameOrComponent is an instance.
-      else if mixin is nameOrComponent
+      # nameOrMixin is an instance.
+      else if mixin is nameOrMixin
         return mixin
 
     return null
@@ -422,7 +422,7 @@ class BlazeComponent extends BaseComponent
   # Caller-level data context. Reactive. Use this to get in event handlers the data
   # context at the place where event originated (target context). In template helpers
   # the data context where template helpers were called. In onCreated, onRendered,
-  # or onDestroyed, the same as @data(). Inside a template this is the same as this.
+  # and onDestroyed, the same as @data(). Inside a template this is the same as this.
   currentData: ->
     Blaze.getData() or null
 
@@ -430,6 +430,12 @@ class BlazeComponent extends BaseComponent
   # it returns the component at the place where event originated (target component).
   currentComponent: ->
     Template.instance()?.get('component') or null
+
+  firstNode: ->
+    @templateInstance.firstNode
+
+  lastNode: ->
+    @templateInstance.lastNode
 
 # We copy utility methods ($, findAll, autorun, subscribe, etc.) from the template instance prototype.
 for methodName, method of Blaze.TemplateInstance::
