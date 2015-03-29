@@ -35,6 +35,19 @@ Animations
 Use with existing classes
 -------------------------
 
+Reference
+---------
+
+### Class methods ###
+
+<a name="reference_class_register"></a>
+```coffee
+@register: (componentName[, componentClass]) ->
+```
+
+Registers a new component with the name `componentName`. This makes it available in templates and elsewhere
+in the component system under that name, and assigns the name to the component. If `componentClass`
+argument is omitted, class on which `@register` is called is used.
 
 <a name="reference_class_getComponent"></a>
 ```coffee
