@@ -349,8 +349,90 @@ values of one to another, until the default component method is reached. All met
 `[parent, node, alreadyRemoved]` values. If the `node` is removed by any method, that method should return
 `alreadyRemoved` set to `true`.
 
-*See [Momentum Metoer package](https://github.com/percolatestudio/meteor-momentum) for more information on how to
-use these hooks to animate DOM elements.*
+#### Mixins ####
+
+<a name="reference_instance_mixins"></a>
+```coffee
+mixins: ->
+```
+
+Extend this method and return mixins for the component. Mixins can be components themselves, or just classes or
+objects resembling them. None method is required for them, but methods will be called on them by Blaze
+Components if they do exist.
+
+The `mixins` method should return an array of registered component names, mixin classes, or mixin instances.
+When component instance is created, all mixins' instances are created as well, if they were not already an
+instance. Life-cycle of mixin instances matches that of the component.
+
+<a name="reference_instance_getMixin"></a>
+```coffee
+getMixin: (nameOrMixin) ->
+```
+
+Returns a component's mixin instance for a given name, class, or instance. Returns `null` if mixin is not found.
+
+You can use it to check if a given mixin is used by a component.
+
+<a name="reference_instance_getFirstMixin"></a>
+```coffee
+getFirstMixin: (attributeName) ->
+```
+
+Returns the first component's mixin instance which has an attribute `attributeName`. Returns `null` if such mixin
+is not found.
+
+<a name="reference_instance_callFirstMixin"></a>
+```coffee
+callFirstMixin: (attributeName, args...) ->
+```
+
+Finds the first component's mixin instance which has an attribute `attributeName` and if it is a function, calls
+it with `args...` as arguments, otherwise returns the value of the attribute. Returns `undefined` if such mixin
+is not found.
+
+<a name="reference_instance_callMixins"></a>
+```coffee
+callMixins: (attributeName, args...) ->
+```
+
+Finds all component's mixin instances which have an attribute `attributeName` and calls them in order with `args...`
+as arguments, returning an array of values returned from those calls.
+
+<a name="reference_instance_foldMixins"></a>
+```coffee
+foldMixins: (attributeName, args...) ->
+```
+
+Iterates over all component's mixin instances which have an attribute `attributeName` and calls them in order
+passing `args...` as arguments to the first one, and results of that call to the second one as arguments, and so on
+until the last value returned is returned.
+
+<a name="reference_instance_mixinParent"></a>
+```coffee
+mixinParent: (mixinParent) ->
+```
+
+When called without a `mixinParent` argument it returns the mixin's parent. For a component instance's mixins it
+returns the component instance.
+
+When called with a `mixinParent` argument it sets the mixin's parent.
+
+*Setting the mixin's parent is done automatically by calling this method when creating component's mixins. Extend
+(or provide) this method if you want to do any action when parent is set, for example, add dependency mixins to
+the parent using [`addMixin`](user-content-reference_instance_addMixin). Make sure you call `super` as well.*
+
+<a name="reference_instance_addMixin"></a>
+```coffee
+addMixin: (nameOrMixin) ->
+```
+
+Adds a mixin after already added mixins. `nameOrMixin` can be a registered component name, mixin class, or
+mixin instance.
+
+If mixin is already added to the component the method does nothing.
+
+Use `addMixin` to manually add additional mixins after a component was created. For example, to add dependencies
+required by automatically added mixins as a result of [`mixins`](user-content-reference_instance_mixins).
 
 Related projects
 ----------------
