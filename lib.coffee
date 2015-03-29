@@ -339,14 +339,15 @@ class BlazeComponent extends BaseComponent
       @view._onViewRendered =>
         # Attach events the first time template instance renders.
         if @view.renderCount is 1
-          addEvents @view, @component
-
           assert @component._mixins
 
           # We manually go over _mixins instead of using getMixin because we also need
           # the mixin itself so that we can bind events correctly.
           for mixin in @component._mixins when 'events' of mixin
             addEvents @view, mixin
+
+          # We first add event handlers from mixins, then the component.
+          addEvents @view, @component
 
       @component = component
       @component.templateInstance = @
