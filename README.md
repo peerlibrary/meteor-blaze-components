@@ -23,6 +23,9 @@ Components
 Accessing data context
 ----------------------
 
+Life-cycle hooks
+----------------
+
 Passing arguments
 -----------------
 
@@ -267,7 +270,7 @@ event originated (target component).
 componentName: ->
 ```
 
-This is just a helpful instance method which calls `@componentName` class method.
+This is a complementary instance method which calls `@componentName` class method.
 
 #### Utilities ####
 
