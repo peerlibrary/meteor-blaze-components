@@ -239,6 +239,26 @@ class AfterCreateValueComponent extends BlazeComponent
 
 BlazeComponent.register 'AfterCreateValueComponent', AfterCreateValueComponent
 
+class PostMessageButtonComponent extends BlazeComponent
+  template: ->
+    'PostMessageButtonComponent'
+
+  onCreated: ->
+    super
+
+    @color = new ReactiveVar "Red"
+
+    $(window).on 'message.buttonComponent', (event) =>
+      if color = event.originalEvent.data?.color
+        @color.set color
+
+  onDestroyed: ->
+    super
+
+    $(window).off '.buttonComponent'
+
+BlazeComponent.register 'PostMessageButtonComponent', PostMessageButtonComponent
+
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
 
@@ -678,5 +698,30 @@ class BasicTestCase extends ClassyTestCase
       <p>42</p>
       <p>43</p>
     """
+
+  testPostMessageExample: [
+    ->
+      @renderedComponent = Blaze.render PostMessageButtonComponent.renderComponent(), $('body').get(0)
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.postMessageButtonComponent').html()), trim """
+        <button>Red</button>
+      """
+
+      window.postMessage {color: "Blue"}, '*'
+
+      # Wait a bit for a message and also wait for a flush.
+      Meteor.setTimeout @expect(), 50 # ms
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.postMessageButtonComponent').html()), trim """
+        <button>Blue</button>
+      """
+
+      Blaze.remove @renderedComponent
+  ]
 
 ClassyTestCase.addTest new BasicTestCase()

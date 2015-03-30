@@ -90,8 +90,13 @@
   <p>Arguments: {{constructorArguments}}</p>
 </template>
 
-
 <template name="AfterCreateValueComponent">
   <p>{{foobar}}</p>
   <p>{{_foobar}}</p>
+</template>
+
+<template name="PostMessageButtonComponent">
+  <div class="postMessageButtonComponent">
+    <button>{{color.get}}</button>
+  </div>
 </template>

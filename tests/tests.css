@@ -1,6 +1,7 @@
 .eventsTestTemplate,
 .animationTestTemplate,
 .argumentsTestTemplate,
-.mixinEventsTestTemplate {
+.mixinEventsTestTemplate,
+.postMessageButtonComponent {
   display: none;
 }
