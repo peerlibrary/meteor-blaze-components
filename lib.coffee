@@ -151,8 +151,12 @@ class BlazeComponent extends BaseComponent
     return if @getMixin nameOrMixin
 
     if _.isString nameOrMixin
-      # It could be that the component is not a real instance of the BlazeComponent class, so it might not have a constructor.
-      mixinInstanceComponent = (@constructor or BlazeComponent).getComponent nameOrMixin
+      # It could be that the component is not a real instance of the BlazeComponent class,
+      # so it might not have a constructor pointing back to a BlazeComponent subclass.
+      if @constructor.getComponent
+        mixinInstanceComponent = @constructor.getComponent nameOrMixin
+      else
+        mixinInstanceComponent = BlazeComponent.getComponent nameOrMixin
       throw new Error "Unknown mixin '#{ nameOrMixin }'." unless mixinInstanceComponent
       mixinInstance = new mixinInstanceComponent()
     else if _.isFunction nameOrMixin
