@@ -274,6 +274,106 @@ componentName: ->
 
 This is a complementary instance method which calls `@componentName` class method.
 
+#### Life-cycle hooks ####
+
+<a name="reference_instance_constructor"></a>
+```coffee
+constructor: (args...) ->
+```
+
+When a component is created, its constructor is first called. There are no restrictions on component's constructor
+and Blaze Components are designed to coexist with classes which require their own arguments when initialized. To
+facilitate this, Blaze Components operate equally well with classes (which are automatically instantiated as needed)
+or already made instances. The real life-cycle of a Blaze Component starts after its instantiation.
+
+When including a component in a template, you can pass arguments to a constructor by using the `args` keyword.
+
+Example:
+
+```handlebars
+{{> ButtonComponent args 12 color='red'}}
+```
+
+Blaze Components will call `ButtonComponent`'s constructor with arguments `12` and `Spacebars.kw({color: 'red'})`
+when instantiating the component's class. Keyword arguments are wrapped into
+[`Spacebars.kw`](https://github.com/meteor/meteor/blob/devel/packages/spacebars/README.md#helper-arguments).
+
+After the component is instantiated, all its [mixins](#user-content-reference_instance_mixins) are instantiated as well.
+
+<a name="reference_instance_onCreated"></a>
+```coffee
+onCreated: ->
+```
+
+Extend this method to do any initialization of the component before it is rendered for the first time. This is a better
+place to do so than a class constructor because it does not depend on the component nature,
+[mixins](#user-content-reference_instance_mixins) are already initialized, and most Blaze Components methods
+work as expected (component was not yet rendered, so [DOM related methods](#access-to-rendered-content) do not yet work).
+
+A recommended use is to initialize any reactive variables and subscriptions internal to the component.
+
+Example:
+
+```coffee
+class ButtonComponent extends BlazeComponent
+  template: ->
+    'ButtonComponent'
+ 
+  onCreated: ->
+    super
+
+    @color = new ReactiveVar "Red"
+
+    $(window).on 'message.buttonComponent', (event) =>
+      if color = event.originalEvent.data?.color
+        @color.set color
+
+  onDestroyed: ->
+    super
+
+    $(window).off '.buttonComponent'
+```
+
+```handlebars
+<template name="ButtonComponent">
+  <button>{{color.get}}</button>
+</template>
+```
+
+You can now use [`postMessage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) to send messages
+like `{color: "Blue"}` which would reactively change the label of the button.
+
+When [mixins](#mixins-1) provide `onCreated` method, the default implementation calls them in order.
+
+<a name="reference_instance_onRendered"></a>
+```coffee
+onRendered: ->
+```
+
+This method is called once when a component is rendered into DOM nodes and put into the document for the first time.
+
+Because your component has been rendered, you can use [DOM related methods](#access-to-rendered-content) to access
+component's DOM nodes.
+
+This is the place where you can initialize 3rd party libraries to work with the DOM content as well. Keep in
+mind that interactions of a 3rd party library with Blaze controlled content might bring unintentional consequences
+so consider reimplementing the 3rd party library as a Blaze Component instead.
+
+When [mixins](#mixins-1) provide `onRendered` method, the default implementation calls them in order.
+
+<a name="reference_instance_onDestroyed"></a>
+```coffee
+onDestroyed: ->
+```
+
+This method is called when an occurrence of a component is taken off the page for any reason and not replaced
+with a re-rendering.
+
+Here you can clean up or undo any external effects of [`onCreated`](#user-content-reference_instance_onCreated)
+or [`onRendered`](#user-content-reference_instance_onRendered) methods. See the example above.
+
+When [mixins](#mixins-1) provide `onDestroyed` method, the default implementation calls them in order.
+
 #### Utilities ####
 
 <a name="reference_instance_autorun"></a>
