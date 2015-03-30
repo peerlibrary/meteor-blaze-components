@@ -23,23 +23,31 @@ Components
 Accessing data context
 ----------------------
 
-Life-cycle hooks
-----------------
 
 Passing arguments
 -----------------
 
-Mixins
-------
+Life-cycle hooks
+----------------
+
+Component-based block helpers
+-----------------------------
 
 Animations
 ----------
+
+Mixins
+------
 
 Use with existing classes
 -------------------------
 
 Reference
 ---------
+
+**API is still in development and we seek community input. Please
+[use GitHub issues](https://github.com/peerlibrary/meteor-blaze-components/issues) to offer your suggestions
+and feedback, and join existing discussions there.**
 
 ### Class methods ###
 
@@ -251,10 +259,10 @@ Example:
 </template>
 ```
 
-If top-level data context is `color='red'`, then `currentData` inside a `color1` component method (template helper)
-will return `color='red'`, but inside a `color2` it will return `color='blue'`. Similarly, click event handler on
-buttons will by calling `currentData` get `color='red'` as the data context for red button, and `color='blue'` for
-blue button. In all cases `data` will return `color='red'`.
+If top-level data context is `{color: "red"}`, then `currentData` inside a `color1` component method (template helper)
+will return `{color: "red"}`, but inside a `color2` it will return `{color: "blue"}`. Similarly, click event handler on
+buttons will by calling `currentData` get `{color: "red"}` as the data context for red button, and `{color: "blue"}` for
+blue button. In all cases `data` will return `{color: "red"}`.
 
 <a name="reference_instance_currentComponent"></a>
 ```coffee
