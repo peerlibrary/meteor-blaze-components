@@ -65,7 +65,7 @@ argument is omitted, class on which `@register` is called is used.
 @getComponent: (componentName) ->
 ```
 
-Retrieves a component class with `componentName` name. If such component does not exist, `null` is returned.
+Retrieves the component class with `componentName` name. If such component does not exist, `null` is returned.
 
 <a name="reference_class_componentName"></a>
 ```coffee
@@ -421,53 +421,50 @@ are ready. Same as with all other methods, you can use it as a template helper i
 
 <a name="reference_instance_insertDOMElement"></a>
 ```coffee
-insertDOMElement: (parent, node, before, alreadyInserted=false) ->
+insertDOMElement: (parent, node, before) ->
 ```
 
 Every time Blaze wants to insert a new DOM element into the component's DOM content it calls this method. The default
-implementation is that it simply inserts the `node` DOM element under the `parent` DOM element, as a sibling
-before the `before` DOM element, or as the last element if `before` is `null`.
+implementation is that if `node` has not yet been inserted, it simply inserts the `node` DOM element under the
+`parent` DOM element, as a sibling before the `before` DOM element, or as the last element if `before` is `null`.
 
 You can extend this method if you want to insert the new DOM element in a different way, for example, by animating
 it. Make sure you do insert it correctly because Blaze will expect it to be there afterwards.
 
-When [mixins](#mixins-1) provide this method, the default implementation calls them in order, passing the returned
-values of one to another, until the default component method is reached. All methods should return an array of
-`[parent, node, before, alreadyInserted]` values. If `node` is inserted into the DOM by any method, that method
-should return `alreadyInserted` set to `true`.
+When [mixins](#mixins-1) provide `insertDOMElement` method, the default implementation calls them in order. Make
+sure to always verify the state of the DOM before proceeding with mixin's logic. Some other mixin might already
+inserted the DOM element.
 
 <a name="reference_instance_moveDOMElement"></a>
 ```coffee
-moveDOMElement: (parent, node, before, alreadyMoved=false) ->
+moveDOMElement: (parent, node, before) ->
 ```
 
 Every time Blaze wants to move a DOM element to a new position between siblings it calls this method. The default
-implementation is that it simply moves the `node` DOM element before the `before` DOM element, or as the last
-element if `before` is `null`.
+implementation is that if `node` has not yet been moved, it simply moves the `node` DOM element before the `before`
+DOM element, or as the last element if `before` is `null`.
 
 You can extend this method if you want to move the DOM element in a different way, for example, by animating
 it. Make sure you do move it correctly because Blaze will expect it to be there afterwards.
 
-When [mixins](#mixins-1) provide this method, the default implementation calls them in order, passing the returned
-values of one to another, until the default component method is reached. All methods should return an array of
-`[parent, node, before, alreadyMoved]` values. If the `node` is moved to the final position by any method, that method
-should return `alreadyMoved` set to `true`.
+When [mixins](#mixins-1) provide `moveDOMElement` method, the default implementation calls them in order. Make
+sure to always verify the state of the DOM before proceeding with mixin's logic. Some other mixin might already
+moved the DOM element.
 
 <a name="reference_instance_removeDOMElement"></a>
 ```coffee
-removeDOMElement: (parent, node, alreadyRemoved=false) ->
+removeDOMElement: (parent, node) ->
 ```
 
 Every time Blaze wants to remove a DOM element it calls this method. The default implementation is that
-it simply removed the `node` DOM element.
+if `node` has not yet been removed, it simply removes the `node` DOM element.
 
 You can extend this method if you want to remove the DOM element in a different way, for example, by animating
 it. Make sure you do remove it correctly because Blaze will expect it to be removed afterwards.
 
-When [mixins](#mixins-1) provide this method, the default implementation calls them in order, passing the returned
-values of one to another, until the default component method is reached. All methods should return an array of
-`[parent, node, alreadyRemoved]` values. If the `node` is removed by any method, that method should return
-`alreadyRemoved` set to `true`.
+When [mixins](#mixins-1) provide `removeDOMElement` method, the default implementation calls them in order. Make
+sure to always verify the state of the DOM before proceeding with mixin's logic. Some other mixin might already
+removed the DOM element.
 
 #### Mixins ####
 
@@ -489,25 +486,27 @@ instance. Life-cycle of mixin instances matches that of the component.
 getMixin: (nameOrMixin) ->
 ```
 
-Returns a component's mixin instance for a given name, class, or instance. Returns `null` if mixin is not found.
+Returns the component's mixin instance for a given name, class, or instance. Returns `null` if mixin is not found.
 
-You can use it to check if a given mixin is used by a component.
+You can use it to check if a given mixin is used by the component.
 
-<a name="reference_instance_getFirstMixin"></a>
+<a name="reference_instance_getMixinWith"></a>
 ```coffee
-getFirstMixin: (propertyName) ->
+getMixinWith: (afterMixin, propertyName) ->
 ```
 
-Returns the first component's mixin instance which has an property `propertyName`. Returns `null` if such mixin
-is not found.
+Returns the component's first mixin instance after `afterMixin` mixin which has a property `propertyName`.
+If `afterMixin` is `null` or the component itself, it searches all mixins. Returns `null` if such mixin is
+not found.
 
 <a name="reference_instance_callFirstMixin"></a>
 ```coffee
-callFirstMixin: (propertyName, args...) ->
+callMixinWith: (afterMixin, propertyName, args...) ->
 ```
 
-Finds the first component's mixin instance which has an property `propertyName` and if it is a function, calls
-it with `args...` as arguments, otherwise returns the value of the property. Returns `undefined` if such mixin
+Finds the component's first mixin instance after `afterMixin` mixin which has a property `propertyName`
+and if it is a function, calls it with `args...` as arguments, otherwise returns the value of the property.
+If `afterMixin` is `null` or the component itself, it searches all mixins. Returns `undefined` if such mixin
 is not found.
 
 <a name="reference_instance_callMixins"></a>
@@ -515,17 +514,8 @@ is not found.
 callMixins: (propertyName, args...) ->
 ```
 
-Finds all component's mixin instances which have an property `propertyName` and calls them in order with `args...`
+Finds all component's mixin instances which have a property `propertyName` and calls them in order with `args...`
 as arguments, returning an array of values returned from those calls.
-
-<a name="reference_instance_foldMixins"></a>
-```coffee
-foldMixins: (propertyName, args...) ->
-```
-
-Iterates over all component's mixin instances which have an property `propertyName` and calls them in order
-passing `args...` as arguments to the first one, and results of that call to the second one as arguments, and so on
-until the last value returned is returned.
 
 <a name="reference_instance_mixinParent"></a>
 ```coffee

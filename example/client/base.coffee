@@ -144,7 +144,7 @@ class AnimatedListComponent extends BlazeComponent
       duration: 1000
     )
 
-    [parent, node, before, true]
+    return
 
   removeDOMElement: (parent, node) ->
     super

@@ -45,7 +45,7 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
     if name of component
       return wrapHelper component, component[name]
 
-    if mixin = component.getFirstMixin name
+    if mixin = component.getMixinWith null, name
       return wrapHelper mixin, mixin[name]
 
   null
@@ -226,7 +226,7 @@ class BlazeComponent extends BaseComponent
         else if mixin is nameOrMixin
           return mixin
 
-    return null
+    null
 
   # Calls all mixins in order and collect all results into an array.
   callMixins: (propertyName, args...) ->
@@ -239,46 +239,33 @@ class BlazeComponent extends BaseComponent
       else
         mixin[propertyName]
 
-  # Calls the first mixin it finds, and returns the result.
-  callFirstMixin: (propertyName, args...) ->
-    assert @_mixins
-
-    for mixin in @_mixins when propertyName of mixin
-      if _.isFunction mixin[propertyName]
-        return mixin[propertyName] args...
-      else
-        return mixin[propertyName]
+  # Calls the first next mixin after fromNameOrMixin it finds, and returns the result.
+  callMixinWith: (afterMixin, propertyName, args...) ->
+    mixin = @getMixinWith afterMixin, propertyName
 
     # TODO: Should we throw an error here? Something like calling a function which does not exist?
-    return
+    return unless mixin
 
-  getFirstMixin: (propertyName) ->
+    if _.isFunction mixin[propertyName]
+      return mixin[propertyName] args...
+    else
+      return mixin[propertyName]
+
+  getMixinWith: (afterMixin, propertyName) ->
     assert @_mixins
 
-    for mixin in @_mixins when propertyName of mixin
-      return mixin
+    # If mixin is not provided, or is the component, we start from the beginning.
+    if not afterMixin or afterMixin is @
+      found = true
+    else
+      found = false
 
-    return
+    for mixin in @_mixins
+      return mixin if found and propertyName of mixin
 
-  # Calls all mixins in order and gives initial arguments to the first, and then results of that
-  # call to the second, and so on, until all mixins were called, when the result is returned. If
-  # there are no mixins matching, initial arguments are returned. Mixins should always return an
-  # array to pass to the next mixin.
-  foldMixins: (propertyName, args...) ->
-    assert @_mixins
+      found = true if mixin is afterMixin
 
-    currentArguments = args
-
-    for mixin in @_mixins when propertyName of mixin
-      if _.isFunction mixin[propertyName]
-        currentArguments = mixin[propertyName] currentArguments...
-      else
-        currentArguments = mixin[propertyName]
-
-      # We ignore results if there were not an array.
-      currentArguments = [] unless _.isArray currentArguments
-
-    currentArguments
+    null
 
   # This class method more or less just creates an instance of a component and calls its renderComponent
   # method. But because we want to allow passing arguments to the component in templates, we have some
@@ -415,32 +402,31 @@ class BlazeComponent extends BaseComponent
   onDestroyed: ->
     @callMixins 'onDestroyed'
 
-  insertDOMElement: (parent, node, before, alreadyInserted=false) ->
-    [parent, node, before, alreadyInserted] = @foldMixins 'insertDOMElement', parent, node, before, alreadyInserted
+  insertDOMElement: (parent, node, before) ->
+    @callMixins 'insertDOMElement', parent, node, before
 
-    if not alreadyInserted and parent and node
-      parent.insertBefore node, (before or null)
-      return [parent, node, before, true]
+    before ?= null
+    if parent and node and (node.parentNode isnt parent or node.nextSibling isnt before)
+      parent.insertBefore node, before
 
-    [parent, node, before, alreadyInserted]
+    return
 
-  moveDOMElement: (parent, node, before, alreadyMoved=false) ->
-    [parent, node, before, alreadyMoved] = @foldMixins 'moveDOMElement', parent, node, before, alreadyMoved
+  moveDOMElement: (parent, node, before) ->
+    @callMixins 'moveDOMElement', parent, node, before
 
-    if not alreadyMoved and parent and node
-      parent.insertBefore node, (before or null)
-      return [parent, node, before, true]
+    before ?= null
+    if parent and node and (node.parentNode isnt parent or node.nextSibling isnt before)
+      parent.insertBefore node, before
 
-    [parent, node, before, alreadyMoved]
+    return
 
-  removeDOMElement: (parent, node, alreadyRemoved=false) ->
-    [parent, node, alreadyRemoved] = @foldMixins 'removeDOMElement', parent, node, alreadyRemoved
+  removeDOMElement: (parent, node) ->
+    @callMixins 'removeDOMElement', parent, node
 
-    if not alreadyRemoved and parent and node
+    if parent and node and node.parentNode is parent
       parent.removeChild node
-      return [parent, node, true]
 
-    [parent, node, alreadyRemoved]
+    return
 
   events: ->
     []

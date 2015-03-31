@@ -108,7 +108,7 @@ class SmartInputComponent extends BlazeComponent
     [AutoSelectInputMixin, RealTimeInputMixin, FrozenInputMixin]
 
   value: ->
-    @callFirstMixin('value') or Values.findOne(@data().id)?.value
+    @callMixinWith(@, 'value') or Values.findOne(@data().id)?.value
 
   events: ->
     super.concat
