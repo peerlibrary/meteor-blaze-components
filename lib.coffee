@@ -183,6 +183,14 @@ class BlazeComponent extends BaseComponent
     # Maybe mixin has its own mixins as well.
     mixinInstance.createMixins?()
 
+    # If a mixin is adding a dependency using addMixin after its mixinParent class (for example, in onCreate)
+    # and this is this dependency mixin, the view might already be created or rendered and callbacks were
+    # already called, so we should call them manually here as well. But only if he view has not been destroyed
+    # already. For those mixins we do not call anything, there is little use for them now.
+    unless @templateInstance?.view.isDestroyed
+      mixinInstance.onCreated?() if @templateInstance?.view.isCreated
+      mixinInstance.onRendered?() if @templateInstance?.view.isRendered
+
     # To allow chaining.
     @
 

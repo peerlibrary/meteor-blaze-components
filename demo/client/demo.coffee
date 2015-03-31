@@ -162,7 +162,7 @@ class EvenSmarterInputComponent extends SmartInputComponent
 class CancelableInputMixin extends BlazeComponent
   onCreated: ->
     # We rely on the frozen input mixin for obtaining the initial value.
-    @mixinParent().addMixin(FrozenInputMixin)
+    @mixinParent().addMixin FrozenInputMixin
 
   events: ->
     super.concat

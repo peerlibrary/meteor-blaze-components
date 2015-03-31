@@ -223,6 +223,17 @@ class SecondMixin extends BlazeComponent
     super.concat
       'click': @onClick
 
+  onCreated: ->
+    # To test if adding a dependency during onCreated will make sure
+    # to call onCreated on the added dependency as well.
+    @mixinParent().addMixin DependencyMixin
+
+class DependencyMixin extends BlazeComponent
+  @calls: []
+
+  onCreated: ->
+    @constructor.calls.push true
+
 class WithMixinsComponent extends BlazeComponent
   template: ->
     'MainComponent'
@@ -663,6 +674,8 @@ class BasicTestCase extends ClassyTestCase
     @assertEqual trim(output), trim COMPONENT_CONTENT 'ExistingClassHierarchyComponent', 'ExistingClassHierarchyComponent', 'ExistingClassHierarchyBase'
 
   testMixins: =>
+    DependencyMixin.calls = []
+
     componentTemplate = BlazeComponent.getComponent('WithMixinsComponent').renderComponent()
 
     @assertTrue componentTemplate
@@ -675,6 +688,8 @@ class BasicTestCase extends ClassyTestCase
       <hr>
       #{ COMPONENT_CONTENT 'SubComponent' }
     """
+
+    @assertEqual DependencyMixin.calls, [true]
 
     componentTemplate = new (BlazeComponent.getComponent('WithMixinsComponent'))().renderComponent()
 
