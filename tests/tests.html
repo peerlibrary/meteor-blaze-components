@@ -100,3 +100,45 @@
     <button>{{color.get}}</button>
   </div>
 </template>
+
+<template name="TableWrapperBlockComponent">
+  <table>
+    <thead>
+      <tr>
+        <td>Name</td>
+        <td>Email</td>
+      </tr>
+    </thead>
+    <tbody>
+      {{currentDataContext}}
+      {{> Template.contentBlock}}
+    </tbody>
+  </table>
+</template>
+
+<template name="testBlockComponent">
+ {{#TableWrapperBlockComponent}}
+   {{#each customers}}
+     <td>{{name}}</td>
+     <td>{{email}}</td>
+   {{/each}}
+ {{/TableWrapperBlockComponent}}
+ {{#TableWrapperBlockComponent a='3a' b='4a'}}
+   {{#each customers}}
+     <td>{{name}}</td>
+     <td>{{email}}</td>
+   {{/each}}
+ {{/TableWrapperBlockComponent}}
+ {{#TableWrapperBlockComponent args '7' a='8' b='9'}}
+   {{#each customers}}
+     <td>{{name}}</td>
+     <td>{{email}}</td>
+   {{/each}}
+ {{/TableWrapperBlockComponent}}
+ {{#TableWrapperBlockComponent args reactiveArguments}}
+   {{#each customers}}
+     <td>{{name}}</td>
+     <td>{{email}}</td>
+   {{/each}}
+ {{/TableWrapperBlockComponent}}
+</template>

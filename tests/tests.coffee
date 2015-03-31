@@ -259,6 +259,18 @@ class PostMessageButtonComponent extends BlazeComponent
 
 BlazeComponent.register 'PostMessageButtonComponent', PostMessageButtonComponent
 
+class TableWrapperBlockComponent extends BlazeComponent
+  template: ->
+    'TableWrapperBlockComponent'
+
+  onCreated: ->
+    super
+
+  currentDataContext: ->
+    EJSON.stringify @currentData()
+
+BlazeComponent.register 'TableWrapperBlockComponent', TableWrapperBlockComponent
+
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
 
@@ -734,4 +746,69 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
   ]
 
+  testBlockComponent: =>
+    output = Blaze.toHTMLWithData Template.testBlockComponent,
+      customers: [
+        name: 'Foo'
+        email: 'foo@example.com'
+      ]
+
+    @assertEqual trim(output), trim """
+      <table>
+        <thead>
+          <tr>
+            <td>Name</td>
+            <td>Email</td>
+          </tr>
+        </thead>
+        <tbody>
+          {"customers":[{"name":"Foo","email":"foo@example.com"}]}
+          <td>Foo</td>
+          <td>foo@example.com</td>
+        </tbody>
+      </table>
+       <table>
+        <thead>
+          <tr>
+            <td>Name</td>
+            <td>Email</td>
+          </tr>
+        </thead>
+        <tbody>
+          {"a":"3a","b":"4a"}
+          <td>Foo</td>
+          <td>foo@example.com</td>
+        </tbody>
+      </table>
+       <table>
+        <thead>
+          <tr>
+            <td>Name</td>
+            <td>Email</td>
+          </tr>
+        </thead>
+        <tbody>
+          {"customers":[{"name":"Foo","email":"foo@example.com"}]}
+          <td>Foo</td>
+          <td>foo@example.com</td>
+        </tbody>
+      </table>
+       <table>
+        <thead>
+          <tr>
+            <td>Name</td>
+            <td>Email</td>
+          </tr>
+        </thead>
+        <tbody>
+          {"customers":[{"name":"Foo","email":"foo@example.com"}]}
+          <td>Foo</td>
+          <td>foo@example.com</td>
+        </tbody>
+      </table>
+    """
+
 ClassyTestCase.addTest new BasicTestCase()
+
+Template.TableWrapperBlockComponent.onCreated ->
+  console.log "tableWrapperBlockComponent", @
