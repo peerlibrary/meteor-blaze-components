@@ -402,7 +402,7 @@ destroyed. You can use `autorun` from an [`onCreated`](#user-content-reference_i
 
 <a name="reference_instance_subscribe"></a>
 ```coffee
-subscribe: (name, [args...], [callbacks]) ->
+subscribe: (name, args..., [callbacks]) ->
 ```
 
 A version of [`Meteor.subscribe`](http://docs.meteor.com/#meteor_subscribe) that is stopped when the component is
@@ -529,7 +529,7 @@ until the last value returned is returned.
 
 <a name="reference_instance_mixinParent"></a>
 ```coffee
-mixinParent: (mixinParent) ->
+mixinParent: ([mixinParent]) ->
 ```
 
 When called without a `mixinParent` argument it returns the mixin's parent. For a component instance's mixins it
