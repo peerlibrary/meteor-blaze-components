@@ -470,7 +470,7 @@ mixins: ->
 ```
 
 Extend this method and return mixins for the component. Mixins can be components themselves, or just classes or
-objects resembling them. None method is required for them, but methods will be called on them by Blaze
+objects resembling them. No method is required for them, but methods will be called on them by Blaze
 Components if they do exist.
 
 The `mixins` method should return an array of registered component names, mixin classes, or mixin instances.
