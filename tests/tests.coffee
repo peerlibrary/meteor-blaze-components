@@ -135,6 +135,11 @@ class ArgumentsComponent extends BlazeComponent
   constructorArguments: ->
     EJSON.stringify @arguments
 
+  parentDataContext: ->
+    # We would like to make sure data context hierarchy
+    # is without intermediate arguments data context.
+    EJSON.stringify Template.parentData()
+
 BlazeComponent.register 'ArgumentsComponent', ArgumentsComponent
 
 reactiveContext = new ReactiveVar {}
@@ -269,7 +274,24 @@ class TableWrapperBlockComponent extends BlazeComponent
   currentDataContext: ->
     EJSON.stringify @currentData()
 
+  parentDataContext: ->
+    # We would like to make sure data context hierarchy
+    # is without intermediate arguments data context.
+    EJSON.stringify Template.parentData()
+
 BlazeComponent.register 'TableWrapperBlockComponent', TableWrapperBlockComponent
+
+Template.testBlockComponent.helpers
+  parentDataContext: ->
+    # We would like to make sure data context hierarchy
+    # is without intermediate arguments data context.
+    EJSON.stringify Template.parentData()
+
+  customersDataContext: ->
+    customers: [
+      name: 'Foo'
+      email: 'foo@example.com'
+    ]
 
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
@@ -539,7 +561,7 @@ class BasicTestCase extends ClassyTestCase
     ->
       ArgumentsComponent.calls = []
 
-      @renderedComponent = Blaze.render Template.argumentsTestTemplate, $('body').get(0)
+      @renderedComponent = Blaze.renderWithData Template.argumentsTestTemplate, {top: '42'}, $('body').get(0)
 
       Tracker.afterFlush @expect()
   ,
@@ -547,15 +569,19 @@ class BasicTestCase extends ClassyTestCase
       @assertEqual trim($('.argumentsTestTemplate').html()), trim """
         <p>Component data context: {"a":"1","b":"2"}</p>
         <p>Current data context: {"a":"1","b":"2"}</p>
+        <p>Parent data context: {"top":"42"}</p>
         <p>Arguments: []</p>
         <p>Component data context: {"a":"3a","b":"4a"}</p>
         <p>Current data context: {"a":"3a","b":"4a"}</p>
+        <p>Parent data context: {"a":"3","b":"4"}</p>
         <p>Arguments: []</p>
         <p>Component data context: {"a":"5","b":"6"}</p>
         <p>Current data context: {"a":"5","b":"6"}</p>
+        <p>Parent data context: {"top":"42"}</p>
         <p>Arguments: ["7",{"hash":{"a":"8","b":"9"}}]</p>
         <p>Component data context: {}</p>
         <p>Current data context: {}</p>
+        <p>Parent data context: {"top":"42"}</p>
         <p>Arguments: [{},{"hash":{}}]</p>
       """
 
@@ -567,15 +593,19 @@ class BasicTestCase extends ClassyTestCase
       @assertEqual trim($('.argumentsTestTemplate').html()), trim """
         <p>Component data context: {"a":"1","b":"2"}</p>
         <p>Current data context: {"a":"1","b":"2"}</p>
+        <p>Parent data context: {"top":"42"}</p>
         <p>Arguments: []</p>
         <p>Component data context: {"a":"3a","b":"4a"}</p>
         <p>Current data context: {"a":"3a","b":"4a"}</p>
+        <p>Parent data context: {"a":"3","b":"4"}</p>
         <p>Arguments: []</p>
         <p>Component data context: {"a":"5","b":"6"}</p>
         <p>Current data context: {"a":"5","b":"6"}</p>
+        <p>Parent data context: {"top":"42"}</p>
         <p>Arguments: ["7",{"hash":{"a":"8","b":"9"}}]</p>
         <p>Component data context: {"a":"10","b":"11"}</p>
         <p>Current data context: {"a":"10","b":"11"}</p>
+        <p>Parent data context: {"top":"42"}</p>
         <p>Arguments: [{},{"hash":{}}]</p>
       """
 
@@ -587,15 +617,19 @@ class BasicTestCase extends ClassyTestCase
       @assertEqual trim($('.argumentsTestTemplate').html()), trim """
         <p>Component data context: {"a":"1","b":"2"}</p>
         <p>Current data context: {"a":"1","b":"2"}</p>
+        <p>Parent data context: {"top":"42"}</p>
         <p>Arguments: []</p>
         <p>Component data context: {"a":"3a","b":"4a"}</p>
         <p>Current data context: {"a":"3a","b":"4a"}</p>
+        <p>Parent data context: {"a":"3","b":"4"}</p>
         <p>Arguments: []</p>
         <p>Component data context: {"a":"5","b":"6"}</p>
         <p>Current data context: {"a":"5","b":"6"}</p>
+        <p>Parent data context: {"top":"42"}</p>
         <p>Arguments: ["7",{"hash":{"a":"8","b":"9"}}]</p>
         <p>Component data context: {"a":"10","b":"11"}</p>
         <p>Current data context: {"a":"10","b":"11"}</p>
+        <p>Parent data context: {"top":"42"}</p>
         <p>Arguments: [{"a":"12","b":"13"},{"hash":{}}]</p>
       """
 
@@ -748,10 +782,7 @@ class BasicTestCase extends ClassyTestCase
 
   testBlockComponent: =>
     output = Blaze.toHTMLWithData Template.testBlockComponent,
-      customers: [
-        name: 'Foo'
-        email: 'foo@example.com'
-      ]
+      top: '42'
 
     @assertEqual trim(output), trim """
       <table>
@@ -762,7 +793,9 @@ class BasicTestCase extends ClassyTestCase
           </tr>
         </thead>
         <tbody>
-          {"customers":[{"name":"Foo","email":"foo@example.com"}]}
+          <p>{"top":"42"}</p>
+          <p>{"customers":[{"name":"Foo","email":"foo@example.com"}]}</p>
+          <p class="inside">{"top":"42"}</p>
           <td>Foo</td>
           <td>foo@example.com</td>
         </tbody>
@@ -775,7 +808,9 @@ class BasicTestCase extends ClassyTestCase
           </tr>
         </thead>
         <tbody>
-          {"a":"3a","b":"4a"}
+          <p>{"customers":[{"name":"Foo","email":"foo@example.com"}]}</p>
+          <p>{"a":"3a","b":"4a"}</p>
+          <p class="inside">{"top":"42"}</p>
           <td>Foo</td>
           <td>foo@example.com</td>
         </tbody>
@@ -788,7 +823,9 @@ class BasicTestCase extends ClassyTestCase
           </tr>
         </thead>
         <tbody>
-          {"customers":[{"name":"Foo","email":"foo@example.com"}]}
+          <p>{"top":"42"}</p>
+          <p>{"customers":[{"name":"Foo","email":"foo@example.com"}]}</p>
+          <p class="inside">{"top":"42"}</p>
           <td>Foo</td>
           <td>foo@example.com</td>
         </tbody>
@@ -801,7 +838,9 @@ class BasicTestCase extends ClassyTestCase
           </tr>
         </thead>
         <tbody>
-          {"customers":[{"name":"Foo","email":"foo@example.com"}]}
+          <p>{"top":"42"}</p>
+          <p>{"customers":[{"name":"Foo","email":"foo@example.com"}]}</p>
+          <p class="inside">{"top":"42"}</p>
           <td>Foo</td>
           <td>foo@example.com</td>
         </tbody>

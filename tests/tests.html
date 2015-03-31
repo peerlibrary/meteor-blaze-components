@@ -87,6 +87,7 @@
 <template name="ArgumentsComponent">
   <p>Component data context: {{dataContext}}</p>
   <p>Current data context: {{currentDataContext}}</p>
+  <p>Parent data context: {{parentDataContext}}</p>
   <p>Arguments: {{constructorArguments}}</p>
 </template>
 
@@ -110,35 +111,42 @@
       </tr>
     </thead>
     <tbody>
-      {{currentDataContext}}
+      <p>{{parentDataContext}}</p>
+      <p>{{currentDataContext}}</p>
       {{> Template.contentBlock}}
     </tbody>
   </table>
 </template>
 
 <template name="testBlockComponent">
- {{#TableWrapperBlockComponent}}
-   {{#each customers}}
-     <td>{{name}}</td>
-     <td>{{email}}</td>
-   {{/each}}
- {{/TableWrapperBlockComponent}}
- {{#TableWrapperBlockComponent a='3a' b='4a'}}
-   {{#each customers}}
-     <td>{{name}}</td>
-     <td>{{email}}</td>
-   {{/each}}
- {{/TableWrapperBlockComponent}}
- {{#TableWrapperBlockComponent args '7' a='8' b='9'}}
-   {{#each customers}}
-     <td>{{name}}</td>
-     <td>{{email}}</td>
-   {{/each}}
- {{/TableWrapperBlockComponent}}
- {{#TableWrapperBlockComponent args reactiveArguments}}
-   {{#each customers}}
-     <td>{{name}}</td>
-     <td>{{email}}</td>
-   {{/each}}
- {{/TableWrapperBlockComponent}}
+  {{#with customersDataContext}}
+    {{#TableWrapperBlockComponent}}
+      <p class="inside">{{parentDataContext}}</p>
+      {{#each customers}}
+        <td>{{name}}</td>
+        <td>{{email}}</td>
+      {{/each}}
+    {{/TableWrapperBlockComponent}}
+    {{#TableWrapperBlockComponent a='3a' b='4a'}}
+      <p class="inside">{{parentDataContext}}</p>
+      {{#each customers}}
+        <td>{{name}}</td>
+        <td>{{email}}</td>
+      {{/each}}
+    {{/TableWrapperBlockComponent}}
+    {{#TableWrapperBlockComponent args '7' a='8' b='9'}}
+      <p class="inside">{{parentDataContext}}</p>
+      {{#each customers}}
+        <td>{{name}}</td>
+        <td>{{email}}</td>
+      {{/each}}
+    {{/TableWrapperBlockComponent}}
+    {{#TableWrapperBlockComponent args reactiveArguments}}
+      <p class="inside">{{parentDataContext}}</p>
+      {{#each customers}}
+        <td>{{name}}</td>
+        <td>{{email}}</td>
+      {{/each}}
+    {{/TableWrapperBlockComponent}}
+  {{/with}}
 </template>
