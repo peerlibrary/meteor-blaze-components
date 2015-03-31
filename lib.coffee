@@ -429,7 +429,11 @@ class BlazeComponent extends BaseComponent
   currentData: ->
     Blaze.getData() or null
 
-  # Caller-level component. Reactive. In most cases the same as @, but in event handlers
+  # Useful in templates to get a reference to the component.
+  component: ->
+    @
+
+  # Caller-level component. In most cases the same as @, but in event handlers
   # it returns the component at the place where event originated (target component).
   currentComponent: ->
     Template.instance()?.get('component') or null

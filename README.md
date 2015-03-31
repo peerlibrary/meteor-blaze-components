@@ -264,13 +264,20 @@ will return `{color: "red"}`, but inside a `color2` it will return `{color: "blu
 buttons will by calling `currentData` get `{color: "red"}` as the data context for red button, and `{color: "blue"}` for
 blue button. In all cases `data` will return `{color: "red"}`.
 
+<a name="reference_instance_component"></a>
+```coffee
+component: ->
+```
+
+Returns the component. Useful in templates to get a reference to the component.
+
 <a name="reference_instance_currentComponent"></a>
 ```coffee
 currentComponent: ->
 ```
 
 Similar to [`currentData`](user-content-reference_instance_currentData), `currentComponent` returns current
-caller-level component. A reactive data source.
+caller-level component.
 
 In most cases the same as `this`/`@`, but in event handlers it returns the component at the place where
 event originated (target component).
