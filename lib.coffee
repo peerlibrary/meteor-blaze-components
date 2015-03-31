@@ -150,7 +150,7 @@ class BlazeComponent extends BaseComponent
   addMixin: (nameOrMixin) ->
     # Do not do anything if mixin is already added. This allows multiple mixins to call addMixin in
     # mixinParent method to add dependencies, but if dependencies are already there, nothing happens.
-    return if @getMixin nameOrMixin
+    return @ if @getMixin nameOrMixin
 
     if _.isString nameOrMixin
       # It could be that the component is not a real instance of the BlazeComponent class,
