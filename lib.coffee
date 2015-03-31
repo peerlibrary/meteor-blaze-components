@@ -33,6 +33,8 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
         Blaze._warn "Assigning helper with `" + template.viewName + "." + name + " = ...` is deprecated.  Use `" + template.viewName + ".helpers(...)` instead."
     return template[name]
 
+  return null unless templateInstance
+
   # TODO: Blaze.View::lookup should not introduce any reactive dependencies. Can we simply ignore reactivity here? Can this template instance or parent template instances change without reconstructing the component as well? I don't think so. Only data context is changing and this is why templateInstance or .get() are reactive and we do not care about data context here.
   component = Tracker.nonreactive ->
     templateInstance = templateInstance()
@@ -150,7 +152,7 @@ class BlazeComponent extends BaseComponent
   addMixin: (nameOrMixin) ->
     # Do not do anything if mixin is already added. This allows multiple mixins to call addMixin in
     # mixinParent method to add dependencies, but if dependencies are already there, nothing happens.
-    return if @getMixin nameOrMixin
+    return @ if @getMixin nameOrMixin
 
     if _.isString nameOrMixin
       # It could be that the component is not a real instance of the BlazeComponent class,

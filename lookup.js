@@ -49,6 +49,11 @@ Blaze._getTemplateHelper = function (template, name) {
 };
 
 var wrapHelper = function (f, templateFunc) {
+  // XXX COMPAT WITH 1.3.2
+  if (! Blaze.Template._withTemplateInstanceFunc) {
+    return Blaze._wrapCatchingExceptions(f, 'template helper');
+  }
+
   if (typeof f !== "function") {
     return f;
   }

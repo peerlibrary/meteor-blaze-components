@@ -98,13 +98,19 @@ handlers for those events. The property can be in one of several forms:
 certain CSS selector.
 * `event1, event2` – To handle more than one type of event with the same function, use a comma-separated list.
 
-The handler function receives one argument, an [jQuery event object](https://api.jquery.com/category/events/event-object/),
+The handler function receives one argument, a [jQuery event object](https://api.jquery.com/category/events/event-object/),
 and optional extra arguments for custom events. The common pattern is to simply pass methods as event handlers to allow
 subclasses to extend the event handlers logic through inheritance.
 
 Example:
 
 ```coffee
+events: ->
+  super.concat
+    'click': @onClick
+    'click .accept': @onAccept
+    'click .accept, focus .accept, keypress': @onMultiple
+    
 # Fires when any element is clicked.
 onClick: (event) ->
 
@@ -113,12 +119,6 @@ onAccept: (event) ->
 
 # Fires when 'accept' is clicked or focused, or a key is pressed.
 onMultiple: (event) ->
-
-events: ->
-  super.concat
-    'click': @onClick
-    'click .accept': @onAccept
-    'click .accept, focus .accept, keypress': @onMultiple
 ```
 
 Blaze Components make sure that event handlers are called bound with the component itself in `this`/`@`.
@@ -477,7 +477,7 @@ mixins: ->
 ```
 
 Extend this method and return mixins for the component. Mixins can be components themselves, or just classes or
-objects resembling them. None method is required for them, but methods will be called on them by Blaze
+objects resembling them. No method is required for them, but methods will be called on them by Blaze
 Components if they do exist.
 
 The `mixins` method should return an array of registered component names, mixin classes, or mixin instances.
