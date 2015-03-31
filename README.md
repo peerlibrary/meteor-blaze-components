@@ -33,6 +33,73 @@ Life-cycle hooks
 Component-based block helpers
 -----------------------------
 
+You can use Blaze Components to define block helpers as well.
+
+Example:
+
+```handlebars
+<template name="TableWrapperBlockComponent">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{> Template.contentBlock}}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="2">
+          {{> Template.elseBlock}}
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+</template>
+```
+
+```handlebars
+{{#TableWrapperBlockComponent}}
+  {{#each customers}}
+    <td>{{name}}</td>
+    <td>{{email}}</td>
+  {{/each}}
+{{else}}
+  <p class="copyright">Content available under the CC0 license.</p>
+{{/TableWrapperBlockComponent}}
+```
+
+You can use [`Template.contentBlock` and `Template.elseBlock`](https://github.com/meteor/meteor/blob/devel/packages/spacebars/README.md#custom-block-helpers)
+to define "content" and "else" inclusion points.
+
+You can modify just block helpers data context by passing it in the tag:
+
+```handlebars
+<template name="TableWrapperBlockComponent">
+  <table class="{{color}}">
+...
+```
+
+```handlebars
+{{#TableWrapperBlockComponent color='red'}}
+...
+```
+
+Notice that block helper's data context is available only inside a block helper's template, but data context where
+it is used (one with `customers`) stays the same.
+
+You can also [pass arguments](#passing-arguments) to a component:
+
+```handlebars
+{{#TableWrapperBlockComponent args displayCopyright=false}}
+...
+```
+
+For when to use a data context and when arguments the same rule of thumb from the [Passing arguments](#passing-arguments)
+section applies.
+
 Animations
 ----------
 

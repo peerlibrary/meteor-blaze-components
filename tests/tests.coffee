@@ -803,8 +803,8 @@ class BasicTestCase extends ClassyTestCase
       <table>
         <thead>
           <tr>
-            <td>Name</td>
-            <td>Email</td>
+            <th>Name</th>
+            <th>Email</th>
           </tr>
         </thead>
         <tbody>
@@ -818,8 +818,8 @@ class BasicTestCase extends ClassyTestCase
        <table>
         <thead>
           <tr>
-            <td>Name</td>
-            <td>Email</td>
+            <th>Name</th>
+            <th>Email</th>
           </tr>
         </thead>
         <tbody>
@@ -833,8 +833,8 @@ class BasicTestCase extends ClassyTestCase
        <table>
         <thead>
           <tr>
-            <td>Name</td>
-            <td>Email</td>
+            <th>Name</th>
+            <th>Email</th>
           </tr>
         </thead>
         <tbody>
@@ -848,8 +848,8 @@ class BasicTestCase extends ClassyTestCase
        <table>
         <thead>
           <tr>
-            <td>Name</td>
-            <td>Email</td>
+            <th>Name</th>
+            <th>Email</th>
           </tr>
         </thead>
         <tbody>
