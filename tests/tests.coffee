@@ -123,7 +123,7 @@ class ArgumentsComponent extends BlazeComponent
     'ArgumentsComponent'
 
   constructor: ->
-    @constructor.calls.push 'ArgumentsComponent constructor'
+    @constructor.calls.push arguments[0]
     @arguments = arguments
 
   dataContext: ->
@@ -589,8 +589,18 @@ class BasicTestCase extends ClassyTestCase
 
       Blaze.remove @renderedComponent
 
-      # TODO: This should be 5, not 6, because we have 3 components with static arguments, and we change arguments twice. But because we are passing arguments through a data context, component is created once more.
-      @assertEqual ArgumentsComponent.calls.length, 6
+      # It is important that this is 5, not 6, because we have 3 components with static arguments, and we change
+      # arguments twice. Component should not be created once more just because we changed its data context.
+      # Only when we change its arguments.
+      @assertEqual ArgumentsComponent.calls.length, 5
+
+      @assertEqual ArgumentsComponent.calls, [
+        undefined
+        undefined
+        '7'
+        {}
+        {a: '12', b: '13'}
+      ]
   ]
 
   testExistingClassHierarchy: =>

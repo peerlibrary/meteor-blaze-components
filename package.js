@@ -14,7 +14,9 @@ Package.onUse(function (api) {
     'templating',
     'coffeescript',
     'underscore',
-    'tracker'
+    'tracker',
+    'reactive-var',
+    'ejson'
   ]);
 
   // Internal dependencies.
