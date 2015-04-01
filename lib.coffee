@@ -69,7 +69,11 @@ viewToTemplateInstance = (view) ->
   _.bind view.templateInstance, view
 
 addEvents = (view, component) ->
-  for events in component.events()
+  eventsList = component.events()
+
+  throw new Error "'events' method from the component '#{ component.componentName() }' did not return a list of event maps." unless _.isArray eventsList
+
+  for events in eventsList
     eventMap = {}
 
     for spec, handler of events
