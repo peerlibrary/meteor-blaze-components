@@ -56,7 +56,8 @@ Package.onTest(function (api) {
 
   // 3rd party dependencies.
   api.use([
-    'peerlibrary:classy-test@0.2.9'
+    'peerlibrary:classy-test@0.2.9',
+    'aldeed:template-extension@3.4.3'
   ]);
 
   api.addFiles([

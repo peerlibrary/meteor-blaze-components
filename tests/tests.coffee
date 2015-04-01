@@ -863,6 +863,3 @@ class BasicTestCase extends ClassyTestCase
     """
 
 ClassyTestCase.addTest new BasicTestCase()
-
-Template.TableWrapperBlockComponent.onCreated ->
-  console.log "tableWrapperBlockComponent", @

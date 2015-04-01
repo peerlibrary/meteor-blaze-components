@@ -49,7 +49,7 @@ Blaze._getTemplateHelper = function (template, name) {
 };
 
 var wrapHelper = function (f, templateFunc) {
-  // XXX COMPAT WITH 1.3.2
+  // XXX COMPAT WITH METEOR 1.0.3.2
   if (! Blaze.Template._withTemplateInstanceFunc) {
     return Blaze._wrapCatchingExceptions(f, 'template helper');
   }

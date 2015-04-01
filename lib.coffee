@@ -80,9 +80,16 @@ addEvents = (view, component) ->
           currentView = Blaze.getView event.currentTarget
           templateInstance = viewToTemplateInstance currentView
 
+          if Template._withTemplateInstanceFunc
+            withTemplateInstanceFunc = Template._withTemplateInstanceFunc
+          else
+            # XXX COMPAT WITH METEOR 1.0.3.2.
+            withTemplateInstanceFunc = (templateInstance, f) ->
+              f()
+
           # We set template instance based on the current target so that inside event handlers
           # BlazeComponent.currentComponent() returns the component of event target.
-          Template._withTemplateInstanceFunc templateInstance, ->
+          withTemplateInstanceFunc templateInstance, ->
             # We set view based on the current target so that inside event handlers
             # BlazeComponent.currentData() (and Blaze.getData() and Template.currentData())
             # returns data context of event target and not component/template.
@@ -130,6 +137,27 @@ Blaze._DOMRange::attach = (parentElement, nextNode, _isMove, _isReplace) ->
       parentElement._uihooks = oldUIHooks if oldUIHooks
 
   originalDOMRangeAttach.apply @, arguments
+
+registerHooks = (template, hooks) ->
+  if template.onCreated
+    template.onCreated hooks.onCreated
+    template.onRendered hooks.onRendered
+    template.onDestroyed hooks.onDestroyed
+  else
+    # XXX COMPAT WITH METEOR 1.0.3.2.
+    template.created = hooks.onCreated
+    template.rendered = hooks.onRendered
+    template.destroyed = hooks.onDestroyed
+
+registerFirstCreatedHook = (template, onCreated) ->
+  if template._callbacks
+    template._callbacks.created.unshift onCreated
+  else
+    # XXX COMPAT WITH METEOR 1.0.3.2.
+    oldCreated = template.created
+    template.created = ->
+      onCreated.call @
+      oldCreated?.call @
 
 class BlazeComponent extends BaseComponent
   mixins: ->
@@ -324,7 +352,7 @@ class BlazeComponent extends BaseComponent
         template = component.renderComponent()
 
         # It has to be the first callback so that other have a correct data context.
-        template._callbacks.created.unshift ->
+        registerFirstCreatedHook template, ->
           # Arguments were passed in as a data context. Restore original (parent) data
           # context. Same logic as in Blaze._InOuterTemplateScope.
           @view.originalParentView = @view.parentView
@@ -358,34 +386,35 @@ class BlazeComponent extends BaseComponent
 
       # We on purpose do not reuse helpers, events, and hooks. Templates are used only for HTML rendering.
 
-      template.onCreated ->
-        # @ is a template instance.
+      registerHooks template,
+        onCreated: ->
+          # @ is a template instance.
 
-        @view._onViewRendered =>
-          # Attach events the first time template instance renders.
-          return unless @view.renderCount is 1
+          @view._onViewRendered =>
+            # Attach events the first time template instance renders.
+            return unless @view.renderCount is 1
 
-          assert @component._mixins
+            assert @component._mixins
 
-          # We manually go over _mixins instead of using getMixin because we also need
-          # the mixin itself so that we can bind events correctly.
-          for mixin in @component._mixins when 'events' of mixin
-            addEvents @view, mixin
+            # We manually go over _mixins instead of using getMixin because we also need
+            # the mixin itself so that we can bind events correctly.
+            for mixin in @component._mixins when 'events' of mixin
+              addEvents @view, mixin
 
-          # We first add event handlers from mixins, then the component.
-          addEvents @view, @component
+            # We first add event handlers from mixins, then the component.
+            addEvents @view, @component
 
-        @component = component
-        @component.templateInstance = @
-        @component.onCreated()
+          @component = component
+          @component.templateInstance = @
+          @component.onCreated()
 
-      template.onRendered ->
-        # @ is a template instance.
-        @component.onRendered()
+        onRendered: ->
+          # @ is a template instance.
+          @component.onRendered()
 
-      template.onDestroyed ->
-        # @ is a template instance.
-        @component.onDestroyed()
+        onDestroyed: ->
+          # @ is a template instance.
+          @component.onDestroyed()
 
       template
 
