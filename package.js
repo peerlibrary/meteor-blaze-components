@@ -21,7 +21,7 @@ Package.onUse(function (api) {
 
   // Internal dependencies.
   api.use([
-    'peerlibrary:base-component'
+    'peerlibrary:base-component@0.3.0'
   ]);
 
   // 3rd party dependencies.
@@ -46,7 +46,8 @@ Package.onTest(function (api) {
     'templating',
     'jquery',
     'reactive-var',
-    'underscore'
+    'underscore',
+    'tracker'
   ]);
 
   // Internal dependencies.

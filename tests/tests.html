@@ -150,3 +150,15 @@
     {{/TableWrapperBlockComponent}}
   {{/with}}
 </template>
+
+<template name="ChildComponent">
+</template>
+
+<template name="ParentComponent">
+  {{#if child1}}
+    {{> ChildComponent args 'child1'}}
+  {{/if}}
+  {{#if child2}}
+    {{> ChildComponent args 'child2'}}
+  {{/if}}
+</template>

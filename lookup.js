@@ -18,7 +18,7 @@ var bindDataContext = function (x) {
   return x;
 };
 
-Blaze._getTemplateHelper = function (template, name) {
+Blaze._getTemplateHelper = function (template, name, templateInstance) {
   // XXX COMPAT WITH 0.9.3
   var isKnownOldStyleHelper = false;
 
@@ -68,7 +68,7 @@ var wrapHelper = function (f, templateFunc) {
   };
 };
 
-Blaze._getTemplate = function (name) {
+Blaze._getTemplate = function (name, templateInstance) {
   if (name in Blaze.Template) {
     return Blaze.Template[name];
   }
@@ -97,7 +97,7 @@ Blaze.View.prototype.lookup = function (name, _options) {
   } else if (template &&
              ((helper = Blaze._getTemplateHelper(template, name, boundTmplInstance)) != null)) {
     return wrapHelper(bindDataContext(helper), boundTmplInstance);
-  } else if (lookupTemplate && (foundTemplate = Blaze._getTemplate(name)) &&
+  } else if (lookupTemplate && (foundTemplate = Blaze._getTemplate(name, boundTmplInstance)) &&
              (foundTemplate instanceof Blaze.Template || typeof foundTemplate === 'function')) {
     return foundTemplate;
   } else if (Blaze._globalHelpers[name] != null) {

@@ -354,7 +354,29 @@ event originated (target component).
 componentName: ->
 ```
 
-This is a complementary instance method which calls `@componentName` class method.
+This is a complementary instance method which calls [`@componentName`](#user-content-reference_class_componentName)
+class method.
+
+<a name="reference_instance_componentParent"></a>
+```coffee
+componentParent: ->
+```
+
+Returns the component's parent component, if it exists, or `null`. A reactive data source.
+
+The parent component is available only after the component has been [created](#user-content-reference_instance_onCreated),
+and until is [destroyed](#user-content-reference_instance_onDestroyed).
+
+<a name="reference_instance_componentChildren"></a>
+```coffee
+componentChildren: ->
+```
+
+Returns an array of component's children components. A reactive data source. The order of children components in the
+array is arbitrary.
+
+The children components are in the array only after they have been [created](#user-content-reference_instance_onCreated),
+and until they are [destroyed](#user-content-reference_instance_onDestroyed).
 
 #### Life-cycle hooks ####
 
@@ -364,7 +386,7 @@ constructor: (args...) ->
 ```
 
 When a component is created, its constructor is first called. There are no restrictions on component's constructor
-and Blaze Components are designed to coexist with classes which require their own arguments when initialized. To
+and Blaze Components are designed to coexist with classes which require their own arguments when instantiated. To
 facilitate this, Blaze Components operate equally well with classes (which are automatically instantiated as needed)
 or already made instances. The real life-cycle of a Blaze Component starts after its instantiation.
 

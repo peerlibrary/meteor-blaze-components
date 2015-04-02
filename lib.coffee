@@ -109,10 +109,11 @@ addEvents = (view, component) ->
   return
 
 originalGetTemplate = Blaze._getTemplate
-Blaze._getTemplate = (name) ->
+Blaze._getTemplate = (name, templateInstance) ->
   # Blaze.View::lookup should not introduce any reactive dependencies, so we are making sure it is so.
   template = Tracker.nonreactive ->
-    BlazeComponent.getComponent(name)?.renderComponent()
+    componentParent = templateInstance?().get 'component'
+    BlazeComponent.getComponent(name)?.renderComponent componentParent
   return template if template
 
   originalGetTemplate name
@@ -304,7 +305,7 @@ class BlazeComponent extends BaseComponent
   # complicated code around to extract and pass those arguments. It is similar to how data context is
   # passed to block helpers. In a data context visible only to the block helper template.
   # TODO: This could be made less hacky. See https://github.com/meteor/meteor/issues/3913
-  @renderComponent: ->
+  @renderComponent: (componentParent) ->
     Tracker.nonreactive =>
       componentClass = @
 
@@ -323,7 +324,7 @@ class BlazeComponent extends BaseComponent
 
       if data?.constructor isnt argumentsConstructor
         component = new componentClass()
-        return component.renderComponent()
+        return component.renderComponent componentParent
 
       # Arguments were provided through "args" template helper.
 
@@ -353,7 +354,7 @@ class BlazeComponent extends BaseComponent
         # Use arguments for the constructor. Here we register a reactive dependency on our own ReactiveVar.
         component = new componentClass reactiveArguments.get()...
 
-        template = component.renderComponent()
+        template = component.renderComponent componentParent
 
         # It has to be the first callback so that other have a correct data context.
         registerFirstCreatedHook template, ->
@@ -364,7 +365,7 @@ class BlazeComponent extends BaseComponent
 
         return template
 
-  renderComponent: ->
+  renderComponent: (componentParent) ->
     # To make sure we do not introduce any reactive dependency. This is a conscious design decision.
     # Reactivity should be changing data context, but components should be more stable, only changing
     # when structure change in rendered DOM. You can change the component you are including (or pass
@@ -394,6 +395,11 @@ class BlazeComponent extends BaseComponent
         onCreated: ->
           # @ is a template instance.
 
+          if componentParent
+            # We set the parent only when the component is created, not just constructed.
+            component.componentParent componentParent
+            componentParent.addComponentChild component
+
           @view._onViewRendered =>
             # Attach events the first time template instance renders.
             return unless @view.renderCount is 1
@@ -419,6 +425,11 @@ class BlazeComponent extends BaseComponent
         onDestroyed: ->
           # @ is a template instance.
           @component.onDestroyed()
+
+          if componentParent
+            # The component has been destroyed, clear up the parent.
+            component.componentParent null
+            componentParent.removeComponentChild component
 
       template
 

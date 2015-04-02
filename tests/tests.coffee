@@ -304,6 +304,27 @@ Template.testBlockComponent.helpers
       email: 'foo@example.com'
     ]
 
+reactiveChild1 = new ReactiveVar false
+reactiveChild2 = new ReactiveVar false
+
+class ChildComponent extends BlazeComponent
+  template: ->
+    'ChildComponent'
+
+BlazeComponent.register 'ChildComponent', ChildComponent
+
+class ParentComponent extends BlazeComponent
+  template: ->
+    'ParentComponent'
+
+  child1: ->
+    reactiveChild1.get()
+
+  child2: ->
+    reactiveChild2.get()
+
+BlazeComponent.register 'ParentComponent', ParentComponent
+
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
 
@@ -571,6 +592,9 @@ class BasicTestCase extends ClassyTestCase
   testArguments: [
     ->
       ArgumentsComponent.calls = []
+
+      reactiveContext.set {}
+      reactiveArguments.set {}
 
       @renderedComponent = Blaze.renderWithData Template.argumentsTestTemplate, {top: '42'}, $('body').get(0)
 
@@ -861,5 +885,75 @@ class BasicTestCase extends ClassyTestCase
         </tbody>
       </table>
     """
+
+  testComponentParent: [
+    ->
+      reactiveChild1.set false
+      reactiveChild2.set false
+
+      @component = new ParentComponent()
+
+      @componentChildren = []
+
+      @handle = Tracker.autorun (computation) =>
+        @componentChildren.push @component.componentChildren()
+
+      @renderedComponent = Blaze.render @component.renderComponent(), $('body').get(0)
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual @component.componentChildren(), []
+
+      reactiveChild1.set true
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual @component.componentChildren().length, 1
+
+      @child1Component = @component.componentChildren()[0]
+
+      @assertEqual @child1Component.componentParent(), @component
+
+      reactiveChild2.set true
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual @component.componentChildren().length, 2
+
+      @child2Component = @component.componentChildren()[1]
+
+      @assertEqual @child2Component.componentParent(), @component
+
+      reactiveChild1.set false
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual @component.componentChildren(), [@child2Component]
+      @assertEqual @child1Component.componentParent(), null
+
+      reactiveChild2.set false
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual @component.componentChildren(), []
+      @assertEqual @child2Component.componentParent(), null
+
+      Blaze.remove @renderedComponent
+
+      @handle.stop()
+
+      @assertEqual @componentChildren, [
+        []
+        [@child1Component]
+        [@child1Component, @child2Component]
+        [@child2Component]
+        []
+      ]
+  ]
 
 ClassyTestCase.addTest new BasicTestCase()
