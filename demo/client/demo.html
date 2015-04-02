@@ -85,6 +85,8 @@ Template.autoSelectInput.events
     <pre class="html"><code class="language-handlebars">{{|&gt; AutoSelectInputComponent id='demo2'}}</code></pre>
 
     <pre class="coffee"><code class="language-coffeescript">class AutoSelectInputComponent extends BlazeComponent
+  @register 'AutoSelectInputComponent'
+
   template: -&gt;
     'autoSelectInput'
 
@@ -100,19 +102,30 @@ Template.autoSelectInput.events
     Values.upsert @data().id, $set: value: event.target.value
 
   onClick: (event) -&gt;
-    $(event.target).select()
-
-BlazeComponent.register 'AutoSelectInputComponent', AutoSelectInputComponent</code></pre>
+    $(event.target).select()</code></pre>
   </div>
 </div>
 <p>Let's look at the code part by part.</p>
 
 <pre class="coffee"><code class="language-coffeescript">class AutoSelectInputComponent extends BlazeComponent
-  template: -&gt;
+  @register 'AutoSelectInputComponent'</code></pre>
+
+<p>We have created an <code class="language-coffeescript">AutoSelectInputComponent</code> and registered it
+  so we can include it just as any other template in our templates.</p>
+
+<aside>
+  <p>
+    The convention is to use for component's class name, its template, and its registration name the same
+    TitleCase name. We are breaking the convention here to reuse an existing template, instead of
+    <code class="language-coffeescript">AutoSelectInputComponent</code>.
+  </p>
+</aside>
+
+<pre class="coffee"><code class="language-coffeescript">  template: -&gt;
     'autoSelectInput'</code></pre>
 
-<p>We have created an <code class="language-coffeescript">AutoSelectInputComponent</code> that simply re-uses the markup
-  of the <code class="language-coffeescript">autoSelectInput</code> template we provided earlier.</p>
+<p>The <code class="language-coffeescript">autoSelectInput</code> template we provided earlier will serve
+as the markup to be re-used by the component.</p>
 <p>However, all the helpers and events will be provided through the component class.</p>
 
 <p>
@@ -158,10 +171,6 @@ BlazeComponent.register 'AutoSelectInputComponent', AutoSelectInputComponent</co
   onClick: (event) -&gt;
     $(event.target).select()</code></pre>
 
-<p>At the end we register the component so we can include it just as any other template in our HTML.</p>
-
-<pre class="coffee"><code class="language-coffeescript">BlazeComponent.register 'AutoSelectInputComponent', AutoSelectInputComponent</code></pre>
-
 <h2>The Beauty</h2>
 
 <p>Components allow us to create new components that share code simply through inheritance.</p>
@@ -181,15 +190,15 @@ BlazeComponent.register 'AutoSelectInputComponent', AutoSelectInputComponent</co
 &lt;/template&gt;</code></pre>
 
     <pre class="coffee"><code class="language-coffeescript">class AutoSelectTextareaComponent extends AutoSelectInputComponent
+  @register 'AutoSelectTextareaComponent'
+
   template: -&gt;
     'autoSelectTextarea'
 
   events: -&gt;
     super.concat
       'change textarea': @onChange
-      'click textarea': @onClick
-
-BlazeComponent.register 'AutoSelectTextareaComponent', AutoSelectTextareaComponent</code></pre>
+      'click textarea': @onClick</code></pre>
   </div>
 </div>
 
@@ -219,14 +228,14 @@ textarea as well.</p>
     <pre class="html"><code class="language-handlebars">{{|&gt; RealTimeInputComponent id='demo4'}}</code></pre>
 
     <pre class="coffee"><code class="language-coffeescript">class RealTimeInputComponent extends AutoSelectInputComponent
+  @register 'RealTimeInputComponent'
+
   events: -&gt;
     super.concat
       'keyup input': @onKeyup
 
   onKeyup: (event) -&gt;
-    $(event.target).change()
-
-BlazeComponent.register 'RealTimeInputComponent', RealTimeInputComponent</code></pre>
+    $(event.target).change()</code></pre>
   </div>
 </div>
 <p>You might have experienced so far, that the input randomly updated while you were typing. This is because the value

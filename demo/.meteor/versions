@@ -33,7 +33,7 @@ mongo@1.1.0
 observe-sequence@1.0.5
 ordered-dict@1.0.3
 peerlibrary:assert@0.2.5
-peerlibrary:base-component@0.1.0
+peerlibrary:base-component@0.3.0
 peerlibrary:blaze-components@0.1.0
 peerlibrary:dimsum@0.1.8_6
 random@1.0.3
