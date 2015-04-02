@@ -14,7 +14,7 @@ Template.autoSelectInput.helpers
 Template.autoSelectInput.events
   # Save value to the collection when it changes.
   'change input': (event, template) ->
-    Values.upsert @id, value: event.target.value
+    Values.upsert @id, $set: value: event.target.value
 
   # Auto-select text when user clicks in the input.
   'click input': (event, template) ->
@@ -37,7 +37,7 @@ class AutoSelectInputComponent extends BlazeComponent
       'click input': @onClick
 
   onChange: (event) ->
-    Values.upsert @data().id, value: event.target.value
+    Values.upsert @data().id, $set: value: event.target.value
 
   onClick: (event) ->
     $(event.target).select()
@@ -115,7 +115,7 @@ class SmartInputComponent extends BlazeComponent
       'change input': @onChange
 
   onChange: (event) ->
-    Values.upsert @data().id, value: event.target.value
+    Values.upsert @data().id, $set: value: event.target.value
 
 class AutoSelectInputMixin extends BlazeComponent
   events: ->
