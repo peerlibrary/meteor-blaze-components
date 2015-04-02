@@ -39,7 +39,7 @@ database and is written to it when the user changes it.</p>
 Template.autoSelectInput.events
   # Save value to the collection when it changes.
   'change input': (event, template) -&gt;
-    Values.upsert @id, $set: $set: value: event.target.value
+    Values.upsert @id, $set: value: event.target.value
 
   # Auto-select text when user clicks in the input.
   'click input': (event, template) -&gt;
