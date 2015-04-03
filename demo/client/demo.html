@@ -20,23 +20,23 @@ database and is written to it when the user changes it.</p>
 
 <div class="demo">
   <div class="live">
-    {{> autoSelectInput id='demo1'}}
+    {{> input id='demo1'}}
     {{> autoSelectDemo id='demo1'}}
   </div>
 
   <div class="code">
-    <pre class="html"><code class="language-handlebars">{{|&gt; autoSelectInput id='demo1'}}
+    <pre class="html"><code class="language-handlebars">{{|&gt; input id='demo1'}}
 
-&lt;template name=&quot;autoSelectInput&quot;&gt;
+&lt;template name=&quot;input&quot;&gt;
   &lt;input value="{{|value}}"/&gt;
 &lt;/template&gt;</code></pre>
 
-    <pre class="coffee"><code class="language-coffeescript">Template.autoSelectInput.helpers
+    <pre class="coffee"><code class="language-coffeescript">Template.input.helpers
   value: -&gt;
     # Read value from the collection.
     Values.findOne(@id)?.value
 
-Template.autoSelectInput.events
+Template.input.events
   # Save value to the collection when it changes.
   'change input': (event, template) -&gt;
     Values.upsert @id, $set: value: event.target.value
@@ -88,7 +88,7 @@ Template.autoSelectInput.events
   @register 'AutoSelectInputComponent'
 
   template: -&gt;
-    'autoSelectInput'
+    'input'
 
   value: -&gt;
     Values.findOne(@data().id)?.value
@@ -114,17 +114,15 @@ Template.autoSelectInput.events
   so we can include it just as any other template in our templates.</p>
 
 <aside>
-  <p>
-    The convention is to use the same TitleCase name for component's class name, its template, and its
-    registration name. We are breaking the convention here to reuse an existing template, instead of
-    <code class="language-coffeescript">AutoSelectInputComponent</code>.
-  </p>
+  <p>The convention would be to use <code class="language-coffeescript">AutoSelectInputComponent</code> for the
+    template name, to match the component's class name (and its registration name).</p>
+  <p>We are breaking the convention in this specific case to reuse an existing template.</p>
 </aside>
 
 <pre class="coffee"><code class="language-coffeescript">  template: -&gt;
-    'autoSelectInput'</code></pre>
+    'input'</code></pre>
 
-<p>The <code class="language-coffeescript">autoSelectInput</code> template we provided earlier will serve
+<p>The <code class="language-coffeescript">input</code> template we provided earlier will serve
 as the markup to be re-used by the component.</p>
 <p>However, all the helpers and events will be provided through the component class.</p>
 
@@ -244,26 +242,73 @@ in the input boxes come from a single database. If any other user has changed th
   <p>Try opening another browser side by side and observe as the values change in both windows. In the example below,
 we are simulating a change every 3 seconds for convenience.</p>
 <p>In such collaborative environments, we need to make sure that the value in the input box doesn't change while you're
-editing it. To enable this, we'll remember the current value when we the input box gets focus and return that value to
-  the rendering engine while we're editing. This will trick it to think that nothing has changed and will not cause
-  re-rendering.</p>
+editing it. To enable this, we'll store the current value when the input box gets focus and keep returning it to
+  the rendering engine while we're editing, even if the reactive change would demand otherwise. This will trick the
+  rendering engine to think that nothing has changed and will not cause re-rendering.</p>
 
 <div class="demo">
   <div class="live">
-    {{> FrozenInputComponent id='demo5'}}
+    {{> PersistentInputComponent id='demo5'}}
     {{> autoSelectDemo id='demo5'}}
   </div>
 
   <div class="code">
-    <pre class="html"><code class="language-handlebars">{{|&gt; FrozenInputComponent id='demo5'}}</code></pre>
+    <pre class="html"><code class="language-handlebars">{{|&gt; PersistentInputComponent id='demo5'}}</code></pre>
 
-    <pre class="coffee"><code class="language-coffeescript"># TODO</code></pre>
+    <pre class="coffee"><code class="language-coffeescript">class PersistentInputComponent extends AutoSelectInputComponent
+  @register 'PersistentInputComponent'
+
+  onCreated: -&gt;
+    super
+    # This will store the value at the start of editing.
+    @storedValue = new ReactiveVar()
+
+  value: -&gt;
+    # Return stored value during editing or normal otherwise.
+    @storedValue.get() or super
+
+  events: -&gt;
+    super.concat
+      'focus input': @onFocus
+      'blur input': @onBlur
+
+  onFocus: (event) -&gt;
+    # Store the current value when starting to edit.
+    @storedValue.set @value()
+
+  onBlur: (event) -&gt;
+    # We are no longer editing, so return to normal.
+    @storedValue.set null</code></pre>
   </div>
 </div>
 
 <h2>The Cooperation</h2>
 
-<p>TODO: Mixins demo text.</p>
+<p>What if we want to now have an input-box that is both real-time and persistent during editing?</p>
+
+<figure>
+  <img src="images/Diamond-01.svg">
+</figure>
+
+<p>This cannot be expressed in a single-inheritance language such as JavaScript and CoffeeScript that use the
+  prototype chain for inheritance.</p>
+
+<p>Since a lot of class-based languages also do not support multiple inheritance (and those that do run into
+  <a href="http://en.wikipedia.org/wiki/Multiple_inheritance">the diamond problem</a>) a principle of
+  <a href="http://en.wikipedia.org/wiki/Composition_over_inheritance">composition over inheritance</a> has been
+    developed. You might have already encountered one implementation of this called mixins.</p>
+
+<p>Mixins provide small chunks of self-contained functionality. In our case we can have a mixin that just handles
+auto-selection, another one for real-time input, third for frozen state. Our
+  <code class="language-coffeescript">SmartInputComponent</code> would then include all three mixins.</p>
+
+<figure>
+  <img src="images/Diamond-02.svg">
+</figure>
+
+<p>This provides for good separation of concerns. The <code class="language-coffeescript">SmartInputComponent</code>
+  will implement the specific logic of reading and writing the value to the database, while delegating to mixins to
+  handle their own minimal implementation of the single things they're supposed to do.</p>
 
 <div class="demo">
   <div class="live">
@@ -274,9 +319,102 @@ editing it. To enable this, we'll remember the current value when we the input b
   <div class="code">
     <pre class="html"><code class="language-handlebars">{{|&gt; SmartInputComponent id='demo6'}}</code></pre>
 
-    <pre class="coffee"><code class="language-coffeescript"># TODO</code></pre>
+    <pre class="coffee"><code class="language-coffeescript">class SmartInputComponent extends BlazeComponent
+  @register 'SmartInputComponent'
+
+  template: -&gt;
+    'input'
+
+  mixins: -&gt;
+    [AutoSelectInputMixin, RealTimeInputMixin, PersistentInputMixin]
+
+  value: -&gt;
+    @callMixinWith(@, 'value') or Values.findOne(@data().id)?.value
+
+  events: -&gt;
+    super.concat
+      'change input': @onChange
+
+  onChange: (event) -&gt;
+    Values.upsert @data().id, $set: value: event.target.value</code></pre>
   </div>
 </div>
+
+<p>The code for the <code class="language-coffeescript">SmartInputComponent</code> above is very similar to what we
+  did so far, with two differences.</p>
+<p>We use the <code class="language-coffeescript">mixins</code> method to return the list of classes that we want to
+  include in our component.</p>
+
+<pre class="coffee"><code class="language-coffeescript">mixins: -&gt;
+  [AutoSelectInputMixin, RealTimeInputMixin, PersistentInputMixin]</code></pre>
+
+<p>We also need to modify our value helper to allow mixins to override it.</p>
+
+<aside>
+  <p>
+    <code class="language-coffeescript">callMixinWith</code> will find one of the mixins that has the specified
+  function defined and call just that one.</p>
+  <p>If you want to execute the function on all mixins that have it implemented,
+    use <code class="language-coffeescript">callMixins</code> instead. The results will be collected into an array.</p>
+</aside>
+
+<pre class="coffee"><code class="language-coffeescript">value: -&gt;
+  @callMixinWith(@, 'value') or Values.findOne(@data().id)?.value</code></pre>
+
+<p>In inheritance we need to call <code class="language-coffeescript">super</code> to get the result of a function
+we are overriding &mdash; otherwise the child completely shadows that function. With mixins we have to perform the same
+thing to get the result from a mixin's implementation. That's what the
+  <code class="language-coffeescript">callMixinWith</code> function does.</p>
+
+<p>Let's quickly glance over all three mixins. The code is very self explanatory.</p>
+
+<p><code class="language-coffeescript">AutoSelectInputMixin</code> selects the input on click.</p>
+
+<pre class="coffee"><code class="language-coffeescript">class AutoSelectInputMixin extends BlazeComponent
+  events: ->
+    super.concat
+      'click input': @onClick
+
+  onClick: (event) ->
+    $(event.target).select()</code></pre>
+
+<p><code class="language-coffeescript">RealTimeInputMixin</code> fires change events on every keystroke.</p>
+
+<pre class="coffee"><code class="language-coffeescript">class RealTimeInputMixin extends BlazeComponent
+  events: ->
+    super.concat
+      'keyup input': @onKeyUp
+
+  onKeyUp: (event) ->
+    $(event.target).change()</code></pre>
+
+<p>And the <code class="language-coffeescript">PersistentInputMixin</code> stores the value while editing.</p>
+
+<pre class="coffee"><code class="language-coffeescript">class PersistentInputMixin extends BlazeComponent
+  onCreated: ->
+    @storedValue = new ReactiveVar()
+
+  value: ->
+    @storedValue.get()
+
+  events: ->
+    super.concat
+      'focus input': @onFocus
+      'blur input': @onBlur
+
+  onFocus: (event) ->
+    @storedValue.set @mixinParent().value()
+
+  onBlur: (event) ->
+    @storedValue.set null</code></pre>
+
+<p>Becuase the mixin needs to control the output of <code class="language-coffeescript">value</code>, our
+  <code class="language-coffeescript">SmartInputComponent</code> needs the mentioned
+  <code class="language-coffeescript">callMixinWith</code> call from its own
+  <code class="language-coffeescript">value</code> function.
+</p>
+
+<hr/>
 
 <p>TODO: Mixins demo 2 text.</p>
 
@@ -324,14 +462,10 @@ Copy/paste when adding a new section.
   {{/if}}
 </template>
 
-<template name="autoSelectInput">
+<template name="input">
   <input value="{{value}}"/>
 </template>
 
 <template name="autoSelectTextarea">
   <textarea>{{value}}</textarea>
-</template>
-
-<template name="smartInput">
-  <input value="{{value}}"/>
 </template>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 18.1.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 400 300" enable-background="new 0 0 400 300" xml:space="preserve">
+<rect x="125" y="23.3" fill="#FFFFFF" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" width="150" height="50"/>
+<rect x="153.1" y="94.6" fill="none" width="100.5" height="52.8"/>
+<text transform="matrix(1 0 0 1 138.9575 52.8541)" font-family="'Roboto-Light'" font-size="10">AutoSelectInputComponent</text>
+<rect x="19" y="125" fill="#FFFFFF" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" width="150" height="50"/>
+<text transform="matrix(1 0 0 1 36.0255 154.5225)" font-family="'Roboto-Light'" font-size="10">RealTimeInputComponent</text>
+<rect x="231" y="125" fill="#FFFFFF" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" width="150" height="50"/>
+<text transform="matrix(1 0 0 1 246.6014 154.5225)" font-family="'Roboto-Light'" font-size="10">PersistentInputComponent</text>
+<rect x="125" y="226.7" fill="#FFFFFF" stroke="#000000" stroke-width="0.5" stroke-miterlimit="10" width="150" height="50"/>
+<text transform="matrix(1 0 0 1 149.3628 256.1909)" font-family="'Roboto-Light'" font-size="10">SmartInputComponent</text>
+<g>
+	<g>
+		<line fill="none" stroke="#000000" stroke-miterlimit="10" x1="117.2" y1="125" x2="163.9" y2="78.4"/>
+		<g>
+			<polygon points="166.4,83 169,73.3 159.3,75.9 			"/>
+		</g>
+	</g>
+</g>
+<g>
+	<g>
+		<line fill="none" stroke="#000000" stroke-miterlimit="10" x1="282.8" y1="124.9" x2="236.1" y2="78.3"/>
+		<g>
+			<polygon points="240.7,75.8 231,73.3 233.6,82.9 			"/>
+		</g>
+	</g>
+</g>
+<g>
+	<g>
+		<line fill="none" stroke="#000000" stroke-miterlimit="10" x1="176.8" y1="226.7" x2="130.1" y2="180.1"/>
+		<g>
+			<polygon points="134.6,177.6 125,175 127.6,184.6 			"/>
+		</g>
+	</g>
+</g>
+<g>
+	<g>
+		<line fill="none" stroke="#000000" stroke-miterlimit="10" x1="231" y1="226.7" x2="277.8" y2="180.1"/>
+		<g>
+			<polygon points="280.3,184.6 282.8,175 273.2,177.6 			"/>
+		</g>
+	</g>
+</g>
+<text transform="matrix(1 0 0 1 193.1885 210.6833)" font-family="'Roboto-Light'" font-size="10">???</text>
+</svg>

@@ -6,12 +6,12 @@ Template.autoSelectDemo.helpers
 
 ### Auto-select input ###
 
-Template.autoSelectInput.helpers
+Template.input.helpers
   value: ->
     # Read value from the collection.
     Values.findOne(@id)?.value
 
-Template.autoSelectInput.events
+Template.input.events
   # Save value to the collection when it changes.
   'change input': (event, template) ->
     Values.upsert @id, $set: value: event.target.value
@@ -26,7 +26,7 @@ class AutoSelectInputComponent extends BlazeComponent
   @register 'AutoSelectInputComponent'
 
   template: ->
-    'autoSelectInput'
+    'input'
 
   value: ->
     Values.findOne(@data().id)?.value
@@ -67,21 +67,19 @@ class RealTimeInputComponent extends AutoSelectInputComponent
   onKeyup: (event) ->
     $(event.target).change()
 
-### Frozen input component ###
+### Persistent input component ###
 
-class FrozenInputComponent extends AutoSelectInputComponent
-  @register 'FrozenInputComponent'
+class PersistentInputComponent extends AutoSelectInputComponent
+  @register 'PersistentInputComponent'
 
   onCreated: ->
     super
-    # We need to know when we are editing the input so that the user's entry is preserved during editing (even if meteor
-    # would have to replace it with a newer value). To do this we will supply a frozen value (set at the start of
-    # editing) to the rendering engine, so it will not re-render our input box, until we empty the frozen value.
-    @frozenValue = new ReactiveVar()
+    # This will store the value at the start of editing.
+    @storedValue = new ReactiveVar()
 
   value: ->
-    # Return frozen value if it is set (it will be during editing, thanks to focus and blur event handlers).
-    @frozenValue.get() or super
+    # Return stored value during editing or normal otherwise.
+    @storedValue.get() or super
 
   events: ->
     super.concat
@@ -89,23 +87,23 @@ class FrozenInputComponent extends AutoSelectInputComponent
       'blur input': @onBlur
 
   onFocus: (event) ->
-    # Initialize the starting value when starting to edit.
-    @frozenValue.set @value()
+    # Store the current value when starting to edit.
+    @storedValue.set @value()
 
   onBlur: (event) ->
-    # We are no longer editing, so we can return to displaying the reactive source of the value (parent implementation).
-    @frozenValue.set null
+    # We are no longer editing, so return to normal.
+    @storedValue.set null
 
-### Smart (auto-select, real-time, frozen) input component ###
+### Smart (auto-select, real-time, persistent) input component ###
 
 class SmartInputComponent extends BlazeComponent
   @register 'SmartInputComponent'
 
   template: ->
-    'smartInput'
+    'input'
 
   mixins: ->
-    [AutoSelectInputMixin, RealTimeInputMixin, FrozenInputMixin]
+    [AutoSelectInputMixin, RealTimeInputMixin, PersistentInputMixin]
 
   value: ->
     @callMixinWith(@, 'value') or Values.findOne(@data().id)?.value
@@ -133,12 +131,12 @@ class RealTimeInputMixin extends BlazeComponent
   onKeyUp: (event) ->
     $(event.target).change()
 
-class FrozenInputMixin extends BlazeComponent
+class PersistentInputMixin extends BlazeComponent
   onCreated: ->
-    @frozenValue = new ReactiveVar()
+    @storedValue = new ReactiveVar()
 
   value: ->
-    @frozenValue.get()
+    @storedValue.get()
 
   events: ->
     super.concat
@@ -146,23 +144,23 @@ class FrozenInputMixin extends BlazeComponent
       'blur input': @onBlur
 
   onFocus: (event) ->
-    @frozenValue.set @mixinParent().value()
+    @storedValue.set @mixinParent().value()
 
   onBlur: (event) ->
-    @frozenValue.set null
+    @storedValue.set null
 
-### Even smarter (auto-select, real-time, frozen, cancelable) input component ###
+### Even smarter (auto-select, real-time, persistent, cancelable) input component ###
 
 class EvenSmarterInputComponent extends SmartInputComponent
   @register 'EvenSmarterInputComponent'
 
   mixins: ->
-    [CancelableInputMixin]
+    super.concat [CancelableInputMixin]
 
 class CancelableInputMixin extends BlazeComponent
   onCreated: ->
-    # We rely on the frozen input mixin for obtaining the initial value.
-    @mixinParent().addMixin FrozenInputMixin
+    # We rely on the persistent input mixin to obtain the stored value.
+    @mixinParent().addMixin PersistentInputMixin
 
   events: ->
     super.concat
@@ -171,5 +169,5 @@ class CancelableInputMixin extends BlazeComponent
   onKeyDown: (event) ->
     # Undo renaming on escape.
     if event.keyCode is 27
-      previousValue = @mixinParent().getMixin(FrozenInputMixin).frozenValue.get()
-      $(event.target).val(previousValue).change().blur()
+      storedValue = @mixinParent().getMixin(PersistentInputMixin).storedValue.get()
+      $(event.target).val(storedValue).change().blur()
