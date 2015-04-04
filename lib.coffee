@@ -114,7 +114,7 @@ Blaze._getTemplate = (name, templateInstance) ->
   template = Tracker.nonreactive ->
     componentParent = templateInstance?().get 'component'
     BlazeComponent.getComponent(name)?.renderComponent componentParent
-  return template if template
+  return template if template and (template instanceof Blaze.Template or _.isFunction template)
 
   originalGetTemplate name
 

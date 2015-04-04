@@ -68,8 +68,10 @@ var wrapHelper = function (f, templateFunc) {
   };
 };
 
+// templateInstance argument is provided to be available for possible
+// alternative implementations of this function by 3rd party packages.
 Blaze._getTemplate = function (name, templateInstance) {
-  if (name in Blaze.Template) {
+  if ((name in Blaze.Template) && (Blaze.Template[name] instanceof Blaze.Template)) {
     return Blaze.Template[name];
   }
   return null;
@@ -97,8 +99,8 @@ Blaze.View.prototype.lookup = function (name, _options) {
   } else if (template &&
              ((helper = Blaze._getTemplateHelper(template, name, boundTmplInstance)) != null)) {
     return wrapHelper(bindDataContext(helper), boundTmplInstance);
-  } else if (lookupTemplate && (foundTemplate = Blaze._getTemplate(name, boundTmplInstance)) &&
-             (foundTemplate instanceof Blaze.Template || typeof foundTemplate === 'function')) {
+  } else if (lookupTemplate &&
+             ((foundTemplate = Blaze._getTemplate(name, boundTmplInstance)) != null)) {
     return foundTemplate;
   } else if (Blaze._globalHelpers[name] != null) {
     return wrapHelper(bindDataContext(Blaze._globalHelpers[name]),
