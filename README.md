@@ -450,6 +450,8 @@ Example:
 
 ```coffee
 class ButtonComponent extends BlazeComponent
+  @register 'ButtonComponent'
+
   template: ->
     'ButtonComponent'
  
