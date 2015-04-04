@@ -659,7 +659,7 @@ Returns the component's first mixin instance after `afterMixin` mixin which has 
 If `afterMixin` is `null` or the component itself, it searches all mixins. Returns `null` if such mixin is
 not found.
 
-<a name="reference_instance_callFirstMixin"></a>
+<a name="reference_instance_callMixinWith"></a>
 ```coffee
 callMixinWith: (afterMixin, propertyName, args...) ->
 ```
