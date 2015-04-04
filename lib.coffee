@@ -21,8 +21,10 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
     helper = template.__helpers.get name
     if helper is Blaze._OLDSTYLE_HELPER
       isKnownOldStyleHelper = true
+    else if helper?
+      return wrapHelper bindDataContext(helper), templateInstance
     else
-      return helper
+      return null
 
   # Old-style helper.
   if name of template
@@ -31,30 +33,54 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
       template.__helpers.set name, Blaze._OLDSTYLE_HELPER
       unless template._NOWARN_OLDSTYLE_HELPERS
         Blaze._warn "Assigning helper with `" + template.viewName + "." + name + " = ...` is deprecated.  Use `" + template.viewName + ".helpers(...)` instead."
-    return template[name]
+    if template[name]?
+      return wrapHelper bindDataContext(template[name]), templateInstance
+    else
+      return null
 
   return null unless templateInstance
 
   # TODO: Blaze.View::lookup should not introduce any reactive dependencies. Can we simply ignore reactivity here? Can this template instance or parent template instances change without reconstructing the component as well? I don't think so. Only data context is changing and this is why templateInstance or .get() are reactive and we do not care about data context here.
   component = Tracker.nonreactive ->
-    templateInstance = templateInstance()
-    templateInstance.get 'component'
+    templateInstance().get 'component'
 
   # Component.
   if component
     if name of component
-      return wrapHelper component, component[name]
+      return wrapHelper bindComponent(component, component[name]), templateInstance
 
     if mixin = component.getMixinWith null, name
-      return wrapHelper mixin, mixin[name]
+      return wrapHelper bindComponent(mixin, mixin[name]), templateInstance
 
   null
 
-wrapHelper = (component, helper) ->
+bindComponent = (component, helper) ->
   if _.isFunction helper
     _.bind helper, component
   else
     helper
+
+bindDataContext = (helper) ->
+  if _.isFunction helper
+    ->
+      data = Blaze.getData()
+      data ?= {}
+      helper.apply data, arguments
+  else
+    helper
+
+wrapHelper = (f, templateFunc) ->
+  # XXX COMPAT WITH METEOR 1.0.3.2
+  return Blaze._wrapCatchingExceptions f, 'template helper' unless Blaze.Template._withTemplateInstanceFunc
+
+  return f unless _.isFunction f
+
+  ->
+    self = @
+    args = arguments
+
+    Blaze.Template._withTemplateInstanceFunc templateFunc, ->
+      Blaze._wrapCatchingExceptions(f, 'template helper').apply self, args
 
 viewToTemplateInstance = (view) ->
   # We skip contentBlock views which are injected by Meteor when using
