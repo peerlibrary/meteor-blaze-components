@@ -369,11 +369,41 @@ and until is [destroyed](#user-content-reference_instance_onDestroyed).
 
 <a name="reference_instance_componentChildren"></a>
 ```coffee
-componentChildren: ->
+componentChildren: ([nameOrComponent]) ->
 ```
 
 Returns an array of component's children components. A reactive data source. The order of children components in the
 array is arbitrary.
+
+You can specify a component name, class, or instance to limit the resulting children to.
+
+The children components are in the array only after they have been [created](#user-content-reference_instance_onCreated),
+and until they are [destroyed](#user-content-reference_instance_onDestroyed).
+
+<a name="reference_instance_componentChildrenWith"></a>
+```coffee
+componentChildrenWith: (propertyOrMatcherOrFunction) ->
+```
+
+Returns an array of component's children components which match a `propertyOrMatcherOrFunction` predicate. A reactive
+data source. The order of children components in the array is arbitrary.
+
+A `propertyOrMatcherOrFunction` predicate can be:
+* a property name string, in this case all children components which have a property with the given name are matched
+* a matcher object specifying mapping between property names and their values, in this case all children components
+which have all properties fom the matcher object equal to given values are matched (if a property is a function, it
+is called and its return value is compared instead)
+* a function which receives `(child, parent)` with `this`/`@` bound to `parent`, in this case all children components
+for which the function returns a true value are matched
+
+Examples:
+
+```coffee
+component.componentChildrenWith 'propertyName'
+component.componentChildrenWith propertyName: 42
+component.componentChildrenWith (child, parent) ->
+  child.propertyName is 42
+```
 
 The children components are in the array only after they have been [created](#user-content-reference_instance_onCreated),
 and until they are [destroyed](#user-content-reference_instance_onDestroyed).

@@ -311,6 +311,31 @@ class ChildComponent extends BlazeComponent
   template: ->
     'ChildComponent'
 
+  constructor: (@childName) ->
+
+  onCreated: ->
+    super
+
+    @domChanged = new ReactiveVar 0
+
+  insertDOMElement: (parent, node, before) ->
+    super
+
+    @domChanged.set Tracker.nonreactive =>
+      @domChanged.get() + 1
+
+  moveDOMElement: (parent, node, before) ->
+    super
+
+    @domChanged.set Tracker.nonreactive =>
+      @domChanged.get() + 1
+
+  removeDOMElement: (parent, node) ->
+    super
+
+    @domChanged.set Tracker.nonreactive =>
+      @domChanged.get() + 1
+
 BlazeComponent.register 'ChildComponent', ChildComponent
 
 class ParentComponent extends BlazeComponent
@@ -894,9 +919,23 @@ class BasicTestCase extends ClassyTestCase
       @component = new ParentComponent()
 
       @componentChildren = []
-
       @handle = Tracker.autorun (computation) =>
         @componentChildren.push @component.componentChildren()
+
+      @componentChildrenChild1 = []
+      @handleChild1 = Tracker.autorun (computation) =>
+        @componentChildrenChild1.push @component.componentChildrenWith childName: 'child1'
+
+      @componentChildrenChild1DOM = []
+      @handleChild1DOM = Tracker.autorun (computation) =>
+        @componentChildrenChild1DOM.push @component.componentChildrenWith (child) ->
+          # We can search also based on DOM. We use domChanged to be sure check is called
+          # every time DOM changes. But it does not seem to be really necessary in this
+          # particular test (it passes without it as well). On the other hand domChanged
+          # also does not capture all changes. We are searching for an element by CSS class
+          # and domChanged is not changed when a class changes on a DOM element.
+          #child.domChanged.get()
+          child.$('.child1').length
 
       @renderedComponent = Blaze.render @component.renderComponent(), $('body').get(0)
 
@@ -946,12 +985,26 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
 
       @handle.stop()
+      @handleChild1.stop()
+      @handleChild1DOM.stop()
 
       @assertEqual @componentChildren, [
         []
         [@child1Component]
         [@child1Component, @child2Component]
         [@child2Component]
+        []
+      ]
+
+      @assertEqual @componentChildrenChild1, [
+        []
+        [@child1Component]
+        []
+      ]
+
+      @assertEqual @componentChildrenChild1DOM, [
+        []
+        [@child1Component]
         []
       ]
   ]
