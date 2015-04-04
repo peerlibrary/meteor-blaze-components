@@ -457,6 +457,9 @@ class BlazeComponent extends BaseComponent
             component.componentParent null
             componentParent.removeComponentChild component
 
+          # Remove the reference so that it is clear that template instance is not available anymore.
+          delete @component.templateInstance
+
       template
 
   template: ->
