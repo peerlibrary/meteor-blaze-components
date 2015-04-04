@@ -350,6 +350,38 @@ class ParentComponent extends BlazeComponent
 
 BlazeComponent.register 'ParentComponent', ParentComponent
 
+class CaseComponent extends BlazeComponent
+  @register 'CaseComponent'
+
+  template: ->
+    'CaseComponent'
+
+  constructor: (kwargs) ->
+    @cases = kwargs.hash
+
+  renderCase: ->
+    caseComponent = @cases[@data().case]
+    return null unless caseComponent
+    BlazeComponent.getComponent(caseComponent).renderComponent @
+
+class LeftComponent extends BlazeComponent
+  @register 'LeftComponent'
+
+  template: ->
+    'LeftComponent'
+
+class MiddleComponent extends BlazeComponent
+  @register 'MiddleComponent'
+
+  template: ->
+    'MiddleComponent'
+
+class RightComponent extends BlazeComponent
+  @register 'RightComponent'
+
+  template: ->
+    'RightComponent'
+
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
 
@@ -1008,5 +1040,43 @@ class BasicTestCase extends ClassyTestCase
         []
       ]
   ]
+
+  testCases: [
+    ->
+      @dataContext = new ReactiveVar {case: 'left'}
+
+      @renderedComponent = Blaze.renderWithData Template.useCaseTemplate, (=> @dataContext.get()), $('body').get(0)
+
+      Tracker.afterFlush @expect()
+    ->
+      @assertEqual trim($('.useCaseTemplate').html()), trim """
+        <p>Left</p>
+      """
+
+      @dataContext.set {case: 'middle'}
+
+      Tracker.afterFlush @expect()
+    ->
+      @assertEqual trim($('.useCaseTemplate').html()), trim """
+        <p>Middle</p>
+      """
+
+      @dataContext.set {case: 'right'}
+
+      Tracker.afterFlush @expect()
+    ->
+      @assertEqual trim($('.useCaseTemplate').html()), trim """
+        <p>Right</p>
+      """
+
+      @dataContext.set {case: 'unknown'}
+
+      Tracker.afterFlush @expect()
+    ->
+      @assertEqual trim($('.useCaseTemplate').html()), trim """"""
+
+      Blaze.remove @renderedComponent
+  ]
+
 
 ClassyTestCase.addTest new BasicTestCase()

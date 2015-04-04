@@ -2,6 +2,7 @@
 .animationTestTemplate,
 .argumentsTestTemplate,
 .mixinEventsTestTemplate,
-.postMessageButtonComponent {
+.postMessageButtonComponent,
+.useCaseTemplate {
   display: none;
 }

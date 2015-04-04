@@ -163,3 +163,25 @@
     {{> ChildComponent args 'child2'}}
   {{/if}}
 </template>
+
+<template name="LeftComponent">
+  <p>Left</p>
+</template>
+
+<template name="MiddleComponent">
+  <p>Middle</p>
+</template>
+
+<template name="RightComponent">
+  <p>Right</p>
+</template>
+
+<template name="CaseComponent">
+  {{> renderCase}}
+</template>
+
+<template name="useCaseTemplate">
+  <div class="useCaseTemplate">
+    {{> CaseComponent args left='LeftComponent' middle='MiddleComponent' right='RightComponent'}}
+  </div>
+</template>

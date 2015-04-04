@@ -100,6 +100,45 @@ You can also [pass arguments](#passing-arguments) to a component:
 For when to use a data context and when arguments the same rule of thumb from the [Passing arguments](#passing-arguments)
 section applies.
 
+Blaze provides up to two inclusion points in block helpers. If you need more you should probably not use a component
+as a block helper but move the logic to the component's method, returning a rendered Blaze Component instance or template
+which provides any content you want. You can provide content (possibly as Blaze Components themselves) to the component
+through your component arguments or data context.
+
+Example:
+
+```handlebars
+<template name="CaseComponent">
+  {{> renderCase}}
+</template>
+
+<template name="useCaseTemplate">
+  {{> CaseComponent args left='LeftComponent' middle='MiddleComponent' right='RightComponent'}}
+</template>
+```
+
+```coffee
+class CaseComponent extends BlazeComponent
+  @register 'CaseComponent'
+
+  template: ->
+    'CaseComponent'
+    
+  constructor: (kwargs) ->
+    @cases = kwargs.hash
+
+  renderCase: ->
+    caseComponent = @cases[@data().case]
+    return null unless caseComponent
+    BlazeComponent.getComponent(caseComponent).renderComponent @
+```
+
+If you use `CaseComponent` now in the `{case: 'left'}` data context, a `LeftComponent`
+component will be rendered. If you want to control in which data context `LeftComponent`
+is rendered, you can specify data context as `{{> renderCase dataContext}}`.
+
+*Example above is using `renderComponent` method which is not yet public.*
+
 Animations
 ----------
 
