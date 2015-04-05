@@ -74,7 +74,7 @@ Template.input.events
 
 <h2>The Solution</h2>
 
-<p>Let's make our auto-select input into a Blaze Component. You can think of a component, just like you would of a
+<p>Let's make our auto-select input into a Blaze Component. You can think of a component just like you would of a
   template, except the functionality (helpers and events) are defined through a class.</p>
 
 <div class="demo">
@@ -134,8 +134,9 @@ as the markup to be re-used by the component.</p>
 
 <aside>
   <p>
-    Notice that to get the data context, we need to call the <code class="language-coffeescript">@data()</code> function,
-    similar to how we call <code class="language-coffeescript">@data</code> in template hooks and
+    Notice that to get the data context, we need to call the
+    <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_data"><code class="language-coffeescript">@data()</code></a>
+    function, similar to how we call <code class="language-coffeescript">@data</code> in template hooks and
     <code class="language-coffeescript">template.data</code> in event handlers.
   </p>
   <p>
@@ -146,8 +147,9 @@ as the markup to be re-used by the component.</p>
   </p>
   <p>
     In Blaze Components, things are consistent: <code class="language-coffeescript">@</code> always refers to the
-    component instance and <code class="language-coffeescript">@data()</code> is always a reactive reference to the data
-    context.
+    component instance and
+    <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_data"><code class="language-coffeescript">@data()</code></a>
+    is always a reactive reference to the data context.
   </p>
 </aside>
 
@@ -155,9 +157,9 @@ as the markup to be re-used by the component.</p>
     Values.findOne(@data().id)?.value</code></pre>
 
 <p>
-  Events are returned with the <code class="language-coffeescript">events</code> method like before, although instead of
-  defining the handlers inline, we rather have them as instance methods, so we can override them from child classes
-  later.
+  Events are returned with the <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_events"><code class="language-coffeescript">events</code></a>
+  method like before, although instead of defining the handlers inline, we rather have them as instance methods, so we can override
+  them from child classes later.
 </p>
 
 <pre class="coffee"><code class="language-coffeescript">  events: -&gt;
@@ -344,8 +346,9 @@ auto-selection, another one for real-time input, third for frozen state. Our
 
 <p>The code for the <code class="language-coffeescript">SmartInputComponent</code> above is very similar to what we
   did so far, with two differences.</p>
-<p>We use the <code class="language-coffeescript">mixins</code> method to return the list of classes that we want to
-  include in our component.</p>
+<p>We use the
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_mixins"><code class="language-coffeescript">mixins</code></a>
+  method to return the list of classes that we want to include in our component.</p>
 
 <pre class="coffee"><code class="language-coffeescript">mixins: -&gt;
   [AutoSelectInputMixin, RealTimeInputMixin, PersistentInputMixin]</code></pre>
@@ -353,20 +356,21 @@ auto-selection, another one for real-time input, third for frozen state. Our
 <p>We also need to modify our value helper to allow mixins to override it.</p>
 
 <aside>
-  <p>
-    <code class="language-coffeescript">callMixinWith</code> will find one of the mixins that has the specified
-  function defined and call just that one.</p>
-  <p>If you want to execute the function on all mixins that have it implemented,
-    use <code class="language-coffeescript">callMixins</code> instead. The results will be collected into an array.</p>
+  <p><a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixinWith"><code class="language-coffeescript">callMixinWith</code></a>
+  will find one of the mixins that has the specified function defined and call just that one.</p>
+  <p>If you want to execute the function on all mixins that have it implemented, use
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixins"><code class="language-coffeescript">callMixins</code></a>
+  instead. The results will be collected into an array.</p>
 </aside>
 
 <pre class="coffee"><code class="language-coffeescript">value: -&gt;
   @callMixinWith(@, 'value') or Values.findOne(@data().id)?.value</code></pre>
 
 <p>In inheritance we need to call <code class="language-coffeescript">super</code> to get the result of a function
-we are overriding &mdash; otherwise the child completely shadows that function. With mixins we have to perform the same
-thing to get the result from a mixin's implementation. That's what the
-  <code class="language-coffeescript">callMixinWith</code> function does.</p>
+  we are overriding &mdash; otherwise the child completely shadows that function. With mixins we have to perform the same
+  thing to get the result from a mixin's implementation. That's what the
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixinWith"><code class="language-coffeescript">callMixinWith</code></a>
+  function does.</p>
 
 <p>Let's quickly glance over all three mixins. The code is very self explanatory.</p>
 
@@ -412,8 +416,8 @@ thing to get the result from a mixin's implementation. That's what the
 
 <p>Becuase the mixin needs to control the output of <code class="language-coffeescript">value</code>, our
   <code class="language-coffeescript">SmartInputComponent</code> needs the mentioned
-  <code class="language-coffeescript">callMixinWith</code> call from its own
-  <code class="language-coffeescript">value</code> function.
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixinWith"><code class="language-coffeescript">callMixinWith</code></a>
+  call from its own <code class="language-coffeescript">value</code> function.
 </p>
 
 <hr/>
@@ -460,7 +464,7 @@ Copy/paste when adding a new section.
 <p>See <a href="https://github.com/peerlibrary/meteor-blaze-components">Blaze Components GitHub repository</a> for a more detailed
   documentation and API reference.</p>
 
-<p>Blaze Components are an open source project and licensed under a permissive BSD license.</p>
+<p>Blaze Components are an open source project and licensed under the permissive BSD license.</p>
 
 </body>
 
