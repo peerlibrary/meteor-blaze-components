@@ -8,11 +8,13 @@
   <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png">
 </a>
 
+<a name="meteor-blaze-components"></a>
 <h1>Meteor Blaze Components</h1>
 
 <p><a href="https://github.com/peerlibrary/meteor-blaze-components">Blaze Components</a> for <a href="https://meteor.com/">Meteor</a>
   are a system for easily developing complex UI elements that need to be reused around your Meteor app.</p>
 
+<a name="the-problem"></a>
 <h2>The Problem</h2>
 
 <p>Let's say we have an input box that auto-selects the text on click for easier changing. Its value is read from the
@@ -72,6 +74,7 @@ Template.input.events
 <p>What if the last option didn't require separate helper class, but it was simply how templates worked?</p>
 <p>That's what Blaze Components are!</p>
 
+<a name="the-solution"></a>
 <h2>The Solution</h2>
 
 <p>Let's make our auto-select input into a Blaze Component. You can think of a component just like you would of a
@@ -173,10 +176,16 @@ as the markup to be re-used by the component.</p>
   onClick: (event) -&gt;
     $(event.target).select()</code></pre>
 
+<a name="the-beauty"></a>
 <h2>The Beauty</h2>
 
-<p>Components allow us to create new components that share code simply through inheritance.</p>
-<p>Let's say we want to provide the same functionality to a textarea template.</p>
+<p>Components allow us to create new components that share code simply through inheritance. Let's see
+  three examples all building upon the same <code class="language-coffeescript">AutoSelectInputComponent</code>.</p>
+
+<a name="textarea-input"></a>
+<h3>Textarea Input</h3>
+
+<p>Let's say we want to provide the same functionality for a template using textarea form input element.</p>
 
 <div class="demo">
   <div class="live">
@@ -185,9 +194,9 @@ as the markup to be re-used by the component.</p>
   </div>
 
   <div class="code">
-    <pre class="html"><code class="language-handlebars">{{|&gt; AutoSelectCanvasComponent id='demo3'}}
+    <pre class="html"><code class="language-handlebars">{{|&gt; AutoSelectTextareaComponent id='demo3'}}
 
-&lt;template name="autoSelectTextarea"&gt;
+&lt;template name="AutoSelectTextareaComponent"&gt;
   &lt;textarea&gt;{{|value}}&lt;/textarea&gt;
 &lt;/template&gt;</code></pre>
 
@@ -195,7 +204,7 @@ as the markup to be re-used by the component.</p>
   @register 'AutoSelectTextareaComponent'
 
   template: -&gt;
-    'autoSelectTextarea'
+    'AutoSelectTextareaComponent'
 
   events: -&gt;
     super.concat
@@ -213,10 +222,11 @@ textarea as well.</p>
     'change *': @onChange
     'click *': @onClick</code></pre>
 
-<hr/>
+<a name="real-time-input"></a>
+<h3>Real-time Input</h3>
 
-<p>An input form element will only update once we press enter or click outside it. Since Meteor's great strength is its
-  reactivity, it would be nice if inputs updated in real-time as we type.</p>
+<p>An input form element triggers the change event once we press enter or click outside it. Since Meteor's
+  great strength is its reactivity, it would be nice if inputs updated in real-time as we type.</p>
 <p>We'll call this extension real-time input. All we need to do is add in the code that calls the change event on
   each keypress.</p>
 
@@ -240,7 +250,11 @@ textarea as well.</p>
     $(event.target).change()</code></pre>
   </div>
 </div>
-<p>You might have experienced so far, that the input randomly updated while you were typing. This is because the value
+
+<a name="persistent-input"></a>
+<h3>Persistent Input</h3>
+
+<p>You might have experienced so far that the input randomly updated while you were typing. This is because the value
 in the input boxes come from a single database. If any other user has changed the text in the input, the value is
   reactively propagated to everywhere else in the world where this page is opened!</p>
   <p>Try opening another browser side by side and observe as the values change in both windows. In the example below,
@@ -286,6 +300,7 @@ editing it. To enable this, we'll store the current value when the input box get
   </div>
 </div>
 
+<a name="the-cooperation"></a>
 <h2>The Cooperation</h2>
 
 <p>What if we want to now have an input-box that is both real-time and persistent during editing?</p>
@@ -294,7 +309,7 @@ editing it. To enable this, we'll store the current value when the input box get
   <img src="/images/Diamond-01.svg">
 </figure>
 
-<p>This cannot be expressed in a single-inheritance language such as JavaScript and CoffeeScript that use the
+<p>This cannot be expressed in a single-inheritance language such as JavaScript that uses the
   prototype chain for inheritance.</p>
 
 <p>Since a lot of class-based languages also do not support multiple inheritance (and those that do run into
@@ -456,6 +471,7 @@ Copy/paste when adding a new section.
 
 {{! TODO: Things we should probably mention/show/demo are all sections from the README: passing arguments to components (better than through data context) and animations. }}
 
+<a name="use-it"></a>
 <h2>Use It</h2>
 
 <p>You can start using Blaze Components in your Meteor package or application by adding <code>peerlibrary:blaze-components</code>
@@ -480,6 +496,6 @@ Copy/paste when adding a new section.
   <input value="{{value}}"/>
 </template>
 
-<template name="autoSelectTextarea">
+<template name="AutoSelectTextareaComponent">
   <textarea>{{value}}</textarea>
 </template>

@@ -48,7 +48,7 @@ class AutoSelectTextareaComponent extends AutoSelectInputComponent
   @register 'AutoSelectTextareaComponent'
 
   template: ->
-    'autoSelectTextarea'
+    'AutoSelectTextareaComponent'
 
   events: ->
     super.concat
