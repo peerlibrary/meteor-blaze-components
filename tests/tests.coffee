@@ -226,7 +226,7 @@ class SecondMixin extends BlazeComponent
   onCreated: ->
     # To test if adding a dependency during onCreated will make sure
     # to call onCreated on the added dependency as well.
-    @mixinParent().addMixin DependencyMixin
+    @mixinParent().requireMixin DependencyMixin
 
 class DependencyMixin extends BlazeComponent
   @calls: []

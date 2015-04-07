@@ -689,11 +689,11 @@ When called with a `mixinParent` argument it sets the mixin's parent.
 
 *Setting the mixin's parent is done automatically by calling this method when creating component's mixins. Extend
 (or provide) this method if you want to do any action when parent is set, for example, add dependency mixins to
-the parent using [`addMixin`](user-content-reference_instance_addMixin). Make sure you call `super` as well.*
+the parent using [`requireMixin`](user-content-reference_instance_requireMixin). Make sure you call `super` as well.*
 
-<a name="reference_instance_addMixin"></a>
+<a name="reference_instance_requireMixin"></a>
 ```coffee
-addMixin: (nameOrMixin) ->
+requireMixin: (nameOrMixin) ->
 ```
 
 Adds a mixin after already added mixins. `nameOrMixin` can be a registered component name, mixin class, or
@@ -701,8 +701,8 @@ mixin instance.
 
 If mixin is already added to the component the method does nothing.
 
-Use `addMixin` to manually add additional mixins after a component was created. For example, to add dependencies
-required by automatically added mixins as a result of [`mixins`](user-content-reference_instance_mixins).
+Use `requireMixin` to manually add additional mixins after a component was created. For example, to add
+dependencies required by automatically added mixins as a result of [`mixins`](user-content-reference_instance_mixins).
 
 Related projects
 ----------------

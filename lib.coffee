@@ -210,9 +210,9 @@ class BlazeComponent extends BaseComponent
     # Getter.
     @_mixinParent or null
 
-  addMixin: (nameOrMixin) ->
-    # Do not do anything if mixin is already added. This allows multiple mixins to call addMixin in
-    # mixinParent method to add dependencies, but if dependencies are already there, nothing happens.
+  requireMixin: (nameOrMixin) ->
+    # Do not do anything if mixin is already required. This allows multiple mixins to call requireMixin
+    # in mixinParent method to add dependencies, but if dependencies are already there, nothing happens.
     return @ if @getMixin nameOrMixin
 
     if _.isString nameOrMixin
@@ -244,7 +244,7 @@ class BlazeComponent extends BaseComponent
     # Maybe mixin has its own mixins as well.
     mixinInstance.createMixins?()
 
-    # If a mixin is adding a dependency using addMixin after its mixinParent class (for example, in onCreate)
+    # If a mixin is adding a dependency using requireMixin after its mixinParent class (for example, in onCreate)
     # and this is this dependency mixin, the view might already be created or rendered and callbacks were
     # already called, so we should call them manually here as well. But only if he view has not been destroyed
     # already. For those mixins we do not call anything, there is little use for them now.
@@ -262,7 +262,7 @@ class BlazeComponent extends BaseComponent
     @_mixins = []
 
     for mixin in @mixins()
-      @addMixin mixin
+      @requireMixin mixin
 
     # To allow chaining.
     @

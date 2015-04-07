@@ -160,7 +160,7 @@ class EvenSmarterInputComponent extends SmartInputComponent
 class CancelableInputMixin extends BlazeComponent
   onCreated: ->
     # We rely on the persistent input mixin to obtain the stored value.
-    @mixinParent().addMixin PersistentInputMixin
+    @mixinParent().requireMixin PersistentInputMixin
 
   events: ->
     super.concat
