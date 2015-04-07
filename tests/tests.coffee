@@ -170,8 +170,10 @@ class ExistingClassHierarchyChild extends ExistingClassHierarchyBase
 
 class ExistingClassHierarchyBaseComponent extends ExistingClassHierarchyChild
 
-_.extend ExistingClassHierarchyBaseComponent, BlazeComponent
-_.extend ExistingClassHierarchyBaseComponent::, BlazeComponent::
+for property, value of BlazeComponent when property not in ['__super__']
+  ExistingClassHierarchyBaseComponent[property] = value
+for property, value of (BlazeComponent::) when property not in ['constructor']
+  ExistingClassHierarchyBaseComponent::[property] = value
 
 class ExistingClassHierarchyComponent extends ExistingClassHierarchyBaseComponent
   template: ->

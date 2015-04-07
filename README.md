@@ -148,6 +148,20 @@ Mixins
 Use with existing classes
 -------------------------
 
+Blaze Components are designed to work with existing class hierarchies. There are no restrictions on class constructor,
+for example. In fact, Blaze Components can be seen simply as an API a class or object has to provide to be compatible
+with the system. The easiest way to bootstrap your class hierarchy is to copy default implementations from
+`BlazeComponent` to your class.
+
+Example:
+
+```coffee
+for property, value of BlazeComponent when property not in ['__super__']
+  YourBaseClass[property] = value
+for property, value of (BlazeComponent::) when property not in ['constructor']
+  YourBaseClass::[property] = value
+```
+
 Reference
 ---------
 
@@ -455,9 +469,10 @@ constructor: (args...) ->
 ```
 
 When a component is created, its constructor is first called. There are no restrictions on component's constructor
-and Blaze Components are designed to coexist with classes which require their own arguments when instantiated. To
-facilitate this, Blaze Components operate equally well with classes (which are automatically instantiated as needed)
-or already made instances. The real life-cycle of a Blaze Component starts after its instantiation.
+and Blaze Components are designed to [coexist with classes](#use-with-existing-classes) which require their own
+arguments when instantiated. To facilitate this, Blaze Components operate equally well with classes (which are
+automatically instantiated as needed) or already made instances. The real life-cycle of a Blaze Component starts
+after its instantiation.
 
 When including a component in a template, you can pass arguments to a constructor by using the `args` keyword.
 
