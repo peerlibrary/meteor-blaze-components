@@ -230,7 +230,7 @@ class BlazeComponent extends BaseComponent
       mixinInstance = nameOrMixin
 
     # We add mixin before we call mixinParent so that dependencies come after this mixin,
-    # and that we prevent possible loops because of circular dependencies.
+    # and that we prevent possible infinite loops because of circular dependencies.
     # TODO: For now we do not provide an official API to add dependencies before the mixin itself.
     @_mixins.push mixinInstance
 

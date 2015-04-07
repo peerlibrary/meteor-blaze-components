@@ -149,18 +149,65 @@ class PersistentInputMixin extends BlazeComponent
   onBlur: (event) ->
     @storedValue.set null
 
-### Even smarter (auto-select, real-time, persistent, cancelable) input component ###
+### Extreme decomposition (auto-select, real-time, persistent, cancelable, form field, storage) input component ###
 
-class EvenSmarterInputComponent extends SmartInputComponent
-  @register 'EvenSmarterInputComponent'
+class PersistentInputMixin2 extends BlazeComponent
+  onCreated: ->
+    @storedValue = new ReactiveVar()
 
-  mixins: ->
-    super.concat [CancelableInputMixin]
+  value: ->
+    @storedValue.get() or @mixinParent().callMixinWith(@, 'value')
+
+  events: ->
+    super.concat
+      'focus input': @onFocus
+      'blur input': @onBlur
+
+  onFocus: (event) ->
+    @storedValue.set @mixinParent().callMixinWith(null, 'value')
+
+  onBlur: (event) ->
+    @storedValue.set null
+
+class ExtremeInputComponent extends BlazeComponent
+  @register 'ExtremeInputComponent'
+
+  template: ->
+    'input'
+
+  mixins: -> [
+    AutoSelectInputMixin, RealTimeInputMixin,
+    CancelableInputMixin, FormFieldMixin,
+    new StorageMixin Values, 'value', => @data().id
+  ]
+
+class FormFieldMixin extends BlazeComponent
+  value: ->
+    @mixinParent().callMixinWith(null, 'getValue')
+
+  events: ->
+    super.concat
+      'change input': @onChange
+
+  onChange: (event) ->
+    @mixinParent().callMixinWith(null, 'setValue', event.target.value)
+
+class StorageMixin extends BlazeComponent
+  constructor: (@collection, @fieldName, @selector) ->
+
+  getValue: ->
+    @collection.findOne(@selector())?[@fieldName]
+
+  setValue: (value) ->
+    modifier = $set: {}
+    modifier.$set[@fieldName] = value
+    @collection.upsert @selector(), modifier
 
 class CancelableInputMixin extends BlazeComponent
-  onCreated: ->
+  mixinParent: (mixinParent) ->
     # We rely on the persistent input mixin to obtain the stored value.
-    @mixinParent().requireMixin PersistentInputMixin
+    mixinParent.requireMixin PersistentInputMixin2 if mixinParent
+    super
 
   events: ->
     super.concat
@@ -169,5 +216,5 @@ class CancelableInputMixin extends BlazeComponent
   onKeyDown: (event) ->
     # Undo renaming on escape.
     if event.keyCode is 27
-      storedValue = @mixinParent().getMixin(PersistentInputMixin).storedValue.get()
+      storedValue = @mixinParent().getMixin(PersistentInputMixin2).storedValue.get()
       $(event.target).val(storedValue).change().blur()

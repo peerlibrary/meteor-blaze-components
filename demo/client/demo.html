@@ -312,13 +312,11 @@ editing it. To enable this, we'll store the current value when the input box get
 <p>This cannot be expressed in a single-inheritance language such as JavaScript that uses the
   prototype chain for inheritance.</p>
 
-<p>Since a lot of class-based languages also do not support multiple inheritance (and those that do run into
-  <a href="http://en.wikipedia.org/wiki/Multiple_inheritance">the diamond problem</a>) a principle of
-  <a href="http://en.wikipedia.org/wiki/Composition_over_inheritance">composition over inheritance</a> has been
-    developed. You might have already encountered one implementation of this called mixins.</p>
+<p>To address this issue Blaze Components provide mixins with <a href="http://en.wikipedia.org/wiki/Composition_over_inheritance">composition
+  over inheritance</a> in mind.</p>
 
 <p>Mixins provide small chunks of self-contained functionality. In our case we can have a mixin that just handles
-auto-selection, another one for real-time input, third for frozen state. Our
+  auto-selection, another one for real-time input, third for persistent state. Our
   <code class="language-coffeescript">SmartInputComponent</code> would then include all three mixins.</p>
 
 <figure>
@@ -363,16 +361,25 @@ auto-selection, another one for real-time input, third for frozen state. Our
   did so far, with two differences.</p>
 <p>We use the
   <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_mixins"><code class="language-coffeescript">mixins</code></a>
-  method to return the list of classes that we want to include in our component.</p>
+  method to return the list of mixin classes that we want to include in our component.</p>
+
+<aside>
+  <p>Each mixin becomes its own JavaScript object with its own state, but they share a life-cycle with the component.
+    The component and mixins can reference each other
+    <a href="https://github.com/peerlibrary/meteor-blaze-components/#mixins-1">through methods</a> provided by Blaze
+    Components.</p>
+</aside>
 
 <pre class="coffee"><code class="language-coffeescript">mixins: -&gt;
   [AutoSelectInputMixin, RealTimeInputMixin, PersistentInputMixin]</code></pre>
 
-<p>We also need to modify our value helper to allow mixins to override it.</p>
+<p>We also need to modify our value helper to call mixins to get a possible value from them.</p>
 
 <aside>
   <p><a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixinWith"><code class="language-coffeescript">callMixinWith</code></a>
-  will find one of the mixins that has the specified function defined and call just that one.</p>
+  will find the first of the mixins that have the specified function defined and call just that one. That mixin can call
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixinWith"><code class="language-coffeescript">callMixinWith</code></a>
+  again to continue traversal of mixins.</p>
   <p>If you want to execute the function on all mixins that have it implemented, use
   <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixins"><code class="language-coffeescript">callMixins</code></a>
   instead. The results will be collected into an array.</p>
@@ -381,76 +388,220 @@ auto-selection, another one for real-time input, third for frozen state. Our
 <pre class="coffee"><code class="language-coffeescript">value: -&gt;
   @callMixinWith(@, 'value') or Values.findOne(@data().id)?.value</code></pre>
 
-<p>In inheritance we need to call <code class="language-coffeescript">super</code> to get the result of a function
-  we are overriding &mdash; otherwise the child completely shadows that function. With mixins we have to perform the same
+<p>In inheritance we need to call <code class="language-coffeescript">super</code> to get the result of a method
+  we are overriding &mdash; otherwise the child completely shadows that method. With mixins we have to perform the same
   thing to get the result from a mixin's implementation. That's what the
   <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixinWith"><code class="language-coffeescript">callMixinWith</code></a>
-  function does.</p>
+  method does.</p>
+
+<p>If the component defines a behavior, it is overriding behaviors from component's mixins. And mixins do the same in
+  the order they are specified in the
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_mixins"><code class="language-coffeescript">mixins</code></a>
+  method. Those earlier are overriding those later. Methods,
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#event-handlers">event handlers</a>, and
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#life-cycle-hooks-1">life-cylcle hooks</a> are all
+  called in this order.
+</p>
 
 <p>Let's quickly glance over all three mixins. The code is very self explanatory.</p>
 
 <p><code class="language-coffeescript">AutoSelectInputMixin</code> selects the input on click.</p>
 
 <pre class="coffee"><code class="language-coffeescript">class AutoSelectInputMixin extends BlazeComponent
-  events: ->
+  events: -&gt;
     super.concat
       'click input': @onClick
 
-  onClick: (event) ->
+  onClick: (event) -&gt;
     $(event.target).select()</code></pre>
 
 <p><code class="language-coffeescript">RealTimeInputMixin</code> fires change events on every keystroke.</p>
 
 <pre class="coffee"><code class="language-coffeescript">class RealTimeInputMixin extends BlazeComponent
-  events: ->
+  events: -&gt;
     super.concat
       'keyup input': @onKeyUp
 
-  onKeyUp: (event) ->
+  onKeyUp: (event) -&gt;
     $(event.target).change()</code></pre>
 
 <p>And the <code class="language-coffeescript">PersistentInputMixin</code> stores the value while editing.</p>
 
 <pre class="coffee"><code class="language-coffeescript">class PersistentInputMixin extends BlazeComponent
-  onCreated: ->
+  onCreated: -&gt;
     @storedValue = new ReactiveVar()
 
-  value: ->
+  value: -&gt;
     @storedValue.get()
 
-  events: ->
+  events: -&gt;
     super.concat
       'focus input': @onFocus
       'blur input': @onBlur
 
-  onFocus: (event) ->
+  onFocus: (event) -&gt;
     @storedValue.set @mixinParent().value()
 
-  onBlur: (event) ->
+  onBlur: (event) -&gt;
     @storedValue.set null</code></pre>
 
-<p>Becuase the mixin needs to control the output of <code class="language-coffeescript">value</code>, our
-  <code class="language-coffeescript">SmartInputComponent</code> needs the mentioned
-  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixinWith"><code class="language-coffeescript">callMixinWith</code></a>
-  call from its own <code class="language-coffeescript">value</code> function.
+<p><a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_mixinParent"><code class="language-coffeescript">mixinParent</code></a>
+  returns the <code class="language-coffeescript">SmartInputComponent</code> component, so mixin can access its value.
 </p>
 
-<hr/>
+<h2>Extreme Decomposition</h2>
 
-<p>TODO: Mixins demo 2 text.</p>
+<p>There is an interesting case of a recursion going on in the last example which shows that
+  <code class="language-coffeescript">PersistentInputMixin</code> and <code class="language-coffeescript">SmartInputComponent</code>
+  are not so independent from each other as they could be. If this is good or bad depends,
+  but as an exercise let's refactor this example once more.</p>
+
+<p>We will add one more feature: editing cancellation. When an user presses the escape key the input should be restored
+  to the value before they started editing.</p>
 
 <div class="demo">
   <div class="live">
-    {{> EvenSmarterInputComponent id='demo7'}}
+    {{> ExtremeInputComponent id='demo7'}}
     {{> autoSelectDemo id='demo7'}}
   </div>
 
   <div class="code">
-    <pre class="html"><code class="language-handlebars">{{|&gt; EvenSmarterInputComponent id='demo7'}}</code></pre>
+    <pre class="html"><code class="language-handlebars">{{|&gt; ExtremeInputComponent id='demo7'}}</code></pre>
 
-    <pre class="coffee"><code class="language-coffeescript"># TODO</code></pre>
+    <pre class="coffee"><code class="language-coffeescript">class ExtremeInputComponent extends BlazeComponent
+  @register 'ExtremeInputComponent'
+
+  template: -&gt;
+    'input'
+
+  mixins: -&gt; [
+    AutoSelectInputMixin, RealTimeInputMixin,
+    CancelableInputMixin, FormFieldMixin,
+    new StorageMixin Values, 'value', =&gt; @data().id
+  ]</code></pre>
   </div>
 </div>
+
+<p><code class="language-coffeescript">ExtremeInputComponent</code> is thin and all the logic is in mixins.
+  It defines only the template and mixins.</p>
+
+<pre class="coffee"><code class="language-coffeescript">mixins: -&gt; [
+  AutoSelectInputMixin, RealTimeInputMixin,
+  CancelableInputMixin, FormFieldMixin,
+  new StorageMixin Values, 'value', =&gt; @data().id
+]</code></pre>
+
+<p>You can pass as a mixin an already made mixin instance. In this case we are passing a collection, a
+  field name, and a selector to the <code class="language-coffeescript">StorageMixin</code> to make it more reusable.</p>
+
+<p>But let's see mixins. First <code class="language-coffeescript">FormFieldMixin</code>. It just
+connects a form field with a getter/setter API which other mixins can provide.</p>
+
+<pre class="coffee"><code class="language-coffeescript">class FormFieldMixin extends BlazeComponent
+  value: -&gt;
+    @mixinParent().callMixinWith(null, 'getValue')
+
+  events: -&gt;
+    super.concat
+      'change input': @onChange
+
+  onChange: (event) -&gt;
+    @mixinParent().callMixinWith(null, 'setValue', event.target.value)</code></pre>
+
+<p>We call <code class="language-coffeescript">getValue</code> on the component's first mixin which has this method.
+  We do the same for <code class="language-coffeescript">setValue</code>, just that we also pass the argument to the
+  method.</p>
+
+<p>In our example, the getter/setter API is provided by the
+  <code class="language-coffeescript">StorageMixin</code>. It uses Meteor collections and MongoDB queries to
+  read and store a value into the database. We use constructor arguments to configure its behavior.</p>
+
+<pre class="coffee"><code class="language-coffeescript">class StorageMixin extends BlazeComponent
+  constructor: (@collection, @fieldName, @selector) -&gt;
+
+  getValue: -&gt;
+    @collection.findOne(@selector())?[@fieldName]
+
+  setValue: (value) -&gt;
+    modifier = $set: {}
+    modifier.$set[@fieldName] = value
+    @collection.upsert @selector(), modifier</code></pre>
+
+<p><code class="language-coffeescript">CancelableInputMixin</code> is the new mixin we are introducing. It is
+  interesting because it is showing how a mixin can depend on another mixin.</p>
+
+<pre class="coffee"><code class="language-coffeescript">class CancelableInputMixin extends BlazeComponent
+  mixinParent: (mixinParent) -&gt;
+    mixinParent.requireMixin PersistentInputMixin if mixinParent
+    super
+
+  events: -&gt;
+    super.concat
+      'keydown input': @onKeyDown
+
+  onKeyDown: (event) -&gt;
+    # Undo renaming on escape.
+    if event.keyCode is 27
+      storedValue = @mixinParent().getMixin(PersistentInputMixin).storedValue.get()
+      $(event.target).val(storedValue).change().blur()</code></pre>
+
+<p><a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixinWith"><code class="language-coffeescript">mixinParent</code></a>
+  is a method which can be used as a setter or getter. When a new mixin is created for a component it is automatically
+  called as a setter to store the reference back to the component. This is a great moment to require any dependencies
+  the mixin might need. In our case, <code class="language-coffeescript">CancelableInputMixin</code> is relying on the
+  <code class="language-coffeescript">PersistentInputMixin</code> to obtain the stored value.</p>
+
+<p>In <code class="language-coffeescript">onKeyDown</code> we retrieve the dependency mixin instance by querying
+  with its class. This allows us then to call mixin's methods or access its properties. In our case we are
+  using the <code class="language-coffeescript">storedValue</code> as a public property others can access.</p>
+
+<p><code class="language-coffeescript">PersistentInputMixin</code> is similar to the previous implementation, but now
+  is not tied to the component implementation anymore.</p>
+
+<pre class="coffee"><code class="language-coffeescript">class PersistentInputMixin extends BlazeComponent
+  onCreated: -&gt;
+    @storedValue = new ReactiveVar()
+
+  value: -&gt;
+    @storedValue.get() or @mixinParent().callMixinWith(@, 'value')
+
+  events: -&gt;
+    super.concat
+      'focus input': @onFocus
+      'blur input': @onBlur
+
+  onFocus: (event) -&gt;
+    @storedValue.set @mixinParent().callMixinWith(null, 'value')
+
+  onBlur: (event) -&gt;
+    @storedValue.set null</code></pre>
+
+Let's look in more detail into two snippets.
+
+<pre class="coffee"><code class="language-coffeescript">value: -&gt;
+  @storedValue.get() or @mixinParent().callMixinWith(@, 'value')</code></pre>
+
+<p>We pass <code class="language-coffeescript">@</code> as the first argument to the
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixinWith"><code class="language-coffeescript">callMixinWith</code></a>
+  call. This makes Blaze Components search for <code class="language-coffeescript">value</code> method only in mixins
+  after the current one. The idea here is that <code class="language-coffeescript">value</code> was potentially called
+  from the component or another mixin before the current one and now we continue and call the
+  <code class="language-coffeescript">value</code> method in the next mixin after the current one.</p>
+
+<p>It is interesting to observe that reactivity propagates as expected. If there is a stored value we register
+  a reactive dependency only on the stored value. But if a stored value is not set, we continue calling the method
+  on other mixins and potentially register other reactive dependencies. In our case, a dependency from the
+  <code class="language-coffeescript">StorageMixin</code>'s <code class="language-coffeescript">getValue</code>
+  method.</p>
+
+<pre class="coffee"><code class="language-coffeescript">onFocus: (event) -&gt;
+    @storedValue.set @mixinParent().callMixinWith(null, 'value')</code></pre>
+
+<p>Here we pass <code class="language-coffeescript">null</code> as the first argument to the
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixinWith"><code class="language-coffeescript">callMixinWith</code></a>
+  because we want to traverse the whole stack of mixins, not just from the current mixin on. We are calling a different
+  method than in which we are so we can do that, but such call might lead to an infinite loop if the other method would
+  call us back. So be careful.</p>
 
 {{!
 TEMPLATE FOR THE DEMO
@@ -471,8 +622,8 @@ Copy/paste when adding a new section.
 
 {{! TODO: Things we should probably mention/show/demo are all sections from the README: passing arguments to components (better than through data context) and animations. }}
 
-<a name="use-it"></a>
-<h2>Use It</h2>
+<a name="try-it-yourself"></a>
+<h2>Try It Yourself</h2>
 
 <p>You can start using Blaze Components in your Meteor package or application by adding <code>peerlibrary:blaze-components</code>
   to your list of dependencies.</p>

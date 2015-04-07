@@ -5,7 +5,7 @@ Meteor.startup ->
     commas_per_sentence: [0, 0]
 
   Meteor.setInterval ->
-    for demo in ['demo5', 'demo6']
+    for demo in ['demo5', 'demo6', 'demo7']
       Values.upsert demo,
         # Remove the sentence dot and convert to lower case.
         $set: value: dimsum.sentence(1).slice(0, -1).toLowerCase()
