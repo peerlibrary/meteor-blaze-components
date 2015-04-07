@@ -3,6 +3,7 @@
 .argumentsTestTemplate,
 .mixinEventsTestTemplate,
 .postMessageButtonComponent,
-.useCaseTemplate {
+.useCaseTemplate,
+.myComponent {
   display: none;
 }

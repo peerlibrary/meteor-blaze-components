@@ -95,7 +95,7 @@ viewToTemplateInstance = (view) ->
 addEvents = (view, component) ->
   eventsList = component.events()
 
-  throw new Error "'events' method from the component '#{ component.componentName() }' did not return a list of event maps." unless _.isArray eventsList
+  throw new Error "'events' method from the component '#{ component.componentName() or 'unnamed' }' did not return a list of event maps." unless _.isArray eventsList
 
   for events in eventsList
     eventMap = {}

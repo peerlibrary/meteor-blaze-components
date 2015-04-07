@@ -185,6 +185,205 @@ use these hooks to animate DOM elements.*
 Mixins
 ------
 
+Blaze Components are designed around the [composition over inheritance](http://en.wikipedia.org/wiki/Composition_over_inheritance)
+paradigm. JavaScript is a single-inheritance language and instead of Blaze Components trying to force fake
+multiple-inheritance onto a language, it offers a
+[set of utility methods](https://github.com/peerlibrary/meteor-blaze-components/#mixins-1) which allow the component to
+interact with its mixins and mixins with the component. The code becomes more verbose because of the use of methods
+instead of overloading, overriding or extending the existing elements of the language or objects, but we believe that
+results are easier to read, understand, and maintain.
+
+Each mixin becomes its own JavaScript object with its own state, but they share a life-cycle with the component.
+Most commonly mixin is an instance of a provided mixin class.
+
+A contrived example to showcase various features of mixins:
+
+```coffee
+class MyComponent extends BlazeComponent
+  @register 'MyComponent'
+
+  template: ->
+    'MyComponent'
+
+  mixins: -> [FirstMixin, new SecondMixin 'foobar']
+
+  alternativeName: ->
+    @callFirstWith null, 'templateHelper'
+
+  values: ->
+    'a' + (@callFirstWith(@, 'values') or '')
+
+class FirstMixinBase extends BlazeComponent
+  templateHelper: ->
+    "42"
+
+  extendedHelper: ->
+    1
+
+  onClick: ->
+    throw new Error() if @values() isnt @valuesPredicton
+
+class FirstMixin extends FirstMixinBase
+  extendedHelper: ->
+    super + 2
+
+  values: ->
+    'b' + (@mixinParent().callFirstWith(@, 'values') or '')
+
+  dataContext: ->
+    EJSON.stringify @mixinParent().data()
+
+  events: ->
+    super.concat
+      'click': @onClick
+
+  onCreated: ->
+    @valuesPredicton = 'bc'
+
+class SecondMixin
+  constructor: (@name) ->
+
+  mixinParent: (mixinParent) ->
+    @_mixinParent = mixinParent if mixinParent
+    @_mixinParent
+
+  values: ->
+    'c' + (@mixinParent().callFirstWith(@, 'values') or '')
+```
+
+```handlebars
+<template name="MyComponent">
+  <p>alternativeName: {{alternativeName}}</p>
+  <p>values: {{values}}</p>
+  <p>templateHelper: {{templateHelper}}</p>
+  <p>extendedHelper: {{extendedHelper}}</p>
+  <p>name: {{name}}</p>
+  <p>dataContext: {{dataContext}}</p>
+</template>
+```
+
+When this component is rendered using the `{top: '42'}` as a data context, it is rendered as:
+
+```html
+<p>alternativeName: 42</p>
+<p>values: abc</p>
+<p>templateHelper: 42</p>
+<p>extendedHelper: 3</p>
+<p>name: foobar</p>
+<p>dataContext: {"top":"42"}</p>
+```
+
+We can visualize class structure and mixins.
+
+
+
+
+
+
+Let's dissect the example.
+
+As we can see all methods become template helpers and they are searched for in the normal order, first the
+component, then mixins. First implementation found is called. If the implementation wants to continue with
+traversal it can call a method like [`callFirstWith`](user-content-reference_instance_callFirstWith).
+
+```coffee
+mixins: -> [FirstMixin, new SecondMixin 'foobar']
+```
+
+We can see that mixins can be also already made instances. And that mixins do not have to extend
+`BlazeComponent`. You get some methods for free, but you can use whatever you want to provide your features.
+
+```coffee
+alternativeName: ->
+  @callFirstWith null, 'templateHelper'
+```
+
+Wa call [`callFirstWith`](user-content-reference_instance_callFirstWith) with `null` which makes it traverse
+the whole stack, the component and all mixins, when searching for the first implementation of `templateHelper`.
+
+This allows us to not assume much about where the `templateHelper` is implemented. But be careful, if `templateHelper`
+would do the same back, calling the `alternativeName` on the whole stack, you might get into an inifinite loop.
+
+```coffee
+values: ->
+  'a' + (@callFirstWith(@, 'values') or '')
+```
+
+`values` method is passing `@` to p[`callFirstWith`](user-content-reference_instance_callFirstWith), signaling that only
+mixins after the component should be traversed.
+
+This is a general pattern for traversal which all `values` methods in this example use. Similar to how you would use
+`super` call in inheritance. `values` methods add their own letter to the result and ask later mixins for possible
+more content.
+
+Calling [`callFirstWith`](user-content-reference_instance_callFirstWith) in this way traverses the stack from the left
+to the right on the diagram of our example, one implementation of `values` after another.
+
+```coffee
+onClick: ->
+  throw new Error() if @values() isnt @valuesPredicton
+```
+
+Event handlers (and all other methods) have `@`/`this` bound to the mixin instance, not the component. Here we can see
+how the event handler can access `values` and `valuesPredicton` on mixin's instance and how normal CoffeeScript
+inheritance works between `FirstMixinBase` and `FirstMixin`.
+
+Event handlers are independent from other mixins and the component's event handlers. They are attached to DOM in the
+normal traversal order, first the component's, then mixins'. 
+
+To control how events are propagated between the component and mixins you can use `event` object methods like
+[`stopPropagation`](https://api.jquery.com/event.stopPropagation/) and
+[`stopImmediatePropagation`](https://api.jquery.com/event.stopImmediatePropagation/).
+
+```coffee
+extendedHelper: ->
+  super + 2
+```
+
+You can use normal CoffeeScript inheritance in your mixins. On the diagram of our example this traverses upwards.
+
+```coffee
+dataContext: ->
+  EJSON.stringify @mixinParent().data()
+```
+
+To access the data context used for the component you first access the component, and then its data context.
+
+```coffee
+onCreated: ->
+  @valuesPredicton = 'bc'
+```
+
+Mixin's life-cycle matches that of the component and mixin's life-cycle hooks are automatically called by Blaze
+Components when the component is [created](#user-content-reference_instance_onCreated),
+[rendered](#user-content-reference_instance_onRendered), and [destroyed](#user-content-reference_instance_onDestroyed).
+`@`/`this` is bound to the mixin instance.
+
+```coffee
+mixinParent: (mixinParent) ->
+  @_mixinParent = mixinParent if mixinParent
+  @_mixinParent
+```
+
+Because `SecondMixin` does not extend `BlazeComponent` we have to provide the
+[`mixinParent`](#user-content-reference_instance_mixinParent) method ourselves. It is called by the Blaze Components
+as a setter to tell the mixin what its component instance is.
+
+[`mixinParent`](#user-content-reference_instance_mixinParent) is a good place to add any dependencies to the
+component your mixin might need. Extend it and your additional logic.
+
+Example:
+
+```coffee
+mixinParent: (mixinParent) ->
+  mixinParent.requireMixin DependencyMixin if mixinParent
+  super
+```
+
+Don't forget to call `super`.
+
+*See the [tutorial](http://components.meteor.com/#the-cooperation) for a more real example of mixins.*
+
 Use with existing classes
 -------------------------
 
@@ -402,8 +601,8 @@ Returns current caller-level data context. A reactive data source.
 
 In [event handlers](#event-handlers) use `currentData` to get the data context at the place where the event originated (target context).
 In template helpers `currentData` returns the data context where a template helper was called. In life-cycle
-hooks [`onCreated`](#user-content-reference_instance_onCreated), [`onRendered`](user-content-reference_instance_onRendered),
-and [`onDestroyed`](user-content-reference_instance_onDestroyed), it is the same as [`data`](#user-content-reference_instance_data).
+hooks [`onCreated`](#user-content-reference_instance_onCreated), [`onRendered`](#user-content-reference_instance_onRendered),
+and [`onDestroyed`](#user-content-reference_instance_onDestroyed), it is the same as [`data`](#user-content-reference_instance_data).
 Inside a template accessing the method as a template helper `currentData` is the same as `this`/`@`.
 
 Example:

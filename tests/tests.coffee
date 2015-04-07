@@ -392,6 +392,60 @@ class RightComponent extends BlazeComponent
   template: ->
     'RightComponent'
 
+class MyComponent extends BlazeComponent
+  @register 'MyComponent'
+
+  template: ->
+    'MyComponent'
+
+  mixins: -> [FirstMixin2, new SecondMixin2 'foobar']
+
+  alternativeName: ->
+    @callFirstWith null, 'templateHelper'
+
+  values: ->
+    'a' + (@callFirstWith(@, 'values') or '')
+
+class FirstMixinBase extends BlazeComponent
+  @calls: []
+
+  templateHelper: ->
+    "42"
+
+  extendedHelper: ->
+    1
+
+  onClick: ->
+    throw new Error() if @values() isnt @valuesPredicton
+    @constructor.calls.push true
+
+class FirstMixin2 extends FirstMixinBase
+  extendedHelper: ->
+    super + 2
+
+  values: ->
+    'b' + (@mixinParent().callFirstWith(@, 'values') or '')
+
+  dataContext: ->
+    EJSON.stringify @mixinParent().data()
+
+  events: ->
+    super.concat
+      'click': @onClick
+
+  onCreated: ->
+    @valuesPredicton = 'bc'
+
+class SecondMixin2
+  constructor: (@name) ->
+
+  mixinParent: (mixinParent) ->
+    @_mixinParent = mixinParent if mixinParent
+    @_mixinParent
+
+  values: ->
+    'c' + (@mixinParent().callFirstWith(@, 'values') or '')
+
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
 
@@ -1088,5 +1142,28 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
   ]
 
+  testMixinsExample: [
+    ->
+      @renderedComponent = Blaze.renderWithData BlazeComponent.getComponent('MyComponent').renderComponent(), {top: '42'}, $('body').get(0)
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.myComponent').html()), trim """
+        <p>alternativeName: 42</p>
+        <p>values: abc</p>
+        <p>templateHelper: 42</p>
+        <p>extendedHelper: 3</p>
+        <p>name: foobar</p>
+        <p>dataContext: {"top":"42"}</p>
+      """
+
+      FirstMixin2.calls = []
+
+      $('.myComponent').click()
+      @assertEqual FirstMixin2.calls, [true]
+
+      Blaze.remove @renderedComponent
+  ]
 
 ClassyTestCase.addTest new BasicTestCase()
