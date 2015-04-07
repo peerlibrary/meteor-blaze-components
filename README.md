@@ -518,7 +518,7 @@ class ButtonComponent extends BlazeComponent
 You can now use [`postMessage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) to send messages
 like `{color: "Blue"}` which would reactively change the label of the button.
 
-When [mixins](#mixins-1) provide `onCreated` method, the default component implementation calls them in order.
+When [mixins](#mixins-1) provide `onCreated` method, they are called after the component in mixins order automatically.
 
 <a name="reference_instance_onRendered"></a>
 ```coffee
@@ -534,7 +534,7 @@ This is the place where you can initialize 3rd party libraries to work with the 
 mind that interactions of a 3rd party library with Blaze controlled content might bring unintentional consequences
 so consider reimplementing the 3rd party library as a Blaze Component instead.
 
-When [mixins](#mixins-1) provide `onRendered` method, the default component implementation calls them in order.
+When [mixins](#mixins-1) provide `onRendered` method, they are called after the component in mixins order automatically.
 
 <a name="reference_instance_onDestroyed"></a>
 ```coffee
@@ -547,7 +547,7 @@ with a re-rendering.
 Here you can clean up or undo any external effects of [`onCreated`](#user-content-reference_instance_onCreated)
 or [`onRendered`](#user-content-reference_instance_onRendered) methods. See the example above.
 
-When [mixins](#mixins-1) provide `onDestroyed` method, the default component implementation calls them in order.
+When [mixins](#mixins-1) provide `onDestroyed` method, they are called after the component in mixins order automatically.
 
 #### Utilities ####
 

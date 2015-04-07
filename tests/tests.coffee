@@ -79,6 +79,8 @@ class AnimatedListComponent extends BlazeComponent
     'AnimatedListComponent'
 
   onCreated: ->
+    super
+
     # To test inserts, moves, and removals.
     @_list = new ReactiveVar [1, 2, 3, 4, 5]
     @_handle = Meteor.setInterval =>
@@ -97,6 +99,8 @@ class AnimatedListComponent extends BlazeComponent
     , 1000 # ms
 
   onDestroyed: ->
+    super
+
     Meteor.clearInterval @_handle
 
   list: ->
@@ -224,6 +228,8 @@ class SecondMixin extends BlazeComponent
       'click': @onClick
 
   onCreated: ->
+    super
+
     # To test if adding a dependency during onCreated will make sure
     # to call onCreated on the added dependency as well.
     @mixinParent().requireMixin DependencyMixin
@@ -232,6 +238,8 @@ class DependencyMixin extends BlazeComponent
   @calls: []
 
   onCreated: ->
+    super
+
     @constructor.calls.push true
 
 class WithMixinsComponent extends BlazeComponent

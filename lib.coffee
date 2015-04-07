@@ -245,8 +245,8 @@ class BlazeComponent extends BaseComponent
     # already called, so we should call them manually here as well. But only if he view has not been destroyed
     # already. For those mixins we do not call anything, there is little use for them now.
     unless @templateInstance?.view.isDestroyed
-      mixinInstance.onCreated?() if @templateInstance?.view.isCreated
-      mixinInstance.onRendered?() if @templateInstance?.view.isRendered
+      mixinInstance.onCreated?() if not @_inOnCreated and @templateInstance?.view.isCreated
+      mixinInstance.onRendered?() if not @_inOnRendered and @templateInstance?.view.isRendered
 
     # To allow chaining.
     @
@@ -442,15 +442,35 @@ class BlazeComponent extends BaseComponent
 
           @component = component
           @component.templateInstance = @
-          @component.onCreated()
+
+          try
+            # We have to know if we should call onCreated on the mixin inside the requireMixin or not. We want to call
+            # it only once. If it requireMixin is called from onCreated of another mixin, then it will be added at the
+            # end and we will get it here at the end. So we should not call onCreated inside requireMixin because then
+            # onCreated would be called twice.
+            @component._inOnCreated = true
+            componentOrMixin = null
+            while componentOrMixin = @component.getFirstWith componentOrMixin, 'onCreated'
+              componentOrMixin.onCreated()
+          finally
+            delete @component._inOnCreated
 
         onRendered: ->
           # @ is a template instance.
-          @component.onRendered()
+          try
+            # Same as for onCreated above.
+            @component._inOnRendered = true
+            componentOrMixin = null
+            while componentOrMixin = @component.getFirstWith componentOrMixin, 'onRendered'
+              componentOrMixin.onRendered()
+          finally
+            delete @component._inOnRendered
 
         onDestroyed: ->
           # @ is a template instance.
-          @component.onDestroyed()
+          componentOrMixin = null
+          while componentOrMixin = @component.getFirstWith componentOrMixin, 'onDestroyed'
+            componentOrMixin.onDestroyed()
 
           if componentParent
             # The component has been destroyed, clear up the parent.
@@ -467,13 +487,10 @@ class BlazeComponent extends BaseComponent
     throw new Error "Component method 'template' not overridden."
 
   onCreated: ->
-    @callMixins 'onCreated'
 
   onRendered: ->
-    @callMixins 'onRendered'
 
   onDestroyed: ->
-    @callMixins 'onDestroyed'
 
   insertDOMElement: (parent, node, before) ->
     @callMixins 'insertDOMElement', parent, node, before
