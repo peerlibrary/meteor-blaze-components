@@ -449,6 +449,7 @@ editing it. To enable this, we'll store the current value when the input box get
   returns the <code class="language-coffeescript">SmartInputComponent</code> component, so mixin can access its value.
 </p>
 
+<a name="extreme-decomposition"></a>
 <h2>Extreme Decomposition</h2>
 
 <p>There is an interesting case of a recursion going on in the last example which shows that
@@ -555,7 +556,7 @@ connects a form field with a getter/setter API which other mixins can provide.</
   with its class. This allows us then to call mixin's methods or access its properties. In our case we are
   using the <code class="language-coffeescript">storedValue</code> as a public property others can access.</p>
 
-<p><code class="language-coffeescript">PersistentInputMixin</code> is similar to the previous implementation, but now
+<p>New <code class="language-coffeescript">PersistentInputMixin</code> is similar to the previous implementation, but now
   is not tied to the component implementation anymore.</p>
 
 <pre class="coffee"><code class="language-coffeescript">class PersistentInputMixin extends BlazeComponent
@@ -612,6 +613,16 @@ Let's look in more detail into two snippets.
   starts with only mixins. If you pass a mixin, then it starts with the mixin after it. The rule of thumb is that you
   can simply pass <code class="language-coffeescript">@</code> to call the next available implementation of the
   property.</p>
+
+<a name="more"></a>
+<h2>More</h2>
+
+<p>Blaze Components provide much more than we were able to cover in this introduction. For example,
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#passing-arguments">passing of arguments to components</a>,
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#component-based-block-helpers">component-based block helpers</a>,
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#animations">low-level DOM modification hooks</a>,
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#use-with-existing-classes">and use with existing classes</a>.
+  Some use cases and patterns have not yet been documented, or even discovered.</p>
 
 {{!
 TEMPLATE FOR THE DEMO
