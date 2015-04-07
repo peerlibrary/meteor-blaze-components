@@ -142,6 +142,46 @@ is rendered, you can specify data context as `{{> renderCase dataContext}}`.
 Animations
 ----------
 
+Blaze Components provide [low-level DOM manipulation hooks](#low-level-dom-manipulation-hooks) you can use to
+hook into insertion, move, or removal of DOM elements. Primarily you can use this to animate manipulation of
+DOM elements, but at the end you have to make sure you do the requested DOM manipulation correctly because Blaze
+will expect it done.
+
+Hooks are called only when DOM elements themselves are manipulated and not when their attributes change.
+
+A common pattern of using the hooks is to do the DOM manipulation as requested immediately, to the final state, and
+then only visually instantaneously revert to the initial state and then animate back to the final state. For example,
+to animate move of a DOM element you can first move the DOM element to the new position, and then use CSS translation
+to visually move it back to the previous position and then animate it slowly to the new position. The DOM element itself
+stays in the new position all the time in the DOM, only visually is being translated to the old position and animated.
+
+One way for animating is to modify CSS, like toggling a CSS class which enables animations. Another common way
+is to use a library like [Velocity](http://julian.com/research/velocity/).
+
+Animations are best provided as [reusable mixins](#mixins-1). But for performance reasons the default
+implementation of [`insertDOMElement`](#user-content-reference_instance_insertDOMElement),
+[`moveDOMElement`](#user-content-reference_instance_moveDOMElement), and
+[`removeDOMElement`](#user-content-reference_instance_removeDOMElement) just performs the manipulation and does not
+try to call mixins. So for components where you want to enable mixin animations for, you should extend those methods
+with something like:
+
+```coffee
+insertDOMElement: (parent, node, before) ->
+  @callFirstWith @, 'insertDOMElement', parent, node, before
+  super
+
+moveDOMElement: (parent, node, before) ->
+  @callFirstWith @, 'moveDOMElement', parent, node, before
+  super
+
+removeDOMElement: (parent, node) ->
+  @callFirstWith @, 'removeDOMElement', parent, node
+  super
+```
+
+*See [Momentum Meteor package](https://github.com/percolatestudio/meteor-momentum) for more information on how to
+use these hooks to animate DOM elements.*
+
 Mixins
 ------
 
