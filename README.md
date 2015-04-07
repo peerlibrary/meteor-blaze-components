@@ -239,7 +239,7 @@ Returned values from event handlers are ignored. To control how events are propa
 methods like [`stopPropagation`](https://api.jquery.com/event.stopPropagation/) and
 [`stopImmediatePropagation`](https://api.jquery.com/event.stopImmediatePropagation/).
 
-When [mixins](#mixins-1) provide event handlers, they are attached in order of mixins, with the component last.
+When [mixins](#mixins-1) provide event handlers, they are attached in order of mixins, with the component first.
 
 *For more information about event maps, event handling, and `event` object, see [Blaze documentation](http://docs.meteor.com/#/full/eventmaps)
 and [jQuery documentation](https://api.jquery.com/category/events/event-object/).*
@@ -518,7 +518,7 @@ class ButtonComponent extends BlazeComponent
 You can now use [`postMessage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) to send messages
 like `{color: "Blue"}` which would reactively change the label of the button.
 
-When [mixins](#mixins-1) provide `onCreated` method, the default implementation calls them in order.
+When [mixins](#mixins-1) provide `onCreated` method, the default component implementation calls them in order.
 
 <a name="reference_instance_onRendered"></a>
 ```coffee
@@ -534,7 +534,7 @@ This is the place where you can initialize 3rd party libraries to work with the 
 mind that interactions of a 3rd party library with Blaze controlled content might bring unintentional consequences
 so consider reimplementing the 3rd party library as a Blaze Component instead.
 
-When [mixins](#mixins-1) provide `onRendered` method, the default implementation calls them in order.
+When [mixins](#mixins-1) provide `onRendered` method, the default component implementation calls them in order.
 
 <a name="reference_instance_onDestroyed"></a>
 ```coffee
@@ -547,7 +547,7 @@ with a re-rendering.
 Here you can clean up or undo any external effects of [`onCreated`](#user-content-reference_instance_onCreated)
 or [`onRendered`](#user-content-reference_instance_onRendered) methods. See the example above.
 
-When [mixins](#mixins-1) provide `onDestroyed` method, the default implementation calls them in order.
+When [mixins](#mixins-1) provide `onDestroyed` method, the default component implementation calls them in order.
 
 #### Utilities ####
 
@@ -591,8 +591,8 @@ implementation is that if `node` has not yet been inserted, it simply inserts th
 You can extend this method if you want to insert the new DOM element in a different way, for example, by animating
 it. Make sure you do insert it correctly because Blaze will expect it to be there afterwards.
 
-When [mixins](#mixins-1) provide `insertDOMElement` method, the default implementation calls them in order. Make
-sure to always verify the state of the DOM before proceeding with mixin's logic. Some other mixin might already
+When [mixins](#mixins-1) provide `insertDOMElement` method, the default componnet implementation calls them in order.
+Make sure to always verify the state of the DOM before proceeding with mixin's logic. Some other mixin might already
 inserted the DOM element.
 
 <a name="reference_instance_moveDOMElement"></a>
@@ -607,8 +607,8 @@ DOM element, or as the last element if `before` is `null`.
 You can extend this method if you want to move the DOM element in a different way, for example, by animating
 it. Make sure you do move it correctly because Blaze will expect it to be there afterwards.
 
-When [mixins](#mixins-1) provide `moveDOMElement` method, the default implementation calls them in order. Make
-sure to always verify the state of the DOM before proceeding with mixin's logic. Some other mixin might already
+When [mixins](#mixins-1) provide `moveDOMElement` method, the default component implementation calls them in order.
+Make sure to always verify the state of the DOM before proceeding with mixin's logic. Some other mixin might already
 moved the DOM element.
 
 <a name="reference_instance_removeDOMElement"></a>
@@ -622,8 +622,8 @@ if `node` has not yet been removed, it simply removes the `node` DOM element.
 You can extend this method if you want to remove the DOM element in a different way, for example, by animating
 it. Make sure you do remove it correctly because Blaze will expect it to be removed afterwards.
 
-When [mixins](#mixins-1) provide `removeDOMElement` method, the default implementation calls them in order. Make
-sure to always verify the state of the DOM before proceeding with mixin's logic. Some other mixin might already
+When [mixins](#mixins-1) provide `removeDOMElement` method, the default component implementation calls them in order.
+Make sure to always verify the state of the DOM before proceeding with mixin's logic. Some other mixin might already
 removed the DOM element.
 
 #### Mixins ####

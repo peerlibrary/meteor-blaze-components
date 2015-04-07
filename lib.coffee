@@ -46,9 +46,11 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
 
   # Component.
   if component
+    # We first search on the component.
     if name of component
       return wrapHelper bindComponent(component, component[name]), templateInstance
 
+    # And then continue with mixins.
     if mixin = component.getMixinWith null, name
       return wrapHelper bindComponent(mixin, mixin[name]), templateInstance
 
@@ -319,6 +321,7 @@ class BlazeComponent extends BaseComponent
     else
       found = false
 
+    # TODO: Implement with a map between mixin -> position, so that we do not have to seek to find a mixin.
     for mixin in @_mixins
       return mixin if found and propertyName of mixin
 
@@ -430,15 +433,12 @@ class BlazeComponent extends BaseComponent
             # Attach events the first time template instance renders.
             return unless @view.renderCount is 1
 
-            assert @component._mixins
-
-            # We manually go over _mixins instead of using getMixin because we also need
-            # the mixin itself so that we can bind events correctly.
-            for mixin in @component._mixins when 'events' of mixin
-              addEvents @view, mixin
-
-            # We first add event handlers from mixins, then the component.
+            # We first add event handlers from the component, then mixins.
             addEvents @view, @component
+
+            mixin = null
+            while mixin = @component.getMixinWith mixin, 'events'
+              addEvents @view, mixin
 
           @component = component
           @component.templateInstance = @
