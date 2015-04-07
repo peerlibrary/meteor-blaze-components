@@ -346,7 +346,7 @@ editing it. To enable this, we'll store the current value when the input box get
     [AutoSelectInputMixin, RealTimeInputMixin, PersistentInputMixin]
 
   value: -&gt;
-    @callMixinWith(@, 'value') or Values.findOne(@data().id)?.value
+    @callFirstWith(@, 'value') or Values.findOne(@data().id)?.value
 
   events: -&gt;
     super.concat
@@ -376,22 +376,22 @@ editing it. To enable this, we'll store the current value when the input box get
 <p>We also need to modify our value helper to call mixins to get a possible value from them.</p>
 
 <aside>
-  <p><a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixinWith"><code class="language-coffeescript">callMixinWith</code></a>
+  <p><a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith"><code class="language-coffeescript">callFirstWith</code></a>
   will find the first of the mixins that have the specified function defined and call just that one. That mixin can call
-  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixinWith"><code class="language-coffeescript">callMixinWith</code></a>
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith"><code class="language-coffeescript">callFirstWith</code></a>
   again to continue traversal of mixins.</p>
-  <p>If you want to execute the function on all mixins that have it implemented, use
-  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixins"><code class="language-coffeescript">callMixins</code></a>
-  instead. The results will be collected into an array.</p>
+  <p>The first argument controls where the method searches for the function. We will look into that
+  <a href="#callFirstWith">in more detail later</a>.</p>
 </aside>
 
+<a name="SmartInputComponent"></a>
 <pre class="coffee"><code class="language-coffeescript">value: -&gt;
-  @callMixinWith(@, 'value') or Values.findOne(@data().id)?.value</code></pre>
+  @callFirstWith(@, 'value') or Values.findOne(@data().id)?.value</code></pre>
 
 <p>In inheritance we need to call <code class="language-coffeescript">super</code> to get the result of a method
   we are overriding &mdash; otherwise the child completely shadows that method. With mixins we have to perform the same
   thing to get the result from a mixin's implementation. That's what the
-  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixinWith"><code class="language-coffeescript">callMixinWith</code></a>
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith"><code class="language-coffeescript">callFirstWith</code></a>
   method does.</p>
 
 <p>If the component defines a behavior, it is overriding behaviors from component's mixins. And mixins do the same in
@@ -499,18 +499,18 @@ connects a form field with a getter/setter API which other mixins can provide.</
 
 <pre class="coffee"><code class="language-coffeescript">class FormFieldMixin extends BlazeComponent
   value: -&gt;
-    @mixinParent().callMixinWith(null, 'getValue')
+    @mixinParent().callFirstWith(null, 'getValue')
 
   events: -&gt;
     super.concat
       'change input': @onChange
 
   onChange: (event) -&gt;
-    @mixinParent().callMixinWith(null, 'setValue', event.target.value)</code></pre>
+    @mixinParent().callFirstWith(null, 'setValue', event.target.value)</code></pre>
 
-<p>We call <code class="language-coffeescript">getValue</code> on the component's first mixin which has this method.
-  We do the same for <code class="language-coffeescript">setValue</code>, just that we also pass the argument to the
-  method.</p>
+<p>We call <code class="language-coffeescript">getValue</code> on the component or component's mixin, whichever
+  has this method first. We do the same for <code class="language-coffeescript">setValue</code>, just that we also
+  pass the argument to the method.</p>
 
 <p>In our example, the getter/setter API is provided by the
   <code class="language-coffeescript">StorageMixin</code>. It uses Meteor collections and MongoDB queries to
@@ -545,7 +545,7 @@ connects a form field with a getter/setter API which other mixins can provide.</
       storedValue = @mixinParent().getMixin(PersistentInputMixin).storedValue.get()
       $(event.target).val(storedValue).change().blur()</code></pre>
 
-<p><a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixinWith"><code class="language-coffeescript">mixinParent</code></a>
+<p><a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith"><code class="language-coffeescript">mixinParent</code></a>
   is a method which can be used as a setter or getter. When a new mixin is created for a component it is automatically
   called as a setter to store the reference back to the component. This is a great moment to require any dependencies
   the mixin might need. In our case, <code class="language-coffeescript">CancelableInputMixin</code> is relying on the
@@ -563,7 +563,7 @@ connects a form field with a getter/setter API which other mixins can provide.</
     @storedValue = new ReactiveVar()
 
   value: -&gt;
-    @storedValue.get() or @mixinParent().callMixinWith(@, 'value')
+    @storedValue.get() or @mixinParent().callFirstWith(@, 'value')
 
   events: -&gt;
     super.concat
@@ -571,18 +571,19 @@ connects a form field with a getter/setter API which other mixins can provide.</
       'blur input': @onBlur
 
   onFocus: (event) -&gt;
-    @storedValue.set @mixinParent().callMixinWith(null, 'value')
+    @storedValue.set @mixinParent().callFirstWith(null, 'value')
 
   onBlur: (event) -&gt;
     @storedValue.set null</code></pre>
 
+<a name="callFirstWith"></a>
 Let's look in more detail into two snippets.
 
 <pre class="coffee"><code class="language-coffeescript">value: -&gt;
-  @storedValue.get() or @mixinParent().callMixinWith(@, 'value')</code></pre>
+  @storedValue.get() or @mixinParent().callFirstWith(@, 'value')</code></pre>
 
 <p>We pass <code class="language-coffeescript">@</code> as the first argument to the
-  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixinWith"><code class="language-coffeescript">callMixinWith</code></a>
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith"><code class="language-coffeescript">callFirstWith</code></a>
   call. This makes Blaze Components search for <code class="language-coffeescript">value</code> method only in mixins
   after the current one. The idea here is that <code class="language-coffeescript">value</code> was potentially called
   from the component or another mixin before the current one and now we continue and call the
@@ -595,13 +596,22 @@ Let's look in more detail into two snippets.
   method.</p>
 
 <pre class="coffee"><code class="language-coffeescript">onFocus: (event) -&gt;
-    @storedValue.set @mixinParent().callMixinWith(null, 'value')</code></pre>
+    @storedValue.set @mixinParent().callFirstWith(null, 'value')</code></pre>
 
 <p>Here we pass <code class="language-coffeescript">null</code> as the first argument to the
-  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callMixinWith"><code class="language-coffeescript">callMixinWith</code></a>
-  because we want to traverse the whole stack of mixins, not just from the current mixin on. We are calling a different
-  method than in which we are so we can do that, but such call might lead to an infinite loop if the other method would
-  call us back. So be careful.</p>
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith"><code class="language-coffeescript">callFirstWith</code></a>
+  because we want to traverse the whole stack of the component and mixins, not just from the current mixin on. We are
+  calling a different method than the one in which we are so we can do that, but such call might lead to an infinite
+  loop if the other method would call us back. So be careful.</p>
+
+<p>To summarize. With the first argument to
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith"><code class="language-coffeescript">callFirstWith</code></a>
+  you control where the method searches for the property. If you pass <code class="language-coffeescript">null</code>,
+  it searchers both the component and all mixins, in order. If you pass the component (as we did in the
+  <a href="#SmartInputComponent"><code class="language-coffeescript">SmartInputComponent</code></a> example), then it
+  starts with only mixins. If you pass a mixin, then it starts with the mixin after it. The rule of thumb is that you
+  can simply pass <code class="language-coffeescript">@</code> to call the next available implementation of the
+  property.</p>
 
 {{!
 TEMPLATE FOR THE DEMO

@@ -106,7 +106,7 @@ class SmartInputComponent extends BlazeComponent
     [AutoSelectInputMixin, RealTimeInputMixin, PersistentInputMixin]
 
   value: ->
-    @callMixinWith(@, 'value') or Values.findOne(@data().id)?.value
+    @callFirstWith(@, 'value') or Values.findOne(@data().id)?.value
 
   events: ->
     super.concat
@@ -156,7 +156,7 @@ class PersistentInputMixin2 extends BlazeComponent
     @storedValue = new ReactiveVar()
 
   value: ->
-    @storedValue.get() or @mixinParent().callMixinWith(@, 'value')
+    @storedValue.get() or @mixinParent().callFirstWith(@, 'value')
 
   events: ->
     super.concat
@@ -164,7 +164,7 @@ class PersistentInputMixin2 extends BlazeComponent
       'blur input': @onBlur
 
   onFocus: (event) ->
-    @storedValue.set @mixinParent().callMixinWith(null, 'value')
+    @storedValue.set @mixinParent().callFirstWith(null, 'value')
 
   onBlur: (event) ->
     @storedValue.set null
@@ -183,14 +183,14 @@ class ExtremeInputComponent extends BlazeComponent
 
 class FormFieldMixin extends BlazeComponent
   value: ->
-    @mixinParent().callMixinWith(null, 'getValue')
+    @mixinParent().callFirstWith(null, 'getValue')
 
   events: ->
     super.concat
       'change input': @onChange
 
   onChange: (event) ->
-    @mixinParent().callMixinWith(null, 'setValue', event.target.value)
+    @mixinParent().callFirstWith(null, 'setValue', event.target.value)
 
 class StorageMixin extends BlazeComponent
   constructor: (@collection, @fieldName, @selector) ->

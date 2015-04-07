@@ -650,24 +650,28 @@ Returns the component's mixin instance for a given name, class, or instance. Ret
 
 You can use it to check if a given mixin is used by the component.
 
-<a name="reference_instance_getMixinWith"></a>
+<a name="reference_instance_getFirstWith"></a>
 ```coffee
-getMixinWith: (afterMixin, propertyName) ->
+getFirstWith: (afterComponentOrMixin, propertyName) ->
 ```
 
-Returns the component's first mixin instance after `afterMixin` mixin which has a property `propertyName`.
-If `afterMixin` is `null` or the component itself, it searches all mixins. Returns `null` if such mixin is
-not found.
+It searchers the component and its mixins in order to find the first with a property `propertyName`. If
+`afterComponentOrMixin` is `null`, it starts with the component itself. If `afterComponentOrMixin` is the component,
+it starts with the first mixin. Otherwise it starts with the mixin after `afterComponentOrMixin`.
 
-<a name="reference_instance_callMixinWith"></a>
+Returns `null` if such component or mixin is not found.
+
+<a name="reference_instance_callFirstWith"></a>
 ```coffee
-callMixinWith: (afterMixin, propertyName, args...) ->
+callFirstWith: (afterComponentOrMixin, propertyName, args...) ->
 ```
 
-Finds the component's first mixin instance after `afterMixin` mixin which has a property `propertyName`
+It searchers the component and its mixins in order to find the first with a property `propertyName`
 and if it is a function, calls it with `args...` as arguments, otherwise returns the value of the property.
-If `afterMixin` is `null` or the component itself, it searches all mixins. Returns `undefined` if such mixin
-is not found.
+If `afterComponentOrMixin` is `null`, it starts with the component itself. If `afterComponentOrMixin` is the component,
+it starts with the first mixin. Otherwise it starts with the mixin after `afterComponentOrMixin`.
+
+Returns `undefined` if such component or mixin is not found.
 
 <a name="reference_instance_callMixins"></a>
 ```coffee

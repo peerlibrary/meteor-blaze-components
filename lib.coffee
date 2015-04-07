@@ -46,13 +46,9 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
 
   # Component.
   if component
-    # We first search on the component.
-    if name of component
-      return wrapHelper bindComponent(component, component[name]), templateInstance
-
-    # And then continue with mixins.
-    if mixin = component.getMixinWith null, name
-      return wrapHelper bindComponent(mixin, mixin[name]), templateInstance
+    # This will first search on the component and then continue with mixins.
+    if mixinOrComponent = component.getFirstWith null, name
+      return wrapHelper bindComponent(mixinOrComponent, mixinOrComponent[name]), templateInstance
 
   null
 
@@ -300,9 +296,10 @@ class BlazeComponent extends BaseComponent
       else
         mixin[propertyName]
 
-  # Calls the first next mixin after fromNameOrMixin it finds, and returns the result.
-  callMixinWith: (afterMixin, propertyName, args...) ->
-    mixin = @getMixinWith afterMixin, propertyName
+  # Calls the component (if afterComponentOrMixin is null) or the first next mixin
+  # after afterComponentOrMixin it finds, and returns the result.
+  callFirstWith: (afterComponentOrMixin, propertyName, args...) ->
+    mixin = @getFirstWith afterComponentOrMixin, propertyName
 
     # TODO: Should we throw an error here? Something like calling a function which does not exist?
     return unless mixin
@@ -312,11 +309,15 @@ class BlazeComponent extends BaseComponent
     else
       return mixin[propertyName]
 
-  getMixinWith: (afterMixin, propertyName) ->
+  getFirstWith: (afterComponentOrMixin, propertyName) ->
     assert @_mixins
 
-    # If mixin is not provided, or is the component, we start from the beginning.
-    if not afterMixin or afterMixin is @
+    # If afterComponentOrMixin is not provided, we start with the component.
+    if not afterComponentOrMixin
+      return @ if propertyName of @
+
+    # If afterComponentOrMixin is the component, we start with mixins.
+    if afterComponentOrMixin and afterComponentOrMixin is @
       found = true
     else
       found = false
@@ -325,7 +326,7 @@ class BlazeComponent extends BaseComponent
     for mixin in @_mixins
       return mixin if found and propertyName of mixin
 
-      found = true if mixin is afterMixin
+      found = true if mixin is afterComponentOrMixin
 
     null
 
@@ -434,11 +435,9 @@ class BlazeComponent extends BaseComponent
             return unless @view.renderCount is 1
 
             # We first add event handlers from the component, then mixins.
-            addEvents @view, @component
-
-            mixin = null
-            while mixin = @component.getMixinWith mixin, 'events'
-              addEvents @view, mixin
+            componentOrMixin = null
+            while componentOrMixin = @component.getFirstWith componentOrMixin, 'events'
+              addEvents @view, componentOrMixin
 
           @component = component
           @component.templateInstance = @
