@@ -315,9 +315,10 @@ class BlazeComponent extends BaseComponent
     # If afterComponentOrMixin is not provided, we start with the component.
     if not afterComponentOrMixin
       return @ if propertyName of @
-
+      # And continue with mixins.
+      found = true
     # If afterComponentOrMixin is the component, we start with mixins.
-    if afterComponentOrMixin and afterComponentOrMixin is @
+    else if afterComponentOrMixin and afterComponentOrMixin is @
       found = true
     else
       found = false
