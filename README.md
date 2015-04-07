@@ -340,7 +340,7 @@ extendedHelper: ->
   super + 2
 ```
 
-You can use normal CoffeeScript inheritance in your mixins. On the diagram of our example this traverses upwards.
+You can use normal CoffeeScript inheritance in your mixins. On the diagram of our example `super` traverses upwards.
 
 ```coffee
 dataContext: ->
