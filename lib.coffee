@@ -285,17 +285,6 @@ class BlazeComponent extends BaseComponent
 
     null
 
-  # Calls all mixins in order and collect all results into an array.
-  callMixins: (propertyName, args...) ->
-    assert @_mixins
-
-    # We return an array of results from each mixin.
-    for mixin in @_mixins when propertyName of mixin
-      if _.isFunction mixin[propertyName]
-        mixin[propertyName] args...
-      else
-        mixin[propertyName]
-
   # Calls the component (if afterComponentOrMixin is null) or the first next mixin
   # after afterComponentOrMixin it finds, and returns the result.
   callFirstWith: (afterComponentOrMixin, propertyName, args...) ->
@@ -493,8 +482,6 @@ class BlazeComponent extends BaseComponent
   onDestroyed: ->
 
   insertDOMElement: (parent, node, before) ->
-    @callMixins 'insertDOMElement', parent, node, before
-
     before ?= null
     if parent and node and (node.parentNode isnt parent or node.nextSibling isnt before)
       parent.insertBefore node, before
@@ -502,8 +489,6 @@ class BlazeComponent extends BaseComponent
     return
 
   moveDOMElement: (parent, node, before) ->
-    @callMixins 'moveDOMElement', parent, node, before
-
     before ?= null
     if parent and node and (node.parentNode isnt parent or node.nextSibling isnt before)
       parent.insertBefore node, before
@@ -511,8 +496,6 @@ class BlazeComponent extends BaseComponent
     return
 
   removeDOMElement: (parent, node) ->
-    @callMixins 'removeDOMElement', parent, node
-
     if parent and node and node.parentNode is parent
       parent.removeChild node
 

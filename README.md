@@ -591,9 +591,8 @@ implementation is that if `node` has not yet been inserted, it simply inserts th
 You can extend this method if you want to insert the new DOM element in a different way, for example, by animating
 it. Make sure you do insert it correctly because Blaze will expect it to be there afterwards.
 
-When [mixins](#mixins-1) provide `insertDOMElement` method, the default componnet implementation calls them in order.
-Make sure to always verify the state of the DOM before proceeding with mixin's logic. Some other mixin might already
-inserted the DOM element.
+If you want to use [mixins](#mixins-1) with the `insertDOMElement` method, you will have to extend the component's
+method to call them in the way you want.
 
 <a name="reference_instance_moveDOMElement"></a>
 ```coffee
@@ -607,9 +606,8 @@ DOM element, or as the last element if `before` is `null`.
 You can extend this method if you want to move the DOM element in a different way, for example, by animating
 it. Make sure you do move it correctly because Blaze will expect it to be there afterwards.
 
-When [mixins](#mixins-1) provide `moveDOMElement` method, the default component implementation calls them in order.
-Make sure to always verify the state of the DOM before proceeding with mixin's logic. Some other mixin might already
-moved the DOM element.
+If you want to use [mixins](#mixins-1) with the `moveDOMElement` method, you will have to extend the component's
+method to call them in the way you want.
 
 <a name="reference_instance_removeDOMElement"></a>
 ```coffee
@@ -622,9 +620,8 @@ if `node` has not yet been removed, it simply removes the `node` DOM element.
 You can extend this method if you want to remove the DOM element in a different way, for example, by animating
 it. Make sure you do remove it correctly because Blaze will expect it to be removed afterwards.
 
-When [mixins](#mixins-1) provide `removeDOMElement` method, the default component implementation calls them in order.
-Make sure to always verify the state of the DOM before proceeding with mixin's logic. Some other mixin might already
-removed the DOM element.
+If you want to use [mixins](#mixins-1) with the `removeDOMElement` method, you will have to extend the component's
+method to call them in the way you want.
 
 #### Mixins ####
 
@@ -672,14 +669,6 @@ If `afterComponentOrMixin` is `null`, it starts with the component itself. If `a
 it starts with the first mixin. Otherwise it starts with the mixin after `afterComponentOrMixin`.
 
 Returns `undefined` if such component or mixin is not found.
-
-<a name="reference_instance_callMixins"></a>
-```coffee
-callMixins: (propertyName, args...) ->
-```
-
-Finds all component's mixin instances which have a property `propertyName` and calls them in order with `args...`
-as arguments, returning an array of values returned from those calls.
 
 <a name="reference_instance_mixinParent"></a>
 ```coffee
