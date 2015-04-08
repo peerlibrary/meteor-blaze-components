@@ -148,6 +148,10 @@ life-long properties of a component, which then uses data context reactively whe
 Another look at it is from the MVC perspective. Arguments configure the controller (component), while data
 context is the model. If data is coming from the database, it should probably be a data context.
 
+*Passing arguments to a component method which returns a component to be included, something like
+`{{> getComponent args 'foo' key='bar'}}` is
+[not yet possible](https://github.com/peerlibrary/meteor-blaze-components/issues/12).*
+
 Life-cycle hooks
 ----------------
 
