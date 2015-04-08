@@ -182,6 +182,27 @@ will return `{color: "red"}`, but inside a `color2` it will return `{color: "blu
 buttons will by calling `currentData` get `{color: "red"}` as the data context for red button, and `{color: "blue"}` for
 blue button. In all cases `data` will return `{color: "red"}`.
 
+Because [`data`](#user-content-reference_instance_data) and [`currentData`](#user-content-reference_instance_currentData)
+are both component's methods you can access them in a template as well. This is useful when you want to access
+a data context property which is shadowed by a component's method.
+
+Example:
+
+```handlebars
+<template name="Colors">
+  {{color}}
+  {{#with color='blue'}}
+    {{color}}
+    {{! To access component's data context from an inner data context, use "data".}}
+    {{data.color}}
+    {{! To access the data context over the component method.}}
+    {{currentData.color}}
+    {{! Alternatively, you can also use keyword "this".}}
+    {{this.color}}
+  {{/with}}
+</template>
+```
+
 *See [Spacebars documentation](https://github.com/meteor/meteor/blob/devel/packages/spacebars/README.md) for more
 information how to specify and work with the data context in templates.*
 
