@@ -12,6 +12,7 @@ Client side only.
 
 * [Installation](#installation)
 * [Components](#components)
+* [JavaScript and ES6 support](#javascript-and-es6-support)
 * [Accessing data context](#accessing-data-context)
 * [Passing arguments](#passing-arguments)
 * [Life-cycle hooks](#life-cycle-hooks)
@@ -118,8 +119,55 @@ You can see how to [register a component](#user-content-reference_class_register
 
 All template helpers, methods, event handlers, life-cycle hooks have `@`/`this` bound to the component.
 
-*While documentation is in [CoffeeScript](http://coffeescript.org/), Blaze Components are designed to be
-equally easy to use with vanilla JavaScript and ES6 classes as well.*
+JavaScript and ES6 support
+--------------------------
+
+While documentation is in [CoffeeScript](http://coffeescript.org/), Blaze Components are designed to be
+equally easy to use with vanilla JavaScript and ES6 classes as well.
+
+Example above in vanilla JavaScript:
+
+```javascript
+function ExampleComponent() {}
+
+ExampleComponent.prototype = Object.create(BlazeComponent.prototype);
+ExampleComponent.prototype.constructor = ExampleComponent;
+
+_.extend(ExampleComponent, BlazeComponent);
+ExampleComponent.__super__ = BlazeComponent.prototype;
+
+ExampleComponent.register('ExampleComponent');
+
+ExampleComponent.prototype.template = function () {
+  return 'ExampleComponent';
+};
+
+ExampleComponent.prototype.onCreated = function () {
+  this.counter = new ReactiveVar(0);
+};
+
+ExampleComponent.prototype.events = function () {
+  return [{
+    'click .increment': this.onClick
+  }];
+};
+
+ExampleComponent.prototype.onClick = function (event) {
+  this.counter.set(this.counter.get() + 1);
+};
+
+ExampleComponent.prototype.customHelper = function () {
+  if (this.counter.get() > 10) {
+    return "Too many times";
+  }
+  else if (this.counter.get() === 10) {
+    return "Just enough";
+  }
+  else {
+    return "Click more";
+  }
+};
+```
 
 Accessing data context
 ----------------------

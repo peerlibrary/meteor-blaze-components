@@ -63,6 +63,7 @@ Package.onTest(function (api) {
 
   api.addFiles([
     'tests/tests.html',
+    'tests/tests.js',
     'tests/tests.coffee',
     'tests/tests.css'
    ], 'client');

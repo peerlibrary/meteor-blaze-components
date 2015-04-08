@@ -1243,4 +1243,43 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
   ]
 
+  testReadmeExampleJS: [
+    ->
+      @renderedComponent = Blaze.render BlazeComponent.getComponent('ExampleComponentJS').renderComponent(), $('body').get(0)
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.exampleComponent').html()), trim """
+        <button class="increment">Click me</button>
+        <p>Counter: 0</p>
+        <p>Message: Click more</p>
+      """
+
+      $('.exampleComponent .increment').click()
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.exampleComponent').html()), trim """
+        <button class="increment">Click me</button>
+        <p>Counter: 1</p>
+        <p>Message: Click more</p>
+      """
+
+      for i in [0..15]
+        $('.exampleComponent .increment').click()
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.exampleComponent').html()), trim """
+        <button class="increment">Click me</button>
+        <p>Counter: 17</p>
+        <p>Message: Too many times</p>
+      """
+
+      Blaze.remove @renderedComponent
+  ]
+
 ClassyTestCase.addTest new BasicTestCase()
