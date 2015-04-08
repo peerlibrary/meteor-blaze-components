@@ -10,6 +10,28 @@ Adding this package to your Meteor application adds `BlazeComponent` class into 
 
 Client side only.
 
+* [Installation](#installation)
+* [Components](#components)
+* [Accessing data context](#accessing-data-context)
+* [Passing arguments](#passing-arguments)
+* [Life-cycle hooks](#life-cycle-hooks)
+* [Component-based block helpers](#component-based-block-helpers)
+* [Animations](#animations)
+* [Mixins](#mixins)
+* [Use with existing classes](#use-with-existing-classes)
+* [Reference](#reference)
+  * [Class methods](#class-methods)
+  * [Instance methods](#instance-methods)
+    * [Event handlers](#event-handlers)
+    * [DOM content](#dom-content)
+    * [Access to rendered content](#access-to-rendered-content)
+    * [Access to data context and components](#access-to-data-context-and-components)
+    * [Life-cycle hooks](#life-cycle-hooks-1)
+    * [Utilities](#utilities)
+    * [Low-level DOM manipulation hooks](#low-level-dom-manipulation-hooks)
+    * [Mixins](#mixins-1)
+* [Related projects](#related-projects)
+
 Installation
 ------------
 
