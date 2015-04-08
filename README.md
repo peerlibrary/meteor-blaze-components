@@ -45,6 +45,66 @@ Components
 Accessing data context
 ----------------------
 
+Blaze Components are designed around the separation of concerns known as
+[Model–View–Controller](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) (MVC).
+Controller and its logic is implemented through a component. View is described through a template. And model is provided
+as a data context to a controller, a component.
+
+Data context is often reactive. It often comes from a database using Meteor's reactive stack. Often as data context
+changes, components stays rendered and just how it is rendered changes.
+
+You can provide a data context to a component when you are including it in the template.
+
+Examples:
+
+```handlebars
+{{> MyComponent}}
+
+{{#with dataContext}}
+  {{> MyComponent}}
+{{/with}}
+
+{{#each documents}}
+  {{> MyComponent}}
+{{/each}}
+
+{{> MyComponent dataContext}}
+
+{{> MyComponent a='foo' b=helper}}
+```
+
+`dataContext`, `documents` and `helper` are template helpers, component's methods. If they are reactive, the data
+context is reactive.
+
+You can access provided data context in your component's code through reactive
+[`data`](#user-content-reference_instance_data) and [`currentData`](#user-content-reference_instance_currentData)
+methods. There is slight difference between those two. The former always returns component's data context, while
+the latter returns the data context from where it was called. It can be different in template helpers and event
+handlers.
+
+Example:
+
+```handlebars
+<template name="Buttons">
+  <button>Red</button>
+  {{color1}}
+  {{#with color='blue'}}
+    <button>Blue</button>
+    {{color2}}
+  {{/with}}
+</template>
+```
+
+If top-level data context is `{color: "red"}`, then `currentData` inside a `color1` component method (template helper)
+will return `{color: "red"}`, but inside a `color2` it will return `{color: "blue"}`. Similarly, click event handler on
+buttons will by calling `currentData` get `{color: "red"}` as the data context for red button, and `{color: "blue"}` for
+blue button. In all cases `data` will return `{color: "red"}`.
+
+*See [Spacebars documentation](https://github.com/meteor/meteor/blob/devel/packages/spacebars/README.md) for more
+information how to specify and work with the data context in templates.*
+
+*Specifying a data context to a component in the code will be provided through the `renderComponent` method
+which is not yet public.*
 
 Passing arguments
 -----------------
@@ -83,7 +143,10 @@ is not used only as a component and requires some arguments to the constructor.
 A general rule of thumb is that if you want the component to persist while data used to render the component is changing,
 use a data context. But if you want to reinitialize the component itself if your data changes, then pass that data
 through arguments. Component is always recreated when any argument changes. In some way arguments configure the
-life-long properties of a component, which then uses data context reactivelly when rendering.
+life-long properties of a component, which then uses data context reactively when rendering.
+
+Another look at it is from the MVC perspective. Arguments configure the controller (component), while data
+context is the model. If data is coming from the database, it should probably be a data context.
 
 Life-cycle hooks
 ----------------
@@ -698,24 +761,6 @@ In template helpers `currentData` returns the data context where a template help
 hooks [`onCreated`](#user-content-reference_instance_onCreated), [`onRendered`](#user-content-reference_instance_onRendered),
 and [`onDestroyed`](#user-content-reference_instance_onDestroyed), it is the same as [`data`](#user-content-reference_instance_data).
 Inside a template accessing the method as a template helper `currentData` is the same as `this`/`@`.
-
-Example:
-
-```handlebars
-<template name="Buttons">
-  <button>Red</button>
-  {{color1}}
-  {{#with color='blue'}}
-    <button>Blue</button>
-    {{color2}}
-  {{/with}}
-</template>
-```
-
-If top-level data context is `{color: "red"}`, then `currentData` inside a `color1` component method (template helper)
-will return `{color: "red"}`, but inside a `color2` it will return `{color: "blue"}`. Similarly, click event handler on
-buttons will by calling `currentData` get `{color: "red"}` as the data context for red button, and `{color: "blue"}` for
-blue button. In all cases `data` will return `{color: "red"}`.
 
 <a name="reference_instance_component"></a>
 ```coffee
