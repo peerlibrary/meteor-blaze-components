@@ -502,10 +502,6 @@ for property, value of (BlazeComponent::) when property not in ['constructor']
 Reference
 ---------
 
-**API is still in development and we seek community input. Please
-[use GitHub issues](https://github.com/peerlibrary/meteor-blaze-components/issues) to offer your suggestions
-and feedback, and join existing discussions there.**
-
 ### Class methods ###
 
 <a name="reference_class_register"></a>
