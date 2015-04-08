@@ -27,6 +27,42 @@ Accessing data context
 Passing arguments
 -----------------
 
+Blaze Components automatically instantiate an instance of a component when needed. In most cases you pass data to
+a component as its data context, but sometimes you want to pass arguments to component's constructor. You can do
+that as well with the special `args` syntax:
+
+```handlebars
+{{> MyComponent args 'foo' key='bar'}}
+```
+
+Blaze Components will call `MyComponent`'s constructor with arguments `foo` and `Spacebars.kw({key: 'bar'})`
+when instantiating the component's class. Keyword arguments are wrapped into
+[`Spacebars.kw`](https://github.com/meteor/meteor/blob/devel/packages/spacebars/README.md#helper-arguments).
+
+Compare:
+
+```handlebars
+{{> MyComponent key='bar'}}
+```
+
+`MyComponent`'s constructor is called without any arguments, but the data context of a component is set to
+`{key: 'bar'}`.
+
+```handlebars
+{{> MyComponent}}
+```
+
+`MyComponent`'s constructor is called without any arguments and the data context is kept as it is.
+
+
+When you want to use a data context and when arguments depends on your use case and code structure. Sometimes your class
+is not used only as a component and requires some arguments to the constructor.
+
+A general rule of thumb is that if you want the component to persist while data used to render the component is changing,
+use a data context. But if you want to reinitialize the component itself if your data changes, then pass that data
+through arguments. Component is always recreated when any argument changes. In some way arguments configure the
+life-long properties of a component, which then uses data context reactivelly when rendering.
+
 Life-cycle hooks
 ----------------
 
