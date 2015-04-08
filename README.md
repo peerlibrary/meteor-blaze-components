@@ -275,7 +275,7 @@ When this component is rendered using the `{top: '42'}` as a data context, it is
 
 We can visualize class structure and mixins.
 
-
+![Example mixins visualization](https://raw.githubusercontent.com/peerlibrary/meteor-blaze-components/master/mixins.svg)
 
 
 
