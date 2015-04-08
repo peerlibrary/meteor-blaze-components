@@ -30,6 +30,32 @@ Passing arguments
 Life-cycle hooks
 ----------------
 
+There are multiple stages in the life of a component. In the common case it starts with a class which is
+instantiated, rendered, and destroyed.
+
+Life-cycle hooks are called in order:
+
+1. Class [`constructor`](#user-content-reference_instance_constructor)
+2. [`mixinParent`](#user-content-reference_instance_mixinParent) (mixins only) – called on a mixin after it has been
+created to associate it with its component
+3. [`onCreated`](#user-content-reference_instance_onCreated) – called once a component is being created before being
+inserted into DOM
+4. [`onRendered`](#user-content-reference_instance_onRendered) – called once a rendered component is inserted into DOM
+5. [`onDestroyed`](#user-content-reference_instance_onDestroyed) – called once a component was removed from DOM and is
+being destroyed
+
+The suggested use is that most of the component related initialization should be in
+[`onCreated`](#user-content-reference_instance_onCreated) and [`constructor`](#user-content-reference_instance_constructor)
+should be used for possible other uses of the same class. [`constructor`](#user-content-reference_instance_constructor)
+does receive [optional arguments](#passing-arguments) though.
+
+[Mixins](#mixins-1) share life-cycle with the component and their life-cycle hooks are called automatically
+by Blaze Components.
+
+*Life-cycle of a component is is the common case linked with its life in the DOM. But you can create an instance of
+a component which you can keep a reference to and reuse it multiple times, thus keeping its state between multiple
+renderings. You can do this using the `renderComponent` method which is not yet public.*
+
 Component-based block helpers
 -----------------------------
 
@@ -285,7 +311,7 @@ Let's dissect the example.
 As we can see all methods become template helpers and they are searched for in the normal order, first the
 component, then mixins. On the diagram from left to right. First implementation found is called. If the
 implementation wants to continue with the traversal it can do it by itself, probably using
-[`callFirstWith`](user-content-reference_instance_callFirstWith).
+[`callFirstWith`](#user-content-reference_instance_callFirstWith).
 
 ```coffee
 mixins: -> [FirstMixin, new SecondMixin 'foobar']
@@ -299,7 +325,7 @@ alternativeName: ->
   @callFirstWith null, 'templateHelper'
 ```
 
-Wa call [`callFirstWith`](user-content-reference_instance_callFirstWith) with `null` which makes it traverse
+Wa call [`callFirstWith`](#user-content-reference_instance_callFirstWith) with `null` which makes it traverse
 the whole structure, the component and all mixins, when searching for the first implementation of `templateHelper`.
 
 This allows us to not assume much about where the `templateHelper` is implemented. But be careful, if `templateHelper`
@@ -314,18 +340,18 @@ values: ->
   'a' + (@callFirstWith(@, 'values') or '')
 ```
 
-`values` method is passing `@` to p[`callFirstWith`](user-content-reference_instance_callFirstWith), signaling that only
+`values` method is passing `@` to [`callFirstWith`](#user-content-reference_instance_callFirstWith), signaling that only
 mixins after the component should be traversed.
 
 This is a general pattern for traversal which all `values` methods in this example use. Similar to how you would use
 `super` call in inheritance. `values` methods add their own letter to the result and ask later mixins for possible
 more content.
 
-Calling [`callFirstWith`](user-content-reference_instance_callFirstWith) in this way traverses the structure from
+Calling [`callFirstWith`](#user-content-reference_instance_callFirstWith) in this way traverses the structure from
 the left to the right on the diagram of our example, one implementation of `values` after another. First, `values`
-method from `MyComponent` component is found. This method calls [`callFirstWith`](user-content-reference_instance_callFirstWith)
+method from `MyComponent` component is found. This method calls [`callFirstWith`](#user-content-reference_instance_callFirstWith)
 which continues searching on `FirstMixin`, where it is found again. That method calls
-[`callFirstWith`](user-content-reference_instance_callFirstWith), which now finds `values` again, this time on
+[`callFirstWith`](#user-content-reference_instance_callFirstWith), which now finds `values` again, this time on
 `SecondMixin`. Call from the `SecondMixin` does not find any more implementations. The result is thus:
 
 ```coffee
@@ -649,7 +675,7 @@ Returns the component. Useful in templates to get a reference to the component.
 currentComponent: ->
 ```
 
-Similar to [`currentData`](user-content-reference_instance_currentData), `currentComponent` returns current
+Similar to [`currentData`](#user-content-reference_instance_currentData), `currentComponent` returns current
 caller-level component.
 
 In most cases the same as `this`/`@`, but in event handlers it returns the component at the place where
@@ -826,7 +852,7 @@ autorun: (runFunc) ->
 
 A version of [`Tracker.autorun`](http://docs.meteor.com/#/full/tracker_autorun) that is stopped when the component is
 destroyed. You can use `autorun` from an [`onCreated`](#user-content-reference_instance_onCreated) or
-[`onRendered`](user-content-reference_instance_onRendered) life-cycle hooks to reactively update the DOM or the component.
+[`onRendered`](#user-content-reference_instance_onRendered) life-cycle hooks to reactively update the DOM or the component.
 
 <a name="reference_instance_subscribe"></a>
 ```coffee
@@ -950,7 +976,7 @@ When called with a `mixinParent` argument it sets the mixin's parent.
 
 *Setting the mixin's parent is done automatically by calling this method when creating component's mixins. Extend
 (or provide) this method if you want to do any action when parent is set, for example, add dependency mixins to
-the parent using [`requireMixin`](user-content-reference_instance_requireMixin). Make sure you call `super` as well.*
+the parent using [`requireMixin`](#user-content-reference_instance_requireMixin). Make sure you call `super` as well.*
 
 <a name="reference_instance_requireMixin"></a>
 ```coffee
@@ -963,7 +989,7 @@ mixin instance.
 If mixin is already added to the component the method does nothing.
 
 Use `requireMixin` to manually add additional mixins after a component was created. For example, to add
-dependencies required by automatically added mixins as a result of [`mixins`](user-content-reference_instance_mixins).
+dependencies required by automatically added mixins as a result of [`mixins`](#user-content-reference_instance_mixins).
 
 Related projects
 ----------------
