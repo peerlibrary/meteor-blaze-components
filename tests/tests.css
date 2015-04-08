@@ -4,6 +4,7 @@
 .mixinEventsTestTemplate,
 .postMessageButtonComponent,
 .useCaseTemplate,
-.myComponent {
+.myComponent,
+.exampleComponent {
   display: none;
 }
