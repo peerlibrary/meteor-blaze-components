@@ -15,7 +15,7 @@ htmljs@1.0.4
 id-map@1.0.3
 jquery@1.11.3_2
 json@1.0.3
-local-test:peerlibrary:blaze-components@0.1.0
+local-test:peerlibrary:blaze-components@0.2.0
 logging@1.0.7
 meteor@1.1.6
 minifiers@1.1.5
@@ -24,8 +24,8 @@ mongo@1.1.0
 observe-sequence@1.0.6
 ordered-dict@1.0.3
 peerlibrary:assert@0.2.5
-peerlibrary:base-component@0.3.0
-peerlibrary:blaze-components@0.1.0
+peerlibrary:base-component@0.5.0
+peerlibrary:blaze-components@0.2.0
 peerlibrary:classy-test@0.2.9
 random@1.0.3
 reactive-var@1.0.5
