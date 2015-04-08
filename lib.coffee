@@ -430,6 +430,9 @@ class BlazeComponent extends BaseComponent
               addEvents @view, componentOrMixin
 
           @component = component
+
+          # TODO: Should we support that the same component can be rendered multiple times in parallel? How could we do that?
+          assert not @component.templateInstance
           @component.templateInstance = @
 
           try
