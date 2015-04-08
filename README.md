@@ -275,16 +275,17 @@ When this component is rendered using the `{top: '42'}` as a data context, it is
 
 We can visualize class structure and mixins.
 
-![Example mixins visualization](https://raw.githubusercontent.com/peerlibrary/meteor-blaze-components/master/mixins.svg)
+![Example mixins visualization](https://cdn.rawgit.com/peerlibrary/meteor-blaze-components/master/mixins.svg)
 
-
-
+Full lines represent JavaScript/CoffeeScript inheritance. Dashed lines represent mixins relationships based
+on the order of mixins specified.
 
 Let's dissect the example.
 
 As we can see all methods become template helpers and they are searched for in the normal order, first the
-component, then mixins. First implementation found is called. If the implementation wants to continue with
-traversal it can call a method like [`callFirstWith`](user-content-reference_instance_callFirstWith).
+component, then mixins. On the diagram from left to right. First implementation found is called. If the
+implementation wants to continue with the traversal it can do it by itself, probably using
+[`callFirstWith`](user-content-reference_instance_callFirstWith).
 
 ```coffee
 mixins: -> [FirstMixin, new SecondMixin 'foobar']
@@ -299,10 +300,14 @@ alternativeName: ->
 ```
 
 Wa call [`callFirstWith`](user-content-reference_instance_callFirstWith) with `null` which makes it traverse
-the whole stack, the component and all mixins, when searching for the first implementation of `templateHelper`.
+the whole structure, the component and all mixins, when searching for the first implementation of `templateHelper`.
 
 This allows us to not assume much about where the `templateHelper` is implemented. But be careful, if `templateHelper`
-would do the same back, calling the `alternativeName` on the whole stack, you might get into an inifinite loop.
+would do the same back, calling the `alternativeName` on the whole structure, you might get into an inifinite loop.
+
+On the diagram of our example, this starts traversal on `MyComponent`, checking for the `templateHelper` on
+its instance through JavaScript/CoffeeScript inheritance. Afterwards it moves to `FirstMixin`, looking at its
+instance and its inheritance parent, where it finds it.
 
 ```coffee
 values: ->
@@ -316,8 +321,16 @@ This is a general pattern for traversal which all `values` methods in this examp
 `super` call in inheritance. `values` methods add their own letter to the result and ask later mixins for possible
 more content.
 
-Calling [`callFirstWith`](user-content-reference_instance_callFirstWith) in this way traverses the stack from the left
-to the right on the diagram of our example, one implementation of `values` after another.
+Calling [`callFirstWith`](user-content-reference_instance_callFirstWith) in this way traverses the structure from
+the left to the right on the diagram of our example, one implementation of `values` after another. First, `values`
+method from `MyComponent` component is found. This method calls [`callFirstWith`](user-content-reference_instance_callFirstWith)
+which continues searching on `FirstMixin`, where it is found again. That method calls
+[`callFirstWith`](user-content-reference_instance_callFirstWith), which now finds `values` again, this time on
+`SecondMixin`. Call from the `SecondMixin` does not find any more implementations. The result is thus:
+
+```coffee
+'a' + ('b' + ('c' + ''))
+```
 
 ```coffee
 onClick: ->
@@ -325,7 +338,7 @@ onClick: ->
 ```
 
 Event handlers (and all other methods) have `@`/`this` bound to the mixin instance, not the component. Here we can see
-how the event handler can access `values` and `valuesPredicton` on mixin's instance and how normal CoffeeScript
+how the event handler can access `values` and `valuesPredicton` on mixin's instance and how normal JavaScript/CoffeeScript
 inheritance works between `FirstMixinBase` and `FirstMixin`.
 
 Event handlers are independent from other mixins and the component's event handlers. They are attached to DOM in the
@@ -340,7 +353,8 @@ extendedHelper: ->
   super + 2
 ```
 
-You can use normal CoffeeScript inheritance in your mixins. On the diagram of our example `super` traverses upwards.
+You can use normal JavaScript/CoffeeScript inheritance in your mixins. On the diagram of our example `super` traverses
+upwards.
 
 ```coffee
 dataContext: ->

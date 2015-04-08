@@ -601,7 +601,7 @@ Let's look in more detail into two snippets.
 
 <p>Here we pass <code class="language-coffeescript">null</code> as the first argument to the
   <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith"><code class="language-coffeescript">callFirstWith</code></a>
-  because we want to traverse the whole stack of the component and mixins, not just from the current mixin on. We are
+  because we want to traverse the whole structure of the component and mixins, not just from the current mixin on. We are
   calling a different method than the one in which we are so we can do that, but such call might lead to an infinite
   loop if the other method would call us back. So be careful.</p>
 
