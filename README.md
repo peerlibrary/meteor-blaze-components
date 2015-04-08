@@ -42,16 +42,98 @@ meteor add peerlibrary:blaze-components
 Components
 ----------
 
+While Blaze Components are build on top of [Blaze](https://www.meteor.com/blaze), Meteor's a powerful library
+for creating live-updating user interfaces, its public API and semantics are different with the goal of providing
+extensible and composable components through unified and consistent interface.
+
+This documentation assumes familiarity with Blaze and its concepts of
+[templates, template helpers, data contexts](http://docs.meteor.com/#/full/livehtmltemplates), and
+[reactivity](http://docs.meteor.com/#/full/reactivity), but we will also turn some of those concepts around.
+For a gentle introduction to Blaze Components see the [tutorial](http://components.meteor.com/).
+
+A Blaze Component is defined as a class providing few methods Blaze Components system will call to render a
+component and few methods which will be called through a lifetime of a component. See the [reference](#reference)
+for the list of all methods used and/or provided by Blaze Components.
+
+A basic component might look like the following.
+
+```coffee
+class ExampleComponent extends BlazeComponent
+  # Register a component so that it can be included in templates. It also
+  # gives the component the name. The convention is to use the class name.
+  @register 'ExampleComponent'
+
+  # Which template to use for this component.
+  template: ->
+    # Convention is to name the template the same as the component.
+    'ExampleComponent'
+
+  # Life-cycle hook to initialize component's state.
+  onCreated: ->
+    super
+    @counter = new ReactiveVar 0
+
+  # Mapping between events and their handlers.
+  events: ->
+    # events method should return an array of event maps, so we concatenate
+    # a new map to a possibly existing ones. It is a good practice to always
+    # call parent implementation.
+    super.concat
+      # You could inline the handler, but the best is to make
+      # it a method so that it can be extended later on.
+      'click .increment': @onClick
+
+  onClick: (event) ->
+    @counter.set @counter.get() + 1
+
+  # Any component's method is available as a template helper in the template.
+  customHelper: ->
+    if @counter.get() > 10
+      "Too many times"
+    else if @counter.get() is 10
+      "Just enough"
+    else
+      "Click more"
+```
+
+```handlebars
+<template name="ExampleComponent">
+  <button class="increment">Click me</button>
+  {{! You can include subtemplates to structure your templates.}}
+  {{> subTemplate}}
+</template>
+
+<!--We use camelCase to distinguish it from the component's template.-->
+<template name="subTemplate">
+  {{! You can access component's properties.}}
+  <p>Counter: {{counter.get}}</p>
+  {{! And component's methods.}}
+  <p>Message: {{customHelper}}</p>  
+</template>
+```
+
+You can see how to [register a component](#user-content-reference_class_register), define a
+[template](#user-content-reference_instance_template), define a [life-cycle hook](#life-cycle-hooks),
+[event handlers](#user-content-reference_instance_events), and a custom helper as a component method.
+
+All template helpers, methods, event handlers, life-cycle hooks have `@`/`this` bound to the component.
+
+*While documentation is in [CoffeeScript](http://coffeescript.org/), Blaze Components are designed to be
+equally easy to use with vanilla JavaScript and ES6 classes as well.*
+
 Accessing data context
 ----------------------
 
 Blaze Components are designed around the separation of concerns known as
-[Model–View–Controller](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) (MVC).
+[model–view–controller](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) (MVC).
 Controller and its logic is implemented through a component. View is described through a template. And model is provided
 as a data context to a controller, a component.
 
 Data context is often reactive. It often comes from a database using Meteor's reactive stack. Often as data context
 changes, components stays rendered and just how it is rendered changes.
+
+When accessing values in a template, first component methods are searched for a property (with possible
+[mixins](#mixins-1)), then global template helpers, and lastly the data context.
 
 You can provide a data context to a component when you are including it in the template.
 
@@ -135,7 +217,6 @@ Compare:
 ```
 
 `MyComponent`'s constructor is called without any arguments and the data context is kept as it is.
-
 
 When you want to use a data context and when arguments depends on your use case and code structure. Sometimes your class
 is not used only as a component and requires some arguments to the constructor.
@@ -675,7 +756,7 @@ itself in `this`/`@`.
 You can include other templates (to keep individual templates manageable) and components.
 
 Convention is to name component templates the same as components, which are named the same as their classes.
-And because components are classes, they start with an upper-case letter.
+And because components are classes, they start with an upper-case letter, TitleCase.
 
 *See [Spacebars documentation](http://docs.meteor.com/#/full/templates_api) for more information about the template
 language.*
