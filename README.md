@@ -124,45 +124,37 @@ equally easy to use with vanilla JavaScript and ES6 classes as well.
 Example above in vanilla JavaScript:
 
 ```javascript
-function ExampleComponent() {}
+var ExampleComponent = BlazeComponent.extendComponent({
+  template: function () {
+    return 'ExampleComponent';
+  },
 
-ExampleComponent.prototype = Object.create(BlazeComponent.prototype);
-ExampleComponent.prototype.constructor = ExampleComponent;
+  onCreated: function () {
+    this.counter = new ReactiveVar(0);
+  },
 
-_.extend(ExampleComponent, BlazeComponent);
-ExampleComponent.__super__ = BlazeComponent.prototype;
+  events: function () {
+    return [{
+      'click .increment': this.onClick
+    }];
+  },
 
-ExampleComponent.register('ExampleComponent');
+  onClick: function (event) {
+    this.counter.set(this.counter.get() + 1);
+  },
 
-ExampleComponent.prototype.template = function () {
-  return 'ExampleComponent';
-};
-
-ExampleComponent.prototype.onCreated = function () {
-  this.counter = new ReactiveVar(0);
-};
-
-ExampleComponent.prototype.events = function () {
-  return [{
-    'click .increment': this.onClick
-  }];
-};
-
-ExampleComponent.prototype.onClick = function (event) {
-  this.counter.set(this.counter.get() + 1);
-};
-
-ExampleComponent.prototype.customHelper = function () {
-  if (this.counter.get() > 10) {
-    return "Too many times";
+  customHelper: function () {
+    if (this.counter.get() > 10) {
+      return "Too many times";
+    }
+    else if (this.counter.get() === 10) {
+      return "Just enough";
+    }
+    else {
+      return "Click more";
+    }
   }
-  else if (this.counter.get() === 10) {
-    return "Just enough";
-  }
-  else {
-    return "Click more";
-  }
-};
+}).register('ExampleComponent');
 ```
 
 Accessing data context
