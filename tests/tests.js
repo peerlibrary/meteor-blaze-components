@@ -31,7 +31,8 @@ var ExampleComponent = BlazeComponent.extendComponent({
 // We use ExampleComponentJS here for JavaScript implementation.
 }).register('ExampleComponentJS');
 
-var OurComponent = BlazeComponent.getComponent('MyComponent').extendComponent({
+var MyComponent = BlazeComponent.getComponent('MyComponent');
+var OurComponent = MyComponent.extendComponent({
   values: function () {
     return '>>>' + OurComponent.__super__.values.call(this) + '<<<';
   }

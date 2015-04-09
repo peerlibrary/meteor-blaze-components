@@ -32,7 +32,8 @@ class ExampleComponent extends BlazeComponent {
 
 ExampleComponent.register('ExampleComponentES6');
 
-class OurComponent extends BlazeComponent.getComponent('MyComponent') {
+var MyComponent = BlazeComponent.getComponent('MyComponent');
+class OurComponent extends MyComponent {
   values() {
     return '>>>' + super.values() + '<<<';
   }
