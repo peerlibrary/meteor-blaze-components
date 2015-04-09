@@ -31,10 +31,10 @@ class AutoSelectInputComponent extends BlazeComponent
   value: ->
     Values.findOne(@data().id)?.value
 
-  events: ->
-    super.concat
-      'change input': @onChange
-      'click input': @onClick
+  events: -> [
+    'change input': @onChange
+    'click input': @onClick
+  ]
 
   onChange: (event) ->
     Values.upsert @data().id, $set: value: event.target.value
@@ -108,25 +108,25 @@ class SmartInputComponent extends BlazeComponent
   value: ->
     @callFirstWith(@, 'value') or Values.findOne(@data().id)?.value
 
-  events: ->
-    super.concat
-      'change input': @onChange
+  events: -> [
+    'change input': @onChange
+  ]
 
   onChange: (event) ->
     Values.upsert @data().id, $set: value: event.target.value
 
 class AutoSelectInputMixin extends BlazeComponent
-  events: ->
-    super.concat
-      'click input': @onClick
+  events: -> [
+    'click input': @onClick
+  ]
 
   onClick: (event) ->
     $(event.target).select()
 
 class RealTimeInputMixin extends BlazeComponent
-  events: ->
-    super.concat
-      'keyup input': @onKeyUp
+  events: -> [
+    'keyup input': @onKeyUp
+  ]
 
   onKeyUp: (event) ->
     $(event.target).change()
@@ -138,10 +138,10 @@ class PersistentInputMixin extends BlazeComponent
   value: ->
     @storedValue.get()
 
-  events: ->
-    super.concat
-      'focus input': @onFocus
-      'blur input': @onBlur
+  events: -> [
+    'focus input': @onFocus
+    'blur input': @onBlur
+  ]
 
   onFocus: (event) ->
     @storedValue.set @mixinParent().value()
@@ -158,10 +158,10 @@ class PersistentInputMixin2 extends BlazeComponent
   value: ->
     @storedValue.get() or @mixinParent().callFirstWith(@, 'value')
 
-  events: ->
-    super.concat
-      'focus input': @onFocus
-      'blur input': @onBlur
+  events: -> [
+    'focus input': @onFocus
+    'blur input': @onBlur
+  ]
 
   onFocus: (event) ->
     @storedValue.set @mixinParent().callFirstWith(null, 'value')
@@ -185,9 +185,9 @@ class FormFieldMixin extends BlazeComponent
   value: ->
     @mixinParent().callFirstWith(null, 'getValue')
 
-  events: ->
-    super.concat
-      'change input': @onChange
+  events: -> [
+    'change input': @onChange
+  ]
 
   onChange: (event) ->
     @mixinParent().callFirstWith(null, 'setValue', event.target.value)
@@ -209,9 +209,9 @@ class CancelableInputMixin extends BlazeComponent
     mixinParent.requireMixin PersistentInputMixin2 if mixinParent
     super
 
-  events: ->
-    super.concat
-      'keydown input': @onKeyDown
+  events: -> [
+    'keydown input': @onKeyDown
+  ]
 
   onKeyDown: (event) ->
     # Undo renaming on escape.

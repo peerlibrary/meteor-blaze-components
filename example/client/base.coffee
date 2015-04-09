@@ -17,9 +17,9 @@ class MainComponent extends BlazeComponent
   onClick: (event) ->
     console.log @componentName(), 'MainComponent.onClick', @data(), @currentData(), @currentComponent().componentName()
 
-  events: ->
-    super.concat
-      'click': @onClick
+  events: -> [
+    'click': @onClick
+  ]
 
 BlazeComponent.register 'MainComponent', MainComponent
 
@@ -76,9 +76,6 @@ class AnimatedListComponent extends BlazeComponent
 
   list: ->
     _id: i for i in @_list.get()
-
-  insertDOMElement: (parent, node, before) ->
-    super
 
   moveDOMElement: (parent, node, before) ->
     $node = $(node)
@@ -145,8 +142,5 @@ class AnimatedListComponent extends BlazeComponent
     )
 
     return
-
-  removeDOMElement: (parent, node) ->
-    super
 
 BlazeComponent.register 'AnimatedListComponent', AnimatedListComponent

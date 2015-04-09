@@ -24,9 +24,9 @@ class MainComponent extends BlazeComponent
   onClick: (event) ->
     @constructor.calls.push [@componentName(), 'MainComponent.onClick', @data(), @currentData(), @currentComponent().componentName()]
 
-  events: ->
-    super.concat
-      'click': @onClick
+  events: -> [
+    'click': @onClick
+  ]
 
 BlazeComponent.register 'MainComponent', MainComponent
 
@@ -79,8 +79,6 @@ class AnimatedListComponent extends BlazeComponent
     'AnimatedListComponent'
 
   onCreated: ->
-    super
-
     # To test inserts, moves, and removals.
     @_list = new ReactiveVar [1, 2, 3, 4, 5]
     @_handle = Meteor.setInterval =>
@@ -99,8 +97,6 @@ class AnimatedListComponent extends BlazeComponent
     , 1000 # ms
 
   onDestroyed: ->
-    super
-
     Meteor.clearInterval @_handle
 
   list: ->
@@ -207,9 +203,9 @@ class FirstMixin extends BlazeComponent
   onClick: (event) ->
     @constructor.calls.push [@mixinParent().componentName(), 'FirstMixin.onClick', @data(), @currentData(), @currentComponent().componentName()]
 
-  events: ->
-    super.concat
-      'click': @onClick
+  events: -> [
+    'click': @onClick
+  ]
 
 class SecondMixin extends BlazeComponent
   @calls: []
@@ -225,13 +221,11 @@ class SecondMixin extends BlazeComponent
   onClick: (event) ->
     @constructor.calls.push [@mixinParent().componentName(), 'SecondMixin.onClick', @data(), @currentData(), @currentComponent().componentName()]
 
-  events: ->
-    super.concat
-      'click': @onClick
+  events: -> [
+    'click': @onClick
+  ]
 
   onCreated: ->
-    super
-
     # To test if adding a dependency during onCreated will make sure
     # to call onCreated on the added dependency as well.
     @mixinParent().requireMixin DependencyMixin
@@ -240,8 +234,6 @@ class DependencyMixin extends BlazeComponent
   @calls: []
 
   onCreated: ->
-    super
-
     @constructor.calls.push true
 
 class WithMixinsComponent extends BlazeComponent
@@ -258,8 +250,6 @@ class AfterCreateValueComponent extends BlazeComponent
     'AfterCreateValueComponent'
 
   onCreated: ->
-    super
-
     @foobar = '42'
     @_foobar = '43'
 
@@ -270,8 +260,6 @@ class PostMessageButtonComponent extends BlazeComponent
     'PostMessageButtonComponent'
 
   onCreated: ->
-    super
-
     @color = new ReactiveVar "Red"
 
     $(window).on 'message.buttonComponent', (event) =>
@@ -279,8 +267,6 @@ class PostMessageButtonComponent extends BlazeComponent
         @color.set color
 
   onDestroyed: ->
-    super
-
     $(window).off '.buttonComponent'
 
 BlazeComponent.register 'PostMessageButtonComponent', PostMessageButtonComponent
@@ -288,9 +274,6 @@ BlazeComponent.register 'PostMessageButtonComponent', PostMessageButtonComponent
 class TableWrapperBlockComponent extends BlazeComponent
   template: ->
     'TableWrapperBlockComponent'
-
-  onCreated: ->
-    super
 
   currentDataContext: ->
     EJSON.stringify @currentData()
@@ -324,8 +307,6 @@ class ChildComponent extends BlazeComponent
   constructor: (@childName) ->
 
   onCreated: ->
-    super
-
     @domChanged = new ReactiveVar 0
 
   insertDOMElement: (parent, node, before) ->
@@ -459,18 +440,14 @@ class ExampleComponent extends BlazeComponent
 
   # Life-cycle hook to initialize component's state.
   onCreated: ->
-    super
     @counter = new ReactiveVar 0
 
   # Mapping between events and their handlers.
-  events: ->
-    # events method should return an array of event maps, so we concatenate
-    # a new map to a possibly existing ones. It is a good practice to always
-    # call parent implementation.
-    super.concat
-      # You could inline the handler, but the best is to make
-      # it a method so that it can be extended later on.
-      'click .increment': @onClick
+  events: -> [
+    # You could inline the handler, but the best is to make
+    # it a method so that it can be extended later on.
+    'click .increment': @onClick
+  ]
 
   onClick: (event) ->
     @counter.set @counter.get() + 1

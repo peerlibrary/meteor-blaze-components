@@ -71,18 +71,14 @@ class ExampleComponent extends BlazeComponent
 
   # Life-cycle hook to initialize component's state.
   onCreated: ->
-    super
     @counter = new ReactiveVar 0
 
   # Mapping between events and their handlers.
-  events: ->
-    # events method should return an array of event maps, so we concatenate
-    # a new map to a possibly existing ones. It is a good practice to always
-    # call parent implementation.
-    super.concat
-      # You could inline the handler, but the best is to make
-      # it a method so that it can be extended later on.
-      'click .increment': @onClick
+  events: -> [
+    # You could inline the handler, but the best is to make
+    # it a method so that it can be extended later on.
+    'click .increment': @onClick
+  ]
 
   onClick: (event) ->
     @counter.set @counter.get() + 1
@@ -1042,8 +1038,6 @@ class ButtonComponent extends BlazeComponent
     'ButtonComponent'
  
   onCreated: ->
-    super
-
     @color = new ReactiveVar "Red"
 
     $(window).on 'message.buttonComponent', (event) =>
@@ -1051,8 +1045,6 @@ class ButtonComponent extends BlazeComponent
         @color.set color
 
   onDestroyed: ->
-    super
-
     $(window).off '.buttonComponent'
 ```
 

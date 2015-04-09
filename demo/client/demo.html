@@ -98,10 +98,10 @@ Template.input.events
   value: -&gt;
     Values.findOne(@data().id)?.value
 
-  events: -&gt;
-    super.concat
-      'change input': @onChange
-      'click input': @onClick
+  events: -&gt; [
+    'change input': @onChange
+    'click input': @onClick
+  ]
 
   onChange: (event) -&gt;
     Values.upsert @data().id, $set: value: event.target.value
@@ -165,10 +165,10 @@ as the markup to be re-used by the component.</p>
   them from child classes later.
 </p>
 
-<pre class="coffee"><code class="language-coffeescript">  events: -&gt;
-    super.concat
-      'change input': @onChange
-      'click input': @onClick
+<pre class="coffee"><code class="language-coffeescript">  events: -&gt; [
+    'change input': @onChange
+    'click input': @onClick
+  ]
 
   onChange: (event) -&gt;
     Values.upsert @data().id, $set: value: event.target.value
@@ -217,10 +217,10 @@ as the markup to be re-used by the component.</p>
 textarea as well.</p>
 <p>This could be made even simpler if our original component already hooked the events in a generic way, like</p>
 
-<pre class="coffee"><code class="language-coffeescript">events: -&gt;
-  super.concat
-    'change *': @onChange
-    'click *': @onClick</code></pre>
+<pre class="coffee"><code class="language-coffeescript">events: -&gt; [
+  'change *': @onChange
+  'click *': @onClick
+]</code></pre>
 
 <a name="real-time-input"></a>
 <h3>Real-time Input</h3>
@@ -348,9 +348,9 @@ editing it. To enable this, we'll store the current value when the input box get
   value: -&gt;
     @callFirstWith(@, 'value') or Values.findOne(@data().id)?.value
 
-  events: -&gt;
-    super.concat
-      'change input': @onChange
+  events: -&gt; [
+    'change input': @onChange
+  ]
 
   onChange: (event) -&gt;
     Values.upsert @data().id, $set: value: event.target.value</code></pre>
@@ -408,9 +408,9 @@ editing it. To enable this, we'll store the current value when the input box get
 <p><code class="language-coffeescript">AutoSelectInputMixin</code> selects the input on click.</p>
 
 <pre class="coffee"><code class="language-coffeescript">class AutoSelectInputMixin extends BlazeComponent
-  events: -&gt;
-    super.concat
-      'click input': @onClick
+  events: -&gt; [
+    'click input': @onClick
+  ]
 
   onClick: (event) -&gt;
     $(event.target).select()</code></pre>
@@ -418,9 +418,9 @@ editing it. To enable this, we'll store the current value when the input box get
 <p><code class="language-coffeescript">RealTimeInputMixin</code> fires change events on every keystroke.</p>
 
 <pre class="coffee"><code class="language-coffeescript">class RealTimeInputMixin extends BlazeComponent
-  events: -&gt;
-    super.concat
-      'keyup input': @onKeyUp
+  events: -&gt; [
+    'keyup input': @onKeyUp
+  ]
 
   onKeyUp: (event) -&gt;
     $(event.target).change()</code></pre>
@@ -434,10 +434,10 @@ editing it. To enable this, we'll store the current value when the input box get
   value: -&gt;
     @storedValue.get()
 
-  events: -&gt;
-    super.concat
-      'focus input': @onFocus
-      'blur input': @onBlur
+  events: -&gt; [
+    'focus input': @onFocus
+    'blur input': @onBlur
+  ]
 
   onFocus: (event) -&gt;
     @storedValue.set @mixinParent().value()
@@ -502,9 +502,9 @@ connects a form field with a getter/setter API which other mixins can provide.</
   value: -&gt;
     @mixinParent().callFirstWith(null, 'getValue')
 
-  events: -&gt;
-    super.concat
-      'change input': @onChange
+  events: -&gt; [
+    'change input': @onChange
+  ]
 
   onChange: (event) -&gt;
     @mixinParent().callFirstWith(null, 'setValue', event.target.value)</code></pre>
@@ -536,9 +536,9 @@ connects a form field with a getter/setter API which other mixins can provide.</
     mixinParent.requireMixin PersistentInputMixin if mixinParent
     super
 
-  events: -&gt;
-    super.concat
-      'keydown input': @onKeyDown
+  events: -&gt; [
+    'keydown input': @onKeyDown
+  ]
 
   onKeyDown: (event) -&gt;
     # Undo renaming on escape.
@@ -566,10 +566,10 @@ connects a form field with a getter/setter API which other mixins can provide.</
   value: -&gt;
     @storedValue.get() or @mixinParent().callFirstWith(@, 'value')
 
-  events: -&gt;
-    super.concat
-      'focus input': @onFocus
-      'blur input': @onBlur
+  events: -&gt; [
+    'focus input': @onFocus
+    'blur input': @onBlur
+  ]
 
   onFocus: (event) -&gt;
     @storedValue.set @mixinParent().callFirstWith(null, 'value')
@@ -597,7 +597,7 @@ Let's look in more detail into two snippets.
   method.</p>
 
 <pre class="coffee"><code class="language-coffeescript">onFocus: (event) -&gt;
-    @storedValue.set @mixinParent().callFirstWith(null, 'value')</code></pre>
+  @storedValue.set @mixinParent().callFirstWith(null, 'value')</code></pre>
 
 <p>Here we pass <code class="language-coffeescript">null</code> as the first argument to the
   <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith"><code class="language-coffeescript">callFirstWith</code></a>
