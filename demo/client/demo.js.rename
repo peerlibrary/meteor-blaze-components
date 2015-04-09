@@ -1,0 +1,303 @@
+/* Auto-select demo */
+
+Template.autoSelectDemo.helpers({
+  value: function () {
+    var doc = Values.findOne(this.id);
+    if (doc) return doc.value;
+  }
+});
+
+/* Auto-select input */
+
+Template.input.helpers({
+  value: function () {
+    // Read value from the collection.
+    var doc = Values.findOne(this.id);
+    if (doc) return doc.value;
+  }
+});
+
+Template.input.events({
+  // Save value to the collection when it changes.
+  'change input': function (event, template) {
+    Values.upsert(this.id, {$set: {
+      value: event.target.value
+    }});
+  },
+
+  // Auto-select text when user clicks in the input.
+  'click input': function (event, template) {
+    $(event.target).select();
+  }
+});
+
+/* Auto-select input component */
+
+var AutoSelectInputComponent = BlazeComponent.extendComponent({
+  template: function () {
+    return 'input';
+  },
+
+  value: function () {
+    var doc = Values.findOne(this.data().id);
+    if (doc) return doc.value;
+  },
+
+  events: function () {
+    return [{
+      'change input': this.onChange,
+      'click input': this.onClick
+    }];
+  },
+
+  onChange: function (event) {
+    Values.upsert(this.data().id, {$set: {
+      value: event.target.value
+    }});
+  },
+
+  onClick: function (event) {
+    $(event.target).select();
+  }
+}).register('AutoSelectInputComponent');
+
+/* Auto-select textarea component */
+
+var AutoSelectTextareaComponent = AutoSelectInputComponent.extendComponent({
+  template: function () {
+    return 'AutoSelectTextareaComponent';
+  },
+
+  events: function () {
+    return AutoSelectTextareaComponent.__super__.events.call(this).concat({
+      'change textarea': this.onChange,
+      'click textarea': this.onClick
+    });
+  }
+}).register('AutoSelectTextareaComponent');
+
+/* Real-time input component */
+
+var RealTimeInputComponent = AutoSelectInputComponent.extendComponent({
+  events: function () {
+    return RealTimeInputComponent.__super__.events.call(this).concat({
+      'keyup input': this.onKeyup
+    });
+  },
+
+  onKeyup: function (event) {
+    $(event.target).change();
+  }
+}).register('RealTimeInputComponent');
+
+/* Persistent input component */
+
+var PersistentInputComponent = AutoSelectInputComponent.extendComponent({
+  onCreated: function () {
+    PersistentInputComponent.__super__.onCreated.call(this);
+    // This will store the value at the start of editing.
+    this.storedValue = new ReactiveVar();
+  },
+
+  value: function () {
+    // Return stored value during editing or normal otherwise.
+    return this.storedValue.get() || PersistentInputComponent.__super__.value.call(this);
+  },
+
+  events: function () {
+    return PersistentInputComponent.__super__.events.call(this).concat({
+      'focus input': this.onFocus,
+      'blur input': this.onBlur
+    });
+  },
+
+  onFocus: function (event) {
+    // Store the current value when starting to edit.
+    this.storedValue.set(this.value());
+  },
+
+  onBlur: function (event) {
+    // We are no longer editing, so return to normal.
+    this.storedValue.set(null);
+  }
+}).register('PersistentInputComponent');
+
+/* Smart (auto-select, real-time, persistent) input component */
+
+var SmartInputComponent = BlazeComponent.extendComponent({
+  template: function () {
+    return 'input';
+  },
+
+  mixins: function () {
+    return [AutoSelectInputMixin, RealTimeInputMixin, PersistentInputMixin];
+  },
+
+  value: function () {
+    var value = this.callFirstWith(this, 'value');
+    if (value) return value;
+    var doc = Values.findOne(this.data().id);
+    if (doc) return doc.value;
+  },
+
+  events: function () {
+    return [{
+      'change input': this.onChange
+    }];
+  },
+
+  onChange: function (event) {
+    Values.upsert(this.data().id, {$set: {
+      value: event.target.value
+    }});
+  }
+}).register('SmartInputComponent');
+
+var AutoSelectInputMixin = BlazeComponent.extendComponent({
+  events: function () {
+    return [{
+      'click input': this.onClick
+    }];
+  },
+
+  onClick: function (event) {
+    $(event.target).select();
+  }
+});
+
+var RealTimeInputMixin = BlazeComponent.extendComponent({
+  events: function () {
+    return [{
+      'keyup input': this.onKeyUp
+    }];
+  },
+
+  onKeyUp: function (event) {
+    $(event.target).change();
+  }
+});
+
+var PersistentInputMixin = BlazeComponent.extendComponent({
+  onCreated: function () {
+    this.storedValue = new ReactiveVar();
+  },
+
+  value: function () {
+    return this.storedValue.get();
+  },
+
+  events: function () {
+    return [{
+      'focus input': this.onFocus,
+      'blur input': this.onBlur
+    }];
+  },
+
+  onFocus: function (event) {
+    this.storedValue.set(this.mixinParent().value());
+  },
+
+  onBlur: function (event) {
+    this.storedValue.set(null);
+  }
+});
+
+/* Extreme decomposition (auto-select, real-time, persistent, cancelable, form field, storage) input component */
+
+var PersistentInputMixin2 = BlazeComponent.extendComponent({
+  onCreated: function () {
+    this.storedValue = new ReactiveVar();
+  },
+
+  value: function () {
+    return this.storedValue.get() || this.mixinParent().callFirstWith(this, 'value');
+  },
+
+  events: function () {
+    return [{
+      'focus input': this.onFocus,
+      'blur input': this.onBlur
+    }];
+  },
+
+  onFocus: function (event) {
+    this.storedValue.set(this.mixinParent().callFirstWith(null, 'value'));
+  },
+
+  onBlur: function (event) {
+    this.storedValue.set(null);
+  }
+});
+
+var ExtremeInputComponent = BlazeComponent.extendComponent({
+  template: function () {
+    return 'input';
+  },
+
+  mixins: function () {
+    return [
+      AutoSelectInputMixin, RealTimeInputMixin,
+      CancelableInputMixin, FormFieldMixin,
+      new StorageMixin(Values, 'value', function () {
+        return this.data().id;
+      }.bind(this))
+    ];
+  }
+}).register('ExtremeInputComponent');
+
+var FormFieldMixin = BlazeComponent.extendComponent({
+  value: function () {
+    return this.mixinParent().callFirstWith(null, 'getValue');
+  },
+
+  events: function () {
+    return [{
+      'change input': this.onChange
+    }];
+  },
+
+  onChange: function (event) {
+    this.mixinParent().callFirstWith(null, 'setValue', event.target.value);
+  }
+});
+
+var StorageMixin = BlazeComponent.extendComponent(function (collection, fieldName, selector) {
+    this.collection = collection;
+    this.fieldName = fieldName;
+    this.selector = selector;
+  }, {
+    getValue: function () {
+      var doc = this.collection.findOne(this.selector());
+      if (doc) return doc[this.fieldName];
+    },
+
+    setValue: function (value) {
+      var modifier = {
+        $set: {}
+      };
+      modifier.$set[this.fieldName] = value;
+      this.collection.upsert(this.selector(), modifier);
+    }
+});
+
+var CancelableInputMixin = BlazeComponent.extendComponent({
+  mixinParent: function (mixinParent) {
+    if (mixinParent) {
+      mixinParent.requireMixin(PersistentInputMixin2);
+    }
+    return CancelableInputMixin.__super__.mixinParent.apply(this, arguments);
+  },
+
+  events: function () {
+    return [{
+      'keydown input': this.onKeyDown
+    }];
+  },
+
+  onKeyDown: function (event) {
+    if (event.keyCode === 27) {
+      var storedValue = this.mixinParent().getMixin(PersistentInputMixin2).storedValue.get();
+      $(event.target).val(storedValue).change().blur();
+    }
+  }
+});
