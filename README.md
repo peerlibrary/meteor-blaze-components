@@ -727,7 +727,7 @@ Retrieves the component class with `componentName` name. If such component does 
 
 <a name="reference_class_componentName"></a>
 ```coffee
-@componentName: ([componentName])  ->
+@componentName: ([componentName]) ->
 ```
 
 When called without a `componentName` argument it returns the component name.
@@ -737,6 +737,29 @@ When called with a `componentName` argument it sets the component name.
 *Setting the component name yourself is needed and required only for unregistered classes because
 [`@register`](#user-content-reference_class_register) sets the component name automatically otherwise. All component
 should have a component name associated with them.*
+
+<a name="reference_class_extendComponent"></a>
+```coffee
+@extendComponent: ([constructor], methods) ->
+```
+
+A helper method to extend a component into a new component when using vanilla JavaScript. It configures
+prototype-based inheritance and assigns properties and values from `methods` to the prototype of the new component.
+It accepts an optional `constructor` function to be used instead of a default one which just calls the constructor
+of the parent component.
+
+Inside a method you can use `this.constructor` to access the class. Parent class prototype is stored into `__super__`
+for you convenience. You can use it to do `super` calls.
+
+Example:
+
+```javascript
+var OurComponent = MyComponent.extendComponent({
+  values: function () {
+    return '>>>' + OurComponent.__super__.values.call(this) + '<<<';
+  }
+});
+```
 
 ### Instance methods ###
 

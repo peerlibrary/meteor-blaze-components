@@ -1259,4 +1259,28 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
   ]
 
+  testMixinsExampleWithJavaScript: [
+    ->
+      @renderedComponent = Blaze.renderWithData BlazeComponent.getComponent('OurComponent').renderComponent(), {top: '42'}, $('body').get(0)
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.myComponent').html()), trim """
+        <p>alternativeName: 42</p>
+        <p>values: &gt;&gt;&gt;abc&lt;&lt;&lt;</p>
+        <p>templateHelper: 42</p>
+        <p>extendedHelper: 3</p>
+        <p>name: foobar</p>
+        <p>dataContext: {"top":"42"}</p>
+      """
+
+      FirstMixin2.calls = []
+
+      $('.myComponent').click()
+      @assertEqual FirstMixin2.calls, [true]
+
+      Blaze.remove @renderedComponent
+  ]
+
 ClassyTestCase.addTest new BasicTestCase()
