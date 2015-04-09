@@ -6,33 +6,17 @@ Template.registerHelper 'isCoffeeScript', ->
 Template.registerHelper 'isJavaScript', ->
   Session.equals 'language', 'javascript'
 
-highlightAll = ->
-  # We have to try few times because sometimes there are errors the first
-  # time because DOM might be still changing or something?
-  for i in [0..10]
-    try
-      Prism.highlightAll()
-      # No error, let's exit.
-      return
-
-  # Try for the last time and throw an error if it fails as well.
-  Prism.highlightAll()
-
 Template.languageSwitch.events
   'click a': (event, template) ->
     event.preventDefault()
     Session.set 'language', $(event.target).text()
     Tracker.afterFlush ->
-      highlightAll()
+      Prism.highlightAll()
     return
 
 Meteor.startup ->
-  # This is throwing errors.
-  document.removeEventListener 'DOMContentLoaded', Prism.highlightAll
-
-  # Let's use afterFlush instead.
   Tracker.afterFlush ->
-    highlightAll()
+    Prism.highlightAll()
 
 ### Auto-select demo ###
 
