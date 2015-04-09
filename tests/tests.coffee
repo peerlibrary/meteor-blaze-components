@@ -1261,7 +1261,70 @@ class BasicTestCase extends ClassyTestCase
 
   testMixinsExampleWithJavaScript: [
     ->
-      @renderedComponent = Blaze.renderWithData BlazeComponent.getComponent('OurComponent').renderComponent(), {top: '42'}, $('body').get(0)
+      @renderedComponent = Blaze.renderWithData BlazeComponent.getComponent('OurComponentJS').renderComponent(), {top: '42'}, $('body').get(0)
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.myComponent').html()), trim """
+        <p>alternativeName: 42</p>
+        <p>values: &gt;&gt;&gt;abc&lt;&lt;&lt;</p>
+        <p>templateHelper: 42</p>
+        <p>extendedHelper: 3</p>
+        <p>name: foobar</p>
+        <p>dataContext: {"top":"42"}</p>
+      """
+
+      FirstMixin2.calls = []
+
+      $('.myComponent').click()
+      @assertEqual FirstMixin2.calls, [true]
+
+      Blaze.remove @renderedComponent
+  ]
+
+  testReadmeExampleES6: [
+    ->
+      @renderedComponent = Blaze.render BlazeComponent.getComponent('ExampleComponentES6').renderComponent(), $('body').get(0)
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.exampleComponent').html()), trim """
+        <button class="increment">Click me</button>
+        <p>Counter: 0</p>
+        <p>Message: Click more</p>
+      """
+
+      $('.exampleComponent .increment').click()
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.exampleComponent').html()), trim """
+        <button class="increment">Click me</button>
+        <p>Counter: 1</p>
+        <p>Message: Click more</p>
+      """
+
+      for i in [0..15]
+        $('.exampleComponent .increment').click()
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.exampleComponent').html()), trim """
+        <button class="increment">Click me</button>
+        <p>Counter: 17</p>
+        <p>Message: Too many times</p>
+      """
+
+      Blaze.remove @renderedComponent
+  ]
+
+  testMixinsExampleWithES6: [
+    ->
+      @renderedComponent = Blaze.renderWithData BlazeComponent.getComponent('OurComponentES6').renderComponent(), {top: '42'}, $('body').get(0)
 
       Tracker.afterFlush @expect()
   ,

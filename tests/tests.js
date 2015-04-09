@@ -35,4 +35,4 @@ var OurComponent = BlazeComponent.getComponent('MyComponent').extendComponent({
   values: function () {
     return '>>>' + OurComponent.__super__.values.call(this) + '<<<';
   }
-}).register('OurComponent');
+}).register('OurComponentJS');
