@@ -295,6 +295,7 @@ var CancelableInputMixin = BlazeComponent.extendComponent({
   },
 
   onKeyDown: function (event) {
+    // Undo renaming on escape.
     if (event.keyCode === 27) {
       var storedValue = this.mixinParent().getMixin(PersistentInputMixin2).storedValue.get();
       $(event.target).val(storedValue).change().blur();

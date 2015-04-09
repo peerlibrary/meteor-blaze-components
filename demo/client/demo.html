@@ -899,6 +899,7 @@ editing it. To enable this, we'll store the current value when the input box get
   },
 
   onKeyDown: function (event) {
+    // Undo renaming on escape.
     if (event.keyCode === 27) {
       var storedValue = this.mixinParent().getMixin(PersistentInputMixin).storedValue.get();
       $(event.target).val(storedValue).change().blur();
