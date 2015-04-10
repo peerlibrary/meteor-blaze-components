@@ -459,18 +459,24 @@ class BlazeComponent extends BaseComponent
             delete @component._inOnRendered
 
         onDestroyed: ->
-          # @ is a template instance.
-          componentOrMixin = null
-          while componentOrMixin = @component.getFirstWith componentOrMixin, 'onDestroyed'
-            componentOrMixin.onDestroyed()
+          @autorun (computation) =>
+            # We wait for all children components to be destroyed first.
+            # See https://github.com/meteor/meteor/issues/4166
+            return if @component.componentChildren().length
+            computation.stop()
 
-          if componentParent
-            # The component has been destroyed, clear up the parent.
-            component.componentParent null
-            componentParent.removeComponentChild component
+            # @ is a template instance.
+            componentOrMixin = null
+            while componentOrMixin = @component.getFirstWith componentOrMixin, 'onDestroyed'
+              componentOrMixin.onDestroyed()
 
-          # Remove the reference so that it is clear that template instance is not available anymore.
-          delete @component.templateInstance
+            if componentParent
+              # The component has been destroyed, clear up the parent.
+              component.componentParent null
+              componentParent.removeComponentChild component
+
+            # Remove the reference so that it is clear that template instance is not available anymore.
+            delete @component.templateInstance
 
       template
 

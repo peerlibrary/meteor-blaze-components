@@ -5,6 +5,7 @@
 .postMessageButtonComponent,
 .useCaseTemplate,
 .myComponent,
-.exampleComponent {
+.exampleComponent,
+.innerComponent {
   display: none;
 }

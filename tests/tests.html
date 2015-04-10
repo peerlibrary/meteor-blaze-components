@@ -212,3 +212,11 @@
   {{! And component's methods.}}
   <p>Message: {{customHelper}}</p>
 </template>
+
+<template name="OuterComponent">
+  {{> InnerComponent}}
+</template>
+
+<template name="InnerComponent">
+  <p class="innerComponent">Content.</p>
+</template>

@@ -461,6 +461,38 @@ class ExampleComponent extends BlazeComponent
     else
       "Click more"
 
+class OuterComponent extends BlazeComponent
+  @register 'OuterComponent'
+
+  @calls: []
+
+  template: ->
+    'OuterComponent'
+
+  onCreated: ->
+    OuterComponent.calls.push 'OuterComponent onCreated'
+
+  onRendered: ->
+    OuterComponent.calls.push 'OuterComponent onRendered'
+
+  onDestroyed: ->
+    OuterComponent.calls.push 'OuterComponent onDestroyed'
+
+class InnerComponent extends BlazeComponent
+  @register 'InnerComponent'
+
+  template: ->
+    'InnerComponent'
+
+  onCreated: ->
+    OuterComponent.calls.push 'InnerComponent onCreated'
+
+  onRendered: ->
+    OuterComponent.calls.push 'InnerComponent onRendered'
+
+  onDestroyed: ->
+    OuterComponent.calls.push 'InnerComponent onDestroyed'
+
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
 
@@ -1344,6 +1376,30 @@ class BasicTestCase extends ClassyTestCase
       @assertEqual FirstMixin2.calls, [true]
 
       Blaze.remove @renderedComponent
+  ]
+
+  testOnDestroyedOrder: [
+    ->
+      OuterComponent.calls = []
+
+      @renderedComponent = Blaze.render BlazeComponent.getComponent('OuterComponent').renderComponent(), $('body').get(0)
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      Blaze.remove @renderedComponent
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual OuterComponent.calls, [
+        'OuterComponent onCreated'
+        'InnerComponent onCreated'
+        'InnerComponent onRendered'
+        'OuterComponent onRendered'
+        'InnerComponent onDestroyed'
+        'OuterComponent onDestroyed'
+      ]
   ]
 
 ClassyTestCase.addTest new BasicTestCase()
