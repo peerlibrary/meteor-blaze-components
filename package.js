@@ -1,7 +1,7 @@
 Package.describe({
   name: 'peerlibrary:blaze-components',
   summary: "Reusable components for Blaze",
-  version: '0.4.0',
+  version: '0.5.0',
   git: 'https://github.com/peerlibrary/meteor-blaze-components.git'
 });
 
@@ -21,7 +21,7 @@ Package.onUse(function (api) {
 
   // Internal dependencies.
   api.use([
-    'peerlibrary:base-component@0.6.0'
+    'peerlibrary:base-component@0.7.0'
   ]);
 
   // 3rd party dependencies.
