@@ -197,16 +197,20 @@ class BlazeComponent extends BaseComponent
   # set, for example, add dependency mixins to the parent. Make sure you call super as well.
   # TODO: Should this be a list of parents? So that the same mixin instance could be reused across components? And serve to communicate across them?
   mixinParent: (mixinParent) ->
+    @_componentInternals ?= {}
+
     # Setter.
     if mixinParent
-      @_mixinParent = mixinParent
+      @_componentInternals.mixinParent = mixinParent
       # To allow chaining.
       return @
 
     # Getter.
-    @_mixinParent or null
+    @_componentInternals.mixinParent or null
 
   requireMixin: (nameOrMixin) ->
+    assert @_componentInternals?.mixins
+
     # Do not do anything if mixin is already required. This allows multiple mixins to call requireMixin
     # in mixinParent method to add dependencies, but if dependencies are already there, nothing happens.
     return @ if @getMixin nameOrMixin
@@ -228,7 +232,7 @@ class BlazeComponent extends BaseComponent
     # We add mixin before we call mixinParent so that dependencies come after this mixin,
     # and that we prevent possible infinite loops because of circular dependencies.
     # TODO: For now we do not provide an official API to add dependencies before the mixin itself.
-    @_mixins.push mixinInstance
+    @_componentInternals.mixins.push mixinInstance
 
     # We allow mixins to not be components, so methods are not necessary available.
 
@@ -245,17 +249,19 @@ class BlazeComponent extends BaseComponent
     # already called, so we should call them manually here as well. But only if he view has not been destroyed
     # already. For those mixins we do not call anything, there is little use for them now.
     unless @templateInstance?.view.isDestroyed
-      mixinInstance.onCreated?() if not @_inOnCreated and @templateInstance?.view.isCreated
-      mixinInstance.onRendered?() if not @_inOnRendered and @templateInstance?.view.isRendered
+      mixinInstance.onCreated?() if not @_componentInternals.inOnCreated and @templateInstance?.view.isCreated
+      mixinInstance.onRendered?() if not @_componentInternals.inOnRendered and @templateInstance?.view.isRendered
 
     # To allow chaining.
     @
 
   # Method to instantiate all mixins.
   createMixins: ->
+    @_componentInternals ?= {}
+
     # To allow calling it multiple times, but non-first calls are simply ignored.
-    return if @_mixins
-    @_mixins = []
+    return if @_componentInternals.mixins
+    @_componentInternals.mixins = []
 
     for mixin in @mixins()
       @requireMixin mixin
@@ -264,17 +270,17 @@ class BlazeComponent extends BaseComponent
     @
 
   getMixin: (nameOrMixin) ->
-    assert @_mixins
+    assert @_componentInternals?.mixins
 
     if _.isString nameOrMixin
-      for mixin in @_mixins
+      for mixin in @_componentInternals.mixins
         # We do not require mixins to be components, but if they are, they can
         # be referenced based on their component name.
         mixinComponentName = mixin.componentName?() or null
         return mixin if mixinComponentName and mixinComponentName is nameOrMixin
 
     else
-      for mixin in @_mixins
+      for mixin in @_componentInternals.mixins
         # nameOrMixin is a class.
         if mixin.constructor is nameOrMixin
           return mixin
@@ -299,7 +305,7 @@ class BlazeComponent extends BaseComponent
       return mixin[propertyName]
 
   getFirstWith: (afterComponentOrMixin, propertyName) ->
-    assert @_mixins
+    assert @_componentInternals?.mixins
 
     # If afterComponentOrMixin is not provided, we start with the component.
     if not afterComponentOrMixin
@@ -313,7 +319,7 @@ class BlazeComponent extends BaseComponent
       found = false
 
     # TODO: Implement with a map between mixin -> position, so that we do not have to seek to find a mixin.
-    for mixin in @_mixins
+    for mixin in @_componentInternals.mixins
       return mixin if found and propertyName of mixin
 
       found = true if mixin is afterComponentOrMixin
@@ -441,27 +447,31 @@ class BlazeComponent extends BaseComponent
           @component.templateInstance = @
 
           try
+            @component._componentInternals ?= {}
+
             # We have to know if we should call onCreated on the mixin inside the requireMixin or not. We want to call
             # it only once. If it requireMixin is called from onCreated of another mixin, then it will be added at the
             # end and we will get it here at the end. So we should not call onCreated inside requireMixin because then
             # onCreated would be called twice.
-            @component._inOnCreated = true
+            @component._componentInternals.inOnCreated = true
             componentOrMixin = null
             while componentOrMixin = @component.getFirstWith componentOrMixin, 'onCreated'
               componentOrMixin.onCreated()
           finally
-            delete @component._inOnCreated
+            delete @component._componentInternals.inOnCreated
 
         onRendered: ->
           # @ is a template instance.
           try
+            @component._componentInternals ?= {}
+
             # Same as for onCreated above.
-            @component._inOnRendered = true
+            @component._componentInternals.inOnRendered = true
             componentOrMixin = null
             while componentOrMixin = @component.getFirstWith componentOrMixin, 'onRendered'
               componentOrMixin.onRendered()
           finally
-            delete @component._inOnRendered
+            delete @component._componentInternals.inOnRendered
 
         onDestroyed: ->
           @autorun (computation) =>
