@@ -1141,6 +1141,29 @@ or [`onRendered`](#user-content-reference_instance_onRendered) methods. See the 
 
 When [mixins](#mixins-1) provide `onDestroyed` method, they are called after the component in mixins order automatically.
 
+<a name="reference_instance_isCreated"></a>
+```coffee
+isCreated: ->
+```
+
+Returns `true` if the component is created, possibly rendered, but not (yet) destroyed. Otherwise `false`. A reactive
+data source.
+
+<a name="reference_instance_isRendered"></a>
+```coffee
+isRendered: ->
+```
+
+Returns `true` if the component is rendered, but not (yet) destroyed. Otherwise `false`. A reactive data source.
+
+<a name="reference_instance_isDestroyed"></a>
+```coffee
+isDestroyed: ->
+```
+
+Returns `true` if the component is destroyed. Otherwise `false`. If component was never created, it was also never
+destroyed so initially the value is `false`. A reactive data source.
+
 #### Utilities ####
 
 <a name="reference_instance_autorun"></a>

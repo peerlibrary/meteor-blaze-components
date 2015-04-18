@@ -460,6 +460,17 @@ class BlazeComponent extends BaseComponent
           finally
             delete @component._componentInternals.inOnCreated
 
+          @component._componentInternals.isCreated ?= new ReactiveVar true
+          @component._componentInternals.isCreated.set true
+
+          # Maybe we are re-rendering the component. So let's initialize variables just to be sure.
+
+          @component._componentInternals.isRendered ?= new ReactiveVar false
+          @component._componentInternals.isRendered.set false
+
+          @component._componentInternals.isDestroyed ?= new ReactiveVar false
+          @component._componentInternals.isDestroyed.set false
+
         onRendered: ->
           # @ is a template instance.
           try
@@ -471,12 +482,29 @@ class BlazeComponent extends BaseComponent
           finally
             delete @component._componentInternals.inOnRendered
 
+          @component._componentInternals.isRendered ?= new ReactiveVar true
+          @component._componentInternals.isRendered.set true
+
+          Tracker.nonreactive =>
+            assert.equal @component._componentInternals.isCreated.get(), true
+
         onDestroyed: ->
           @autorun (computation) =>
             # We wait for all children components to be destroyed first.
             # See https://github.com/meteor/meteor/issues/4166
             return if @component.componentChildren().length
             computation.stop()
+
+            Tracker.nonreactive =>
+              assert.equal @component._componentInternals.isCreated.get(), true
+
+            @component._componentInternals.isCreated.set false
+
+            @component._componentInternals.isRendered ?= new ReactiveVar false
+            @component._componentInternals.isRendered.set false
+
+            @component._componentInternals.isDestroyed ?= new ReactiveVar true
+            @component._componentInternals.isDestroyed.set true
 
             # @ is a template instance.
             componentOrMixin = null
@@ -502,6 +530,24 @@ class BlazeComponent extends BaseComponent
   onRendered: ->
 
   onDestroyed: ->
+
+  isCreated: ->
+    @_componentInternals ?= {}
+    @_componentInternals.isCreated ?= new ReactiveVar false
+
+    @_componentInternals.isCreated.get()
+
+  isRendered: ->
+    @_componentInternals ?= {}
+    @_componentInternals.isRendered ?= new ReactiveVar false
+
+    @_componentInternals.isRendered.get()
+
+  isDestroyed: ->
+    @_componentInternals ?= {}
+    @_componentInternals.isDestroyed ?= new ReactiveVar false
+
+    @_componentInternals.isDestroyed.get()
 
   insertDOMElement: (parent, node, before) ->
     before ?= null

@@ -1387,7 +1387,17 @@ class BasicTestCase extends ClassyTestCase
     ->
       OuterComponent.calls = []
 
-      @renderedComponent = Blaze.render BlazeComponent.getComponent('OuterComponent').renderComponent(), $('body').get(0)
+      @outerComponent = new (BlazeComponent.getComponent('OuterComponent'))()
+
+      @states = []
+
+      @autorun =>
+        @states.push ['outer', @outerComponent.isCreated(), @outerComponent.isRendered(), @outerComponent.isDestroyed()]
+
+      @autorun =>
+        @states.push ['inner', @outerComponent.componentChildren()[0]?.isCreated(), @outerComponent.componentChildren()[0]?.isRendered(), @outerComponent.componentChildren()[0]?.isDestroyed()]
+
+      @renderedComponent = Blaze.render @outerComponent.renderComponent(), $('body').get(0)
 
       Tracker.afterFlush @expect()
   ,
@@ -1404,6 +1414,17 @@ class BasicTestCase extends ClassyTestCase
         'OuterComponent onRendered'
         'InnerComponent onDestroyed'
         'OuterComponent onDestroyed'
+      ]
+
+      @assertEqual @states, [
+        ['outer', false, false, false]
+        ['inner', undefined, undefined, undefined]
+        ['outer', true, false, false]
+        ['inner', true, false, false]
+        ['inner', true, true, false]
+        ['outer', true, true, false]
+        ['inner', undefined, undefined, undefined]
+        ['outer', false, false, true]
       ]
   ]
 
