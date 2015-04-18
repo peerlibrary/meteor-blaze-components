@@ -417,7 +417,7 @@ class BlazeComponent extends BaseComponent
 
           if componentParent
             # TODO: Should we support that the same component can be rendered multiple times in parallel? How could we do that? For different component parents or only the same one?
-            assert not @componentParent()
+            assert not component.componentParent()
 
             # We set the parent only when the component is created, not just constructed.
             component.componentParent componentParent
