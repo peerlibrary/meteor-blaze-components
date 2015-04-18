@@ -416,6 +416,9 @@ class BlazeComponent extends BaseComponent
           # @ is a template instance.
 
           if componentParent
+            # TODO: Should we support that the same component can be rendered multiple times in parallel? How could we do that? For different component parents or only the same one?
+            assert not @componentParent()
+
             # We set the parent only when the component is created, not just constructed.
             component.componentParent componentParent
             componentParent.addComponentChild component
@@ -431,7 +434,7 @@ class BlazeComponent extends BaseComponent
 
           @component = component
 
-          # TODO: Should we support that the same component can be rendered multiple times in parallel? How could we do that?
+          # TODO: Should we support that the same component can be rendered multiple times in parallel? How could we do that? For different component parents or only the same one?
           assert not @component.templateInstance
           @component.templateInstance = @
 
