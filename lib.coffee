@@ -416,12 +416,14 @@ class BlazeComponent extends BaseComponent
           # @ is a template instance.
 
           if componentParent
-            # TODO: Should we support that the same component can be rendered multiple times in parallel? How could we do that? For different component parents or only the same one?
-            assert not component.componentParent()
+            # component.componentParent is reactive, so we use Tracker.nonreactive just to make sure we do not leak any reactivity here.
+            Tracker.nonreactive =>
+              # TODO: Should we support that the same component can be rendered multiple times in parallel? How could we do that? For different component parents or only the same one?
+              assert not component.componentParent()
 
-            # We set the parent only when the component is created, not just constructed.
-            component.componentParent componentParent
-            componentParent.addComponentChild component
+              # We set the parent only when the component is created, not just constructed.
+              component.componentParent componentParent
+              componentParent.addComponentChild component
 
           @view._onViewRendered =>
             # Attach events the first time template instance renders.
