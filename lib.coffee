@@ -248,9 +248,9 @@ class BlazeComponent extends BaseComponent
     # and this is this dependency mixin, the view might already be created or rendered and callbacks were
     # already called, so we should call them manually here as well. But only if he view has not been destroyed
     # already. For those mixins we do not call anything, there is little use for them now.
-    unless @templateInstance?.view.isDestroyed
-      mixinInstance.onCreated?() if not @_componentInternals.inOnCreated and @templateInstance?.view.isCreated
-      mixinInstance.onRendered?() if not @_componentInternals.inOnRendered and @templateInstance?.view.isRendered
+    unless @_componentInternals.templateInstance?.view.isDestroyed
+      mixinInstance.onCreated?() if not @_componentInternals.inOnCreated and @_componentInternals.templateInstance?.view.isCreated
+      mixinInstance.onRendered?() if not @_componentInternals.inOnRendered and @_componentInternals.templateInstance?.view.isRendered
 
     # To allow chaining.
     @
@@ -417,6 +417,8 @@ class BlazeComponent extends BaseComponent
 
       # We on purpose do not reuse helpers, events, and hooks. Templates are used only for HTML rendering.
 
+      @component._componentInternals ?= {}
+
       registerHooks template,
         onCreated: ->
           # @ is a template instance.
@@ -443,12 +445,10 @@ class BlazeComponent extends BaseComponent
           @component = component
 
           # TODO: Should we support that the same component can be rendered multiple times in parallel? How could we do that? For different component parents or only the same one?
-          assert not @component.templateInstance
-          @component.templateInstance = @
+          assert not @component._componentInternals.templateInstance
+          @component._componentInternals.templateInstance = @
 
           try
-            @component._componentInternals ?= {}
-
             # We have to know if we should call onCreated on the mixin inside the requireMixin or not. We want to call
             # it only once. If it requireMixin is called from onCreated of another mixin, then it will be added at the
             # end and we will get it here at the end. So we should not call onCreated inside requireMixin because then
@@ -463,8 +463,6 @@ class BlazeComponent extends BaseComponent
         onRendered: ->
           # @ is a template instance.
           try
-            @component._componentInternals ?= {}
-
             # Same as for onCreated above.
             @component._componentInternals.inOnRendered = true
             componentOrMixin = null
@@ -491,7 +489,7 @@ class BlazeComponent extends BaseComponent
               componentParent.removeComponentChild component
 
             # Remove the reference so that it is clear that template instance is not available anymore.
-            delete @component.templateInstance
+            delete @component._componentInternals.templateInstance
 
       template
 
@@ -537,7 +535,7 @@ class BlazeComponent extends BaseComponent
     while component.mixinParent()
       component = component.mixinParent()
 
-    Blaze.getData(component.templateInstance.view) or null
+    Blaze.getData(component._componentInternals.templateInstance.view) or null
 
   # Caller-level data context. Reactive. Use this to get in event handlers the data
   # context at the place where event originated (target context). In template helpers
@@ -556,16 +554,16 @@ class BlazeComponent extends BaseComponent
     Template.instance()?.get('component') or null
 
   firstNode: ->
-    @templateInstance.firstNode
+    @_componentInternals.templateInstance.firstNode
 
   lastNode: ->
-    @templateInstance.lastNode
+    @_componentInternals.templateInstance.lastNode
 
 # We copy utility methods ($, findAll, autorun, subscribe, etc.) from the template instance prototype.
 for methodName, method of Blaze.TemplateInstance::
   do (methodName, method) ->
     BlazeComponent::[methodName] = (args...) ->
-      @templateInstance[methodName] args...
+      @_componentInternals.templateInstance[methodName] args...
 
 argumentsConstructor = ->
   # This class should never really be created.
