@@ -142,10 +142,29 @@ class ArgumentsComponent extends BlazeComponent
 
 BlazeComponent.register 'ArgumentsComponent', ArgumentsComponent
 
+class MyNamespace
+
+class MyNamespace.Foo
+
+class MyNamespace.Foo.ArgumentsComponent extends ArgumentsComponent
+  @register 'MyNamespace.Foo.ArgumentsComponent'
+
+  template: ->
+    # We could simply use "ArgumentsComponent" here and not have to copy the
+    # template, but we want to test if a template name with dots works.
+    'MyNamespace.Foo.ArgumentsComponent'
+
 reactiveContext = new ReactiveVar {}
 reactiveArguments = new ReactiveVar {}
 
 Template.argumentsTestTemplate.helpers
+  reactiveContext: ->
+    reactiveContext.get()
+
+  reactiveArguments: ->
+    reactiveArguments.get()
+
+Template.namespacedArgumentsTestTemplate.helpers
   reactiveContext: ->
     reactiveContext.get()
 
@@ -1425,6 +1444,101 @@ class BasicTestCase extends ClassyTestCase
         ['outer', true, true, false]
         ['inner', undefined, undefined, undefined]
         ['outer', false, false, true]
+      ]
+  ]
+
+  testNamespacedArguments: [
+    ->
+      MyNamespace.Foo.ArgumentsComponent.calls = []
+
+      reactiveContext.set {}
+      reactiveArguments.set {}
+
+      @renderedComponent = Blaze.renderWithData Template.namespacedArgumentsTestTemplate, {top: '42'}, $('body').get(0)
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.namespacedArgumentsTestTemplate').html()), trim """
+        <p>Component data context: {"a":"1","b":"2"}</p>
+        <p>Current data context: {"a":"1","b":"2"}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"3a","b":"4a"}</p>
+        <p>Current data context: {"a":"3a","b":"4a"}</p>
+        <p>Parent data context: {"a":"3","b":"4"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"5","b":"6"}</p>
+        <p>Current data context: {"a":"5","b":"6"}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: ["7",{"hash":{"a":"8","b":"9"}}]</p>
+        <p>Component data context: {}</p>
+        <p>Current data context: {}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: [{},{"hash":{}}]</p>
+      """
+
+      reactiveContext.set {a: '10', b: '11'}
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.namespacedArgumentsTestTemplate').html()), trim """
+        <p>Component data context: {"a":"1","b":"2"}</p>
+        <p>Current data context: {"a":"1","b":"2"}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"3a","b":"4a"}</p>
+        <p>Current data context: {"a":"3a","b":"4a"}</p>
+        <p>Parent data context: {"a":"3","b":"4"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"5","b":"6"}</p>
+        <p>Current data context: {"a":"5","b":"6"}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: ["7",{"hash":{"a":"8","b":"9"}}]</p>
+        <p>Component data context: {"a":"10","b":"11"}</p>
+        <p>Current data context: {"a":"10","b":"11"}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: [{},{"hash":{}}]</p>
+      """
+
+      reactiveArguments.set {a: '12', b: '13'}
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.namespacedArgumentsTestTemplate').html()), trim """
+        <p>Component data context: {"a":"1","b":"2"}</p>
+        <p>Current data context: {"a":"1","b":"2"}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"3a","b":"4a"}</p>
+        <p>Current data context: {"a":"3a","b":"4a"}</p>
+        <p>Parent data context: {"a":"3","b":"4"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"5","b":"6"}</p>
+        <p>Current data context: {"a":"5","b":"6"}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: ["7",{"hash":{"a":"8","b":"9"}}]</p>
+        <p>Component data context: {"a":"10","b":"11"}</p>
+        <p>Current data context: {"a":"10","b":"11"}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: [{"a":"12","b":"13"},{"hash":{}}]</p>
+      """
+
+      Blaze.remove @renderedComponent
+
+      # It is important that this is 5, not 6, because we have 3 components with static arguments, and we change
+      # arguments twice. Component should not be created once more just because we changed its data context.
+      # Only when we change its arguments.
+      @assertEqual MyNamespace.Foo.ArgumentsComponent.calls.length, 5
+
+      @assertEqual MyNamespace.Foo.ArgumentsComponent.calls, [
+        undefined
+        undefined
+        '7'
+        {}
+        {a: '12', b: '13'}
       ]
   ]
 

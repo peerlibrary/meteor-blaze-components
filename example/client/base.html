@@ -1,6 +1,7 @@
 <body>
   {{> MainComponent top='42'}}
   {{> AnimatedListComponent}}
+  {{> MyNamespace.Foo.MyComponent top='42'}}
 </body>
 
 <template name="MainComponent">
@@ -52,4 +53,9 @@
       <li>{{_id}}</li>
     {{/each}}
   </ul>
+</template>
+
+<template name="MyNamespace.Foo.MyComponent">
+  <p>MyComponent, namespaced, loaded.</p>
+  <p>Data context: {{dataContext}}</p>
 </template>

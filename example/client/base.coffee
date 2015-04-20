@@ -144,3 +144,16 @@ class AnimatedListComponent extends BlazeComponent
     return
 
 BlazeComponent.register 'AnimatedListComponent', AnimatedListComponent
+
+class MyNamespace
+
+class MyNamespace.Foo
+
+class MyNamespace.Foo.MyComponent extends BlazeComponent
+  @register 'MyNamespace.Foo.MyComponent'
+
+  template: ->
+    'MyNamespace.Foo.MyComponent'
+
+  dataContext: ->
+    EJSON.stringify @data()

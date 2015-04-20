@@ -19,6 +19,7 @@ Client side only.
 * [Component-based block helpers](#component-based-block-helpers)
 * [Animations](#animations)
 * [Mixins](#mixins)
+* [Namespaces](#namespaces)
 * [Use with existing classes](#use-with-existing-classes)
 * [Reference](#reference)
   * [Class methods](#class-methods)
@@ -457,7 +458,7 @@ class CaseComponent extends BlazeComponent
   renderCase: ->
     caseComponent = @cases[@data().case]
     return null unless caseComponent
-    BlazeComponent.getComponent(caseComponent).renderComponent @
+    BlazeComponent.getComponent(caseComponent).renderComponent @currentComponent()
 ```
 
 If you use `CaseComponent` now in the `{case: 'left'}` data context, a `LeftComponent`
@@ -724,6 +725,82 @@ mixinParent: (mixinParent) ->
 Don't forget to call `super`.
 
 *See the [tutorial](http://components.meteor.com/#the-cooperation) for a more real example of mixins.*
+
+Namespaces
+----------
+
+As your project grows and you are using more and more components, especially from 3rd party packages, flat
+structure of components (and templates) might lead to interference. To address this issue Blaze Components
+provide multi-level namespacing, with `.` character as a separator.
+
+Example:
+
+```coffee
+class Buttons
+
+class Buttons.Red extends BlazeComponent
+  @register 'Buttons.Red'
+
+  template: ->
+    'Buttons.Red'
+
+class Buttons.Blue extends BlazeComponent
+  @register 'Buttons.Blue'
+
+  template: ->
+    'Buttons.Blue'
+```
+
+```handlebars
+{{> Buttons.Red}}
+```
+
+You do not have to export `Buttons` from your package for components to be available in templates throughout your
+project. The registry of components is shared between all packages and the project. Even if you need to access a
+component's class in your code, you can use `BlazeComponent.getComponent('Buttons.Red')` to access it.
+
+Sometimes you want some non-component logic to be available together with your components. You can export
+one symbol and nest components under it like in the example above, having access to both non-component logic
+through that symbol, and components through Blaze Components registry.
+
+On the other hand, you do not even have to register components to use them. But then you have to get them into
+templates through some other means, for example, using some other component's template helper (method). Remember
+though that Meteor has a global namespace for all template names, so probably you want to use namespaced template
+names in large projects or packages you publish even if you are not registering components.
+
+Let's imagine thar your package exports `Buttons` class above. Then you could do:
+
+```handlebars
+<template name="OtherComponent">
+  {{> renderButton}}
+</template>
+```
+
+```coffee
+class OtherComponent extends BlazeComponent
+  @register 'OtherComponent'
+
+  template: ->
+    'OtherComponent'
+
+  renderButton: ->
+    Buttons.Red.renderComponent @currentComponent()
+```
+
+If you would leave your components registered, you could still do:
+
+```coffee
+renderButton: ->
+  BlazeComponent.getComponent('Buttons.Red').renderComponent @currentComponent()
+```
+
+You do not even have to create a namespacing class in your code like we did in the example above. It does make the
+code more readable and uniform, though.
+
+How exactly you structure your code and components depends on various factors. Blaze Components provide multiple
+ways to keep your components structured, tidy, and reusable.
+
+*Example above is using `renderComponent` method which is not yet public.*
 
 Use with existing classes
 -------------------------

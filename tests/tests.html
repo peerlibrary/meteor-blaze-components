@@ -220,3 +220,27 @@
 <template name="InnerComponent">
   <p class="innerComponent">Content.</p>
 </template>
+
+<template name="MyNamespace.Foo.ArgumentsComponent">
+  <p>Component data context: {{dataContext}}</p>
+  <p>Current data context: {{currentDataContext}}</p>
+  <p>Parent data context: {{parentDataContext}}</p>
+  <p>Arguments: {{constructorArguments}}</p>
+</template>
+
+<template name="namespacedArgumentsTestTemplate">
+  <div class="namespacedArgumentsTestTemplate">
+    {{#with a='1' b='2'}}
+      {{> MyNamespace.Foo.ArgumentsComponent}}
+    {{/with}}
+    {{#with a='3' b='4'}}
+      {{> MyNamespace.Foo.ArgumentsComponent a='3a' b='4a'}}
+    {{/with}}
+    {{#with a='5' b='6'}}
+      {{> MyNamespace.Foo.ArgumentsComponent args '7' a='8' b='9'}}
+    {{/with}}
+    {{#with reactiveContext}}
+      {{> MyNamespace.Foo.ArgumentsComponent args reactiveArguments}}
+    {{/with}}
+  </div>
+</template>

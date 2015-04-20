@@ -1,3 +1,15 @@
+class ComponentsNamespaceReference
+  constructor: (@namespace, @templateInstance) ->
+
+# We extend the original dot operator to support {{> Foo.Bar}}. This goes through a getTemplateHelper path, but
+# we want to redirect it to the getTemplate path. So we mark it in getTemplateHelper and then here call getTemplate.
+originalDot = Spacebars.dot
+Spacebars.dot = (value, args...) ->
+  if value instanceof ComponentsNamespaceReference
+    return Blaze._getTemplate "#{ value.namespace }.#{ args.join '.' }", value.templateInstance
+
+  originalDot value, args...
+
 # We override the original lookup method with a similar one, which supports components as well.
 #
 # Now the order of the lookup will be, in order:
@@ -49,6 +61,12 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
     # This will first search on the component and then continue with mixins.
     if mixinOrComponent = component.getFirstWith null, name
       return wrapHelper bindComponent(mixinOrComponent, mixinOrComponent[name]), templateInstance
+
+  # A special case to support {{> Foo.Bar}}. This goes through a getTemplateHelper path, but we want to redirect
+  # it to the getTemplate path. So we mark it and leave to Spacebars.dot to call getTemplate.
+  # TODO: We should provide a BaseComponent.getComponentsNamespace method instead of accessing components directly.
+  if name and name of BlazeComponent.components
+    return new ComponentsNamespaceReference name, templateInstance
 
   null
 
