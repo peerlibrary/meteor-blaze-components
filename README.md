@@ -763,7 +763,7 @@ Sometimes you want some non-component logic to be available together with your c
 one symbol and nest components under it like in the example above, having access to both non-component logic
 through that symbol, and components through Blaze Components registry.
 
-On the other hand, you do not even have to [`register`](#user-content-reference_class_register) components to use them.
+On the other hand, you do not even have to [register](#user-content-reference_class_register) components to use them.
 But then you have to get them into templates through some other means, for example, using some other component's
 template helper (method). Remember though that Meteor has a global namespace for all template names, so probably you
 want to use namespaced template names in large projects or packages you publish even if you are not registering
