@@ -2,7 +2,8 @@ Meteor Blaze Components
 =======================
 
 Blaze Components for [Meteor](https://meteor.com/) are a system for easily developing complex UI elements
-that need to be reused around your Meteor app.
+that need to be reused around your Meteor app. You can use them in [CoffeeScript, vanilla JavaScript and
+ES6](#javascript-and-es6-support).
 
 See [live tutorial](http://components.meteor.com/) for an introduction.
 
