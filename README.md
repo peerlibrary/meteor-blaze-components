@@ -534,7 +534,8 @@ class MyComponent extends BlazeComponent
   template: ->
     'MyComponent'
 
-  mixins: -> [FirstMixin, new SecondMixin 'foobar']
+  mixins: ->
+    [FirstMixin, new SecondMixin 'foobar']
 
   alternativeName: ->
     @callFirstWith null, 'templateHelper'
@@ -617,7 +618,8 @@ implementation wants to continue with the traversal it can do it by itself, prob
 [`callFirstWith`](#user-content-reference_instance_callFirstWith).
 
 ```coffee
-mixins: -> [FirstMixin, new SecondMixin 'foobar']
+mixins: ->
+  [FirstMixin, new SecondMixin 'foobar']
 ```
 
 We can see that mixins can be also already made instances. And that mixins do not have to extend
