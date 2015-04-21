@@ -420,6 +420,7 @@ class BlazeComponent extends BaseComponent
       # If mixins have not yet been created.
       component.createMixins()
 
+      # We do not allow template to be a reactive method.
       componentTemplate = component.template()
       if _.isString componentTemplate
         templateBase = Template[componentTemplate]
