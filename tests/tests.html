@@ -244,3 +244,20 @@
     {{/with}}
   </div>
 </template>
+
+<template name="TemplateDynamicTestComponent">
+  <p>Main component: {{componentName}}</p>
+  <button>Foo1</button>
+  <p>{{foobar}}</p>
+  {{#with a='1' b='2'}}
+    <button>Foo2</button>
+    <p>{{foobar2}}</p>
+  {{/with}}
+  <p>{{foobar3}}</p>
+  {{> Template.dynamic template='normalSubtemplate'}}
+  {{> FooComponent}}
+  {{#if isMainComponent}}
+    <hr/>
+    {{> SubComponent}}
+  {{/if}}
+</template>

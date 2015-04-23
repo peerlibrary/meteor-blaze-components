@@ -512,6 +512,17 @@ class InnerComponent extends BlazeComponent
   onDestroyed: ->
     OuterComponent.calls.push 'InnerComponent onDestroyed'
 
+class TemplateDynamicTestComponent extends MainComponent
+  @register 'TemplateDynamicTestComponent'
+
+  @calls: []
+
+  template: ->
+    'TemplateDynamicTestComponent'
+
+  isMainComponent: ->
+    @constructor is TemplateDynamicTestComponent
+
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
 
@@ -1541,5 +1552,69 @@ class BasicTestCase extends ClassyTestCase
         {a: '12', b: '13'}
       ]
   ]
+
+  # Test for https://github.com/peerlibrary/meteor-blaze-components/issues/30.
+  testTemplateDynamic: =>
+    componentTemplate = BlazeComponent.getComponent('TemplateDynamicTestComponent').renderComponent()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    @assertEqual trim(output), trim """
+      #{ COMPONENT_CONTENT 'TemplateDynamicTestComponent', 'MainComponent' }
+      <hr>
+      #{ COMPONENT_CONTENT 'SubComponent' }
+    """
+
+    componentTemplate = new (BlazeComponent.getComponent('TemplateDynamicTestComponent'))().renderComponent()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    @assertEqual trim(output), trim """
+      #{ COMPONENT_CONTENT 'TemplateDynamicTestComponent', 'MainComponent' }
+      <hr>
+      #{ COMPONENT_CONTENT 'SubComponent' }
+    """
+
+    componentTemplate = BlazeComponent.getComponent('FooComponent').renderComponent()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    @assertEqual trim(output), trim FOO_COMPONENT_CONTENT()
+
+    componentTemplate = new (BlazeComponent.getComponent('FooComponent'))().renderComponent()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    @assertEqual trim(output), trim FOO_COMPONENT_CONTENT()
+
+    componentTemplate = BlazeComponent.getComponent('SubComponent').renderComponent()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    @assertEqual trim(output), trim COMPONENT_CONTENT 'SubComponent'
+
+    componentTemplate = new (BlazeComponent.getComponent('SubComponent'))().renderComponent()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    @assertEqual trim(output), trim COMPONENT_CONTENT 'SubComponent'
 
 ClassyTestCase.addTest new BasicTestCase()

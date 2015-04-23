@@ -52,6 +52,12 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
 
   return null unless templateInstance
 
+  # Do not resolve component helpers if inside Template.dynamic. The reason is that Template.dynamic uses a data context
+  # value with name "template" internally. But when used inside a component the data context lookup is then resolved
+  # into a current component's template method and not the data context "template". To force the data context resolving
+  # Template.dynamic should use "this.template" in its templates, but it does not, so we have a special case here for it.
+  return null if template.viewName in ['Template.__dynamicWithDataContext', 'Template.__dynamic']
+
   # TODO: Blaze.View::lookup should not introduce any reactive dependencies. Can we simply ignore reactivity here? Can this template instance or parent template instances change without reconstructing the component as well? I don't think so. Only data context is changing and this is why templateInstance or .get() are reactive and we do not care about data context here.
   component = Tracker.nonreactive ->
     templateInstance().get 'component'
