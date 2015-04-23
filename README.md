@@ -42,6 +42,13 @@ Installation
 meteor add peerlibrary:blaze-components
 ```
 
+Note: at the time of writing (22 April 2015) meteor adds version 0.0.1 by default, so run `meteor update` after installing the package.
+
+If you're using `api.use` to include the package, make sure you specify the current version. E.g.
+````
+api.use('peerlibrary:blaze-components@0.7.0', 'client');
+````
+
 Components
 ----------
 
