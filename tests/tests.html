@@ -257,9 +257,9 @@
   {{/with}}
   <p>{{foobar3}}</p>
   {{> Template.dynamic template='normalSubtemplate'}}
-  {{> FooComponent}}
+  {{> Template.dynamic template='FooComponent'}}
   {{#if isMainComponent}}
     <hr/>
-    {{> SubComponent}}
+    {{> Template.dynamic template='SubComponent'}}
   {{/if}}
 </template>
