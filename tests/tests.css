@@ -6,7 +6,7 @@
 .useCaseTemplate,
 .myComponent,
 .exampleComponent,
-.innerComponent,
+.outerComponent,
 .namespacedArgumentsTestTemplate {
   display: none;
 }

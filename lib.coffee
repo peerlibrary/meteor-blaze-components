@@ -213,6 +213,15 @@ registerFirstCreatedHook = (template, onCreated) ->
       oldCreated?.call @
 
 class BlazeComponent extends BaseComponent
+  # TODO: Figure out how to do at the BaseComponent level?
+  @getComponentForElement: (domElement) ->
+    return null unless domElement
+
+    # This uses the same check if the argument is a DOM element that Blaze._DOMRange.forElement does.
+    throw new Error "Expected DOM element." unless domElement.nodeType is 1
+
+    Blaze.getView(domElement)?.templateInstance()?.get('component') or null
+
   mixins: ->
     []
 

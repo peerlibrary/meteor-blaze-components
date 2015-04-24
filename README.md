@@ -852,6 +852,14 @@ argument is omitted, class on which `@register` is called is used.
 
 Retrieves the component class with `componentName` name. If such component does not exist, `null` is returned.
 
+<a name="reference_class_getComponentForElement"></a>
+```coffee
+@getComponentForElement: (domElement) ->
+```
+
+Returns a component instance used to render a particular DOM element, if it was rendered using Blaze Components.
+Otherwise `null`.
+
 <a name="reference_class_componentName"></a>
 ```coffee
 @componentName: ([componentName]) ->

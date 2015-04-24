@@ -1617,4 +1617,23 @@ class BasicTestCase extends ClassyTestCase
 
     @assertEqual trim(output), trim COMPONENT_CONTENT 'SubComponent'
 
+  testGetComponentForElement: [
+    ->
+      @outerComponent = new (BlazeComponent.getComponent('OuterComponent'))()
+
+      @renderedComponent = Blaze.render @outerComponent.renderComponent(), $('body').get(0)
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @innerComponent = @outerComponent.componentChildren()[0]
+
+      @assertTrue @innerComponent
+
+      @assertEqual BlazeComponent.getComponentForElement($('.outerComponent').get(0)), @outerComponent
+      @assertEqual BlazeComponent.getComponentForElement($('.innerComponent').get(0)), @innerComponent
+
+      Blaze.remove @renderedComponent
+  ]
+
 ClassyTestCase.addTest new BasicTestCase()
