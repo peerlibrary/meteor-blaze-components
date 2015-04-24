@@ -47,7 +47,7 @@ Note: At the time of writing (22 April 2015) Meteor adds version 0.1.0 by defaul
 If you're using `api.use` to include the package, make sure you specify the current version. E.g.
 
 ```
-api.use('peerlibrary:blaze-components@0.7.0', 'client');
+api.use('peerlibrary:blaze-components@0.8.0', 'client');
 ```
 
 Components
