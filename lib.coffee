@@ -218,7 +218,7 @@ class BlazeComponent extends BaseComponent
     return null unless domElement
 
     # This uses the same check if the argument is a DOM element that Blaze._DOMRange.forElement does.
-    throw new Error "Expected DOM element." unless domElement.nodeType is 1
+    throw new Error "Expected DOM element." unless domElement.nodeType is Node.ELEMENT_NODE
 
     Blaze.getView(domElement)?.templateInstance()?.get('component') or null
 
