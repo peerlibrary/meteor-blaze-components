@@ -74,11 +74,6 @@ class ExampleComponent extends BlazeComponent
   # gives the component the name. The convention is to use the class name.
   @register 'ExampleComponent'
 
-  # Which template to use for this component.
-  template: ->
-    # Convention is to name the template the same as the component.
-    'ExampleComponent'
-
   # Life-cycle hook to initialize component's state.
   onCreated: ->
     @counter = new ReactiveVar 0
@@ -104,17 +99,18 @@ class ExampleComponent extends BlazeComponent
 ```
 
 ```handlebars
+<!-- By default a template with the component's name will be used for the content. -->
 <template name="ExampleComponent">
   <button class="increment">Click me</button>
-  {{! You can include subtemplates to structure your templates.}}
+  {{! You can include subtemplates to structure your templates. }}
   {{> subTemplate}}
 </template>
 
-<!--We use camelCase to distinguish it from the component's template.-->
+<!-- We use camelCase to distinguish it from the component's template. -->
 <template name="subTemplate">
-  {{! You can access component's properties.}}
+  {{! You can access component's properties. }}
   <p>Counter: {{counter.get}}</p>
-  {{! And component's methods.}}
+  {{! And component's methods. }}
   <p>Message: {{customHelper}}</p>  
 </template>
 ```
@@ -135,10 +131,6 @@ Example above in vanilla JavaScript:
 
 ```javascript
 var ExampleComponent = BlazeComponent.extendComponent({
-  template: function () {
-    return 'ExampleComponent';
-  },
-
   onCreated: function () {
     this.counter = new ReactiveVar(0);
   },
@@ -171,10 +163,6 @@ Example in ES6:
 
 ```javascript
 class ExampleComponent extends BlazeComponent {
-  template() {
-    return 'ExampleComponent';
-  }
-
   onCreated() {
     this.counter = new ReactiveVar(0);
   }
@@ -277,11 +265,11 @@ Example:
   {{color}}
   {{#with color='blue'}}
     {{color}}
-    {{! To access component's data context from an inner data context, use "data".}}
+    {{! To access component's data context from an inner data context, use "data". }}
     {{data.color}}
-    {{! To access the data context over the component method.}}
+    {{! To access the data context over the component method. }}
     {{currentData.color}}
-    {{! Alternatively, you can also use keyword "this".}}
+    {{! Alternatively, you can also use keyword "this". }}
     {{this.color}}
   {{/with}}
 </template>
@@ -458,9 +446,6 @@ Example:
 class CaseComponent extends BlazeComponent
   @register 'CaseComponent'
 
-  template: ->
-    'CaseComponent'
-    
   constructor: (kwargs) ->
     @cases = kwargs.hash
 
@@ -538,9 +523,6 @@ A contrived example to showcase various features of mixins:
 ```coffee
 class MyComponent extends BlazeComponent
   @register 'MyComponent'
-
-  template: ->
-    'MyComponent'
 
   mixins: ->
     [FirstMixin, new SecondMixin 'foobar']
@@ -752,14 +734,8 @@ class Buttons
 class Buttons.Red extends BlazeComponent
   @register 'Buttons.Red'
 
-  template: ->
-    'Buttons.Red'
-
 class Buttons.Blue extends BlazeComponent
   @register 'Buttons.Blue'
-
-  template: ->
-    'Buttons.Blue'
 ```
 
 ```handlebars
@@ -791,9 +767,6 @@ Let's imagine thar your package exports `Buttons` class above. Then you could do
 ```coffee
 class OtherComponent extends BlazeComponent
   @register 'OtherComponent'
-
-  template: ->
-    'OtherComponent'
 
   renderButton: ->
     Buttons.Red.renderComponent @currentComponent()
@@ -962,7 +935,9 @@ template: ->
 ```
 
 Extend this method and return the name of a [Blaze template](http://docs.meteor.com/#/full/templates_api) or template
-object itself. Template content will be used to render component's DOM content, but all preexisting template helpers,
+object itself. By default it returns the [component name](#user-content-reference_class_componentName).
+
+Template content will be used to render component's DOM content, but all preexisting template helpers,
 event handlers and life-cycle hooks will be ignored.
 
 All component methods are available in the template as template helpers. Template helpers are bound to the component
@@ -1184,9 +1159,6 @@ Example:
 class ButtonComponent extends BlazeComponent
   @register 'ButtonComponent'
 
-  template: ->
-    'ButtonComponent'
- 
   onCreated: ->
     @color = new ReactiveVar "Red"
 

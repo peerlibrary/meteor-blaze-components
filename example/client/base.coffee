@@ -1,7 +1,4 @@
 class MainComponent extends BlazeComponent
-  template: ->
-    'MainComponent'
-
   foobar: ->
     "#{ @componentName() }/MainComponent.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
 
@@ -24,12 +21,13 @@ class MainComponent extends BlazeComponent
 BlazeComponent.register 'MainComponent', MainComponent
 
 class @FooComponent extends BlazeComponent
-  template: ->
-    'FooComponent'
 
 BlazeComponent.register 'FooComponent', FooComponent
 
 class SubComponent extends MainComponent
+  template: ->
+    'MainComponent'
+
   foobar: ->
     "#{ @componentName() }/SubComponent.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
 
@@ -55,9 +53,6 @@ $.fn.outerOffset = ->
   offset
 
 class AnimatedListComponent extends BlazeComponent
-  template: ->
-    'AnimatedListComponent'
-
   onCreated: ->
     @_list = new ReactiveVar [1...6]
     @_handle = Meteor.setInterval =>
@@ -151,9 +146,6 @@ class MyNamespace.Foo
 
 class MyNamespace.Foo.MyComponent extends BlazeComponent
   @register 'MyNamespace.Foo.MyComponent'
-
-  template: ->
-    'MyNamespace.Foo.MyComponent'
 
   dataContext: ->
     EJSON.stringify @data()

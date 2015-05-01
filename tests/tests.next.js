@@ -1,5 +1,6 @@
 class ExampleComponent extends BlazeComponent {
   template() {
+    // We register the component under a different name.
     return 'ExampleComponent';
   }
 
@@ -34,6 +35,11 @@ ExampleComponent.register('ExampleComponentES6');
 
 var MyComponent = BlazeComponent.getComponent('MyComponent');
 class OurComponent extends MyComponent {
+  template() {
+    // By default it would use "OurComponentES6" name.
+    return 'MyComponent';
+  }
+
   values() {
     return '>>>' + super.values() + '<<<';
   }

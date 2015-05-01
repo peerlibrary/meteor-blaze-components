@@ -33,7 +33,7 @@
   </div>
 </template>
 
-<template name="MainComponent">
+<template name="MainComponent2">
   <p>Main component: {{componentName}}</p>
   <button>Foo1</button>
   <p>{{foobar}}</p>
@@ -66,11 +66,11 @@
 <template name="FooComponent">
   {{! Helpers here should not resolve becasue ther are defined in another component. }}
   <p>Other component: {{componentName}}</p>
-  <button>Foo1</button>
+  <button>Foo2</button>
   <p>{{foobar}}</p>
   {{#with a='5' b='6'}}
     {{! But event handler from the MainComponent should still handle the click here. }}
-    <button>Foo2</button>
+    <button>Foo3</button>
     <p>{{foobar2}}</p>
   {{/with}}
   <p>{{foobar3}}</p>
@@ -197,19 +197,20 @@
   </div>
 </template>
 
+<!-- By default a template with the component's name will be used for the content. -->
 <template name="ExampleComponent">
   <div class="exampleComponent">
     <button class="increment">Click me</button>
-    {{! You can include subtemplates to structure your templates.}}
+    {{! You can include subtemplates to structure your templates. }}
     {{> subTemplate}}
   </div>
 </template>
 
-<!--We use camelCase to distinguish it from the component's template.-->
+<!-- We use camelCase to distinguish it from the component's template. -->
 <template name="subTemplate">
-  {{! You can access component's properties.}}
+  {{! You can access component's properties. }}
   <p>Counter: {{counter.get}}</p>
-  {{! And component's methods.}}
+  {{! And component's methods. }}
   <p>Message: {{customHelper}}</p>
 </template>
 

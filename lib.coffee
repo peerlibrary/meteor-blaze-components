@@ -567,8 +567,7 @@ class BlazeComponent extends BaseComponent
       template
 
   template: ->
-    # You have to override this method with a method which returns a template name or template itself.
-    throw new Error "Component method 'template' not overridden."
+    @constructor.componentName() or throw new Error "Component is missing a name and component's 'template' method is not overridden."
 
   onCreated: ->
 

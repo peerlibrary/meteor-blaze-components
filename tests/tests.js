@@ -1,5 +1,6 @@
 var ExampleComponent = BlazeComponent.extendComponent({
   template: function () {
+    // We register the component under a different name.
     return 'ExampleComponent';
   },
 
@@ -33,6 +34,11 @@ var ExampleComponent = BlazeComponent.extendComponent({
 
 var MyComponent = BlazeComponent.getComponent('MyComponent');
 var OurComponent = MyComponent.extendComponent({
+  template: function () {
+    // By default it would use "OurComponentJS" name.
+    return 'MyComponent';
+  },
+
   values: function () {
     return '>>>' + OurComponent.__super__.values.call(this) + '<<<';
   }

@@ -7,7 +7,8 @@ class MainComponent extends BlazeComponent
   @calls: []
 
   template: ->
-    'MainComponent'
+    # To test when name of the component mismatches the template name. Template name should have precedence.
+    'MainComponent2'
 
   foobar: ->
     "#{ @componentName() }/MainComponent.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
@@ -30,9 +31,8 @@ class MainComponent extends BlazeComponent
 
 BlazeComponent.register 'MainComponent', MainComponent
 
+# Template should match registered name.
 class FooComponent extends BlazeComponent
-  template: ->
-    'FooComponent'
 
 BlazeComponent.register 'FooComponent', FooComponent
 
@@ -223,7 +223,7 @@ for property, value of (BlazeComponent::) when property not in ['constructor']
 
 class ExistingClassHierarchyComponent extends ExistingClassHierarchyBaseComponent
   template: ->
-    'MainComponent'
+    'MainComponent2'
 
   foobar: ->
     "#{ @componentName() }/ExistingClassHierarchyComponent.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
@@ -288,7 +288,7 @@ class DependencyMixin extends BlazeComponent
 
 class WithMixinsComponent extends BlazeComponent
   template: ->
-    'MainComponent'
+    'MainComponent2'
 
   mixins: ->
     [SecondMixin, FirstMixin]
@@ -306,9 +306,6 @@ class AfterCreateValueComponent extends BlazeComponent
 BlazeComponent.register 'AfterCreateValueComponent', AfterCreateValueComponent
 
 class PostMessageButtonComponent extends BlazeComponent
-  template: ->
-    'PostMessageButtonComponent'
-
   onCreated: ->
     @color = new ReactiveVar "Red"
 
@@ -394,9 +391,6 @@ BlazeComponent.register 'ParentComponent', ParentComponent
 class CaseComponent extends BlazeComponent
   @register 'CaseComponent'
 
-  template: ->
-    'CaseComponent'
-
   constructor: (kwargs) ->
     @cases = kwargs.hash
 
@@ -425,9 +419,6 @@ class RightComponent extends BlazeComponent
 
 class MyComponent extends BlazeComponent
   @register 'MyComponent'
-
-  template: ->
-    'MyComponent'
 
   mixins: -> [FirstMixin2, new SecondMixin2 'foobar']
 
@@ -482,11 +473,6 @@ class ExampleComponent extends BlazeComponent
   # Register a component so that it can be included in templates. It also
   # gives the component the name. The convention is to use the class name.
   @register 'ExampleComponent'
-
-  # Which template to use for this component.
-  template: ->
-    # Convention is to name the template the same as the component.
-    'ExampleComponent'
 
   # Life-cycle hook to initialize component's state.
   onCreated: ->
@@ -560,9 +546,9 @@ class BasicTestCase extends ClassyTestCase
   FOO_COMPONENT_CONTENT = ->
     """
       <p>Other component: FooComponent</p>
-      <button>Foo1</button>
-      <p></p>
       <button>Foo2</button>
+      <p></p>
+      <button>Foo3</button>
       <p></p>
       <p></p>
     """
@@ -721,17 +707,16 @@ class BasicTestCase extends ClassyTestCase
       /Component 'OtherMainComponent' already registered under the name 'MainComponent'/
 
     class WithoutTemplateComponent extends BlazeComponent
-      @componentName 'WithoutTemplateComponent'
 
     @assertThrows =>
       Blaze.toHTML WithoutTemplateComponent.renderComponent()
     ,
-      /Component method 'template' not overridden/
+      /Component is missing a name and component's 'template' method is not overridden/
 
     @assertThrows =>
       Blaze.toHTML new WithoutTemplateComponent().renderComponent()
     ,
-      /Component method 'template' not overridden/
+      /Component is missing a name and component's 'template' method is not overridden/
 
     class WithUnknownTemplateComponent extends BlazeComponent
       @componentName 'WithoutTemplateComponent'
