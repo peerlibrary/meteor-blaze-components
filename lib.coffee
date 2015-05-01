@@ -10,6 +10,17 @@ Spacebars.dot = (value, args...) ->
 
   originalDot value, args...
 
+originalInclude = Spacebars.include
+Spacebars.include = (templateOrFunction, args...) ->
+  # If ComponentsNamespaceReference gets all the way to the Spacebars.include it means that we are in the situation
+  # where there is both namespace and component with the same name, and user is including a component. But namespace
+  # reference is created instead (because we do not know in advance that there is no Spacebars.dot call around lookup
+  # call). So we dereference the reference and try to resolve a template. Of course, a component might not really exist.
+  if templateOrFunction instanceof ComponentsNamespaceReference
+    templateOrFunction = Blaze._getTemplate templateOrFunction.namespace, templateOrFunction.templateInstance
+
+  originalInclude templateOrFunction, args...
+
 # We override the original lookup method with a similar one, which supports components as well.
 #
 # Now the order of the lookup will be, in order:

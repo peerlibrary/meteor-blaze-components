@@ -230,6 +230,20 @@
   <p>Arguments: {{constructorArguments}}</p>
 </template>
 
+<template name="OurNamespace">
+  <p>Component data context: {{dataContext}}</p>
+  <p>Current data context: {{currentDataContext}}</p>
+  <p>Parent data context: {{parentDataContext}}</p>
+  <p>Arguments: {{constructorArguments}}</p>
+</template>
+
+<template name="OurNamespace.ArgumentsComponent">
+  <p>Component data context: {{dataContext}}</p>
+  <p>Current data context: {{currentDataContext}}</p>
+  <p>Parent data context: {{parentDataContext}}</p>
+  <p>Arguments: {{constructorArguments}}</p>
+</template>
+
 <template name="namespacedArgumentsTestTemplate">
   <div class="namespacedArgumentsTestTemplate">
     {{#with a='1' b='2'}}
@@ -243,6 +257,40 @@
     {{/with}}
     {{#with reactiveContext}}
       {{> MyNamespace.Foo.ArgumentsComponent args reactiveArguments}}
+    {{/with}}
+  </div>
+</template>
+
+<template name="ourNamespacedArgumentsTestTemplate">
+  <div class="ourNamespacedArgumentsTestTemplate">
+    {{#with a='1' b='2'}}
+      {{> OurNamespace.ArgumentsComponent}}
+    {{/with}}
+    {{#with a='3' b='4'}}
+      {{> OurNamespace.ArgumentsComponent a='3a' b='4a'}}
+    {{/with}}
+    {{#with a='5' b='6'}}
+      {{> OurNamespace.ArgumentsComponent args '7' a='8' b='9'}}
+    {{/with}}
+    {{#with reactiveContext}}
+      {{> OurNamespace.ArgumentsComponent args reactiveArguments}}
+    {{/with}}
+  </div>
+</template>
+
+<template name="ourNamespaceComponentArgumentsTestTemplate">
+  <div class="ourNamespaceComponentArgumentsTestTemplate">
+    {{#with a='1' b='2'}}
+      {{> OurNamespace}}
+    {{/with}}
+    {{#with a='3' b='4'}}
+      {{> OurNamespace a='3a' b='4a'}}
+    {{/with}}
+    {{#with a='5' b='6'}}
+      {{> OurNamespace args '7' a='8' b='9'}}
+    {{/with}}
+    {{#with reactiveContext}}
+      {{> OurNamespace args reactiveArguments}}
     {{/with}}
   </div>
 </template>

@@ -7,6 +7,8 @@
 .myComponent,
 .exampleComponent,
 .outerComponent,
-.namespacedArgumentsTestTemplate {
+.namespacedArgumentsTestTemplate,
+.ourNamespacedArgumentsTestTemplate,
+.ourNamespaceComponentArgumentsTestTemplate {
   display: none;
 }
