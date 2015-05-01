@@ -948,6 +948,10 @@ You can include other templates (to keep individual templates manageable) and co
 Convention is to name component templates the same as components, which are named the same as their classes.
 And because components are classes, they start with an upper-case letter, TitleCase.
 
+When [mixins](#mixins-1) provide `template` method, the component's default implementation first calls them
+and only if mixins do not provide a template, [component name](#user-content-reference_class_componentName) is used
+instead.
+
 *See [Spacebars documentation](http://docs.meteor.com/#/full/templates_api) for more information about the template
 language.*
 

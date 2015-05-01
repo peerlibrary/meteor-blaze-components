@@ -451,9 +451,10 @@ class BlazeComponent extends BaseComponent
       if _.isString componentTemplate
         templateBase = Template[componentTemplate]
         throw new Error "Template '#{ componentTemplate }' cannot be found." unless templateBase
-      else
+      else if componentTemplate
         templateBase = componentTemplate
-        assert templateBase
+      else
+        throw new Error "Template for the component '#{ component.componentName() or 'unnamed' }' not provided."
 
       # Create a new component template based on the Blaze template. We want our own template
       # because the same Blaze template could be reused between multiple components.
@@ -567,7 +568,7 @@ class BlazeComponent extends BaseComponent
       template
 
   template: ->
-    @constructor.componentName() or throw new Error "Component is missing a name and component's 'template' method is not overridden."
+    @callFirstWith(@, 'template') or @constructor.componentName()
 
   onCreated: ->
 

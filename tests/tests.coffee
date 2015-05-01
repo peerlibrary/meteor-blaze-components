@@ -260,6 +260,9 @@ class FirstMixin extends BlazeComponent
 class SecondMixin extends BlazeComponent
   @calls: []
 
+  template: ->
+    'MainComponent2'
+
   foobar: ->
     "#{ @mixinParent().componentName() }/SecondMixin.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
 
@@ -287,9 +290,6 @@ class DependencyMixin extends BlazeComponent
     @constructor.calls.push true
 
 class WithMixinsComponent extends BlazeComponent
-  template: ->
-    'MainComponent2'
-
   mixins: ->
     [SecondMixin, FirstMixin]
 
@@ -711,12 +711,12 @@ class BasicTestCase extends ClassyTestCase
     @assertThrows =>
       Blaze.toHTML WithoutTemplateComponent.renderComponent()
     ,
-      /Component is missing a name and component's 'template' method is not overridden/
+      /Template for the component 'unnamed' not provided/
 
     @assertThrows =>
       Blaze.toHTML new WithoutTemplateComponent().renderComponent()
     ,
-      /Component is missing a name and component's 'template' method is not overridden/
+      /Template for the component 'unnamed' not provided/
 
     class WithUnknownTemplateComponent extends BlazeComponent
       @componentName 'WithoutTemplateComponent'
