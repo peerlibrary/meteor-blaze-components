@@ -1419,3 +1419,16 @@ without a clearly defined API community cannot build and share components
 * [meteor-autoform](https://github.com/aldeed/meteor-autoform) – offers forms components through a sophisticated
 use of templates and template helpers but it is still hard to compose behaviors you want beyond defining additional
 input fields
+* [Flow Components](https://github.com/meteorhacks/flow-components) – Flow Components are closer to
+[React](https://facebook.github.io/react/) in the API design while Blaze Components are keeping familiar concepts
+like data contexts and template helpers; Flow Components on the other hand still use template-based event handlers
+while Blaze Components make them class methods so it easier to extend or override them through inheritance; in
+general Blaze Components seems to be more OOP oriented; Flow Components are not yet officially released
+* [ViewModel](http://viewmodel.meteor.com/) – instead of using event handlers to imperatively respond to user
+interactions, ViewModel provides a two-way data binding between the model and DOM elements, like form input elements,
+if data changes, form input element updates, if user modifies form input element, data is updated; alongside, ViewModel
+can be used as components; Blaze Components are in this way lower level and they do not prescribe the way you
+should be using data binding or event handlers, Blaze Components provide traditional DOM event handlers but you can
+build on top of it data binding in the way you want, when you want/need it; you can even create a mixin for that and
+reuse it across components; moreover, Blaze Components' main focus is on providing a good and extensible components
+system and its power shows exactly because you can build such features through opt-in mixins
