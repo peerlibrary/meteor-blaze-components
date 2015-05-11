@@ -1,3 +1,28 @@
+getTemplateInstance = (view) ->
+  while view and not view.template
+    view = view.originalParentView or view.parentView
+
+  # Body view has template field, but not templateInstance, so we have ? at the end.
+  view?.templateInstance?()
+
+# More or less the same as aldeed:template-extension's template.get('component') just specialized.
+# It allows us to not have a dependency on template-extension package and that we can work with Iron
+# Router which has its own DynamicTemplate class which is not patched by template-extension and thus
+# does not have .get() method.
+templateInstanceToComponent = (templateInstanceFunc) ->
+  templateInstance = templateInstanceFunc?()
+
+  # Iron Router uses its own DynamicTemplate which is not a proper template instance, but it is
+  # passed in as such, so we want to find the real one before we start searching for the component.
+  templateInstance = getTemplateInstance templateInstance.view
+
+  while templateInstance
+    return templateInstance.component if 'component' of templateInstance
+
+    templateInstance = getTemplateInstance templateInstance.view.originalParentView or templateInstance.view.parentView
+
+  null
+
 class ComponentsNamespaceReference
   constructor: (@namespace, @templateInstance) ->
 
@@ -69,9 +94,9 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
   # Template.dynamic should use "this.template" in its templates, but it does not, so we have a special case here for it.
   return null if template.viewName in ['Template.__dynamicWithDataContext', 'Template.__dynamic']
 
-  # TODO: Blaze.View::lookup should not introduce any reactive dependencies. Can we simply ignore reactivity here? Can this template instance or parent template instances change without reconstructing the component as well? I don't think so. Only data context is changing and this is why templateInstance or .get() are reactive and we do not care about data context here.
+  # TODO: Blaze.View::lookup should not introduce any reactive dependencies. Can we simply ignore reactivity here? Can this template instance or parent template instances change without reconstructing the component as well? I don't think so. Only data context is changing and this is why templateInstance() inside templateInstanceToComponent is reactive and we do not care about data context here.
   component = Tracker.nonreactive ->
-    templateInstance().get 'component'
+    templateInstanceToComponent templateInstance
 
   # Component.
   if component
@@ -171,7 +196,7 @@ originalGetTemplate = Blaze._getTemplate
 Blaze._getTemplate = (name, templateInstance) ->
   # Blaze.View::lookup should not introduce any reactive dependencies, so we are making sure it is so.
   template = Tracker.nonreactive ->
-    componentParent = templateInstance?().get 'component'
+    componentParent = templateInstanceToComponent templateInstance
     BlazeComponent.getComponent(name)?.renderComponent componentParent
   return template if template and (template instanceof Blaze.Template or _.isFunction template)
 
@@ -231,7 +256,8 @@ class BlazeComponent extends BaseComponent
     # This uses the same check if the argument is a DOM element that Blaze._DOMRange.forElement does.
     throw new Error "Expected DOM element." unless domElement.nodeType is Node.ELEMENT_NODE
 
-    Blaze.getView(domElement)?.templateInstance()?.get('component') or null
+    templateInstanceToComponent =>
+      Blaze.getView(domElement)?.templateInstance()
 
   mixins: ->
     []
@@ -642,7 +668,8 @@ class BlazeComponent extends BaseComponent
   # Caller-level component. In most cases the same as @, but in event handlers
   # it returns the component at the place where event originated (target component).
   currentComponent: ->
-    Template.instance()?.get('component') or null
+    templateInstanceToComponent =>
+      Template.instance()
 
   firstNode: ->
     @_componentInternals.templateInstance.firstNode
