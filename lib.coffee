@@ -1,9 +1,8 @@
 getTemplateInstance = (view) ->
-  while view and not view.template
+  while view and not view._templateInstance
     view = view.originalParentView or view.parentView
 
-  # Body view has template field, but not templateInstance, so we have ? at the end.
-  view?.templateInstance?()
+  view?._templateInstance
 
 # More or less the same as aldeed:template-extension's template.get('component') just specialized.
 # It allows us to not have a dependency on template-extension package and that we can work with Iron
@@ -94,7 +93,8 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
   # Template.dynamic should use "this.template" in its templates, but it does not, so we have a special case here for it.
   return null if template.viewName in ['Template.__dynamicWithDataContext', 'Template.__dynamic']
 
-  # TODO: Blaze.View::lookup should not introduce any reactive dependencies. Can we simply ignore reactivity here? Can this template instance or parent template instances change without reconstructing the component as well? I don't think so. Only data context is changing and this is why templateInstance() inside templateInstanceToComponent is reactive and we do not care about data context here.
+  # Blaze.View::lookup should not introduce any reactive dependencies, but we can simply ignore reactivity here because
+  # template instance probably cannot change without reconstructing the component as well.
   component = Tracker.nonreactive ->
     templateInstanceToComponent templateInstance
 
@@ -257,7 +257,7 @@ class BlazeComponent extends BaseComponent
     throw new Error "Expected DOM element." unless domElement.nodeType is Node.ELEMENT_NODE
 
     templateInstanceToComponent =>
-      Blaze.getView(domElement)?.templateInstance()
+      Blaze.getView(domElement)?._templateInstance
 
   mixins: ->
     []
@@ -668,14 +668,24 @@ class BlazeComponent extends BaseComponent
   # Caller-level component. In most cases the same as @, but in event handlers
   # it returns the component at the place where event originated (target component).
   currentComponent: ->
-    templateInstanceToComponent =>
-      Template.instance()
+    # Template.instance() registers a dependency on the template instance data context,
+    # but we do not need that. We just need a template instance to resolve a component.
+    Tracker.nonreactive =>
+      templateInstanceToComponent Template.instance
 
   firstNode: ->
-    @_componentInternals.templateInstance.firstNode
+    view = @_componentInternals.templateInstance.view
+    if view._domrange and not view.isDestroyed
+      view._domrange.firstNode()
+    else
+      null
 
   lastNode: ->
-    @_componentInternals.templateInstance.lastNode
+    view = @_componentInternals.templateInstance.view
+    if view._domrange and not view.isDestroyed
+      view._domrange.lastNode()
+    else
+      null
 
 # We copy utility methods ($, findAll, autorun, subscribe, etc.) from the template instance prototype.
 for methodName, method of Blaze.TemplateInstance::
