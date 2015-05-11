@@ -13,7 +13,7 @@ templateInstanceToComponent = (templateInstanceFunc) ->
 
   # Iron Router uses its own DynamicTemplate which is not a proper template instance, but it is
   # passed in as such, so we want to find the real one before we start searching for the component.
-  templateInstance = getTemplateInstance templateInstance.view
+  templateInstance = getTemplateInstance templateInstance?.view
 
   while templateInstance
     return templateInstance.component if 'component' of templateInstance
