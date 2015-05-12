@@ -833,6 +833,22 @@ Retrieves the component class with `componentName` name. If such component does 
 Returns a component instance used to render a particular DOM element, if it was rendered using Blaze Components.
 Otherwise `null`.
 
+<a name="reference_class_currentData"></a>
+```coffee
+@currentData: ->
+```
+
+This is a complementary class method to the [`currentData`](#user-content-reference_instance_currentData)
+instance method. Use it when you do not have a component instance available.
+
+<a name="reference_class_currentComponent"></a>
+```coffee
+@currentComponent: ->
+```
+
+This is a complementary class method to the [`currentComponent`](#user-content-reference_instance_currentComponent)
+instance method. Use it when you do not have a component instance available.
+
 <a name="reference_class_componentName"></a>
 ```coffee
 @componentName: ([componentName]) ->

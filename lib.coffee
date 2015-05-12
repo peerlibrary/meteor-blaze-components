@@ -658,8 +658,12 @@ class BlazeComponent extends BaseComponent
   # context at the place where event originated (target context). In template helpers
   # the data context where template helpers were called. In onCreated, onRendered,
   # and onDestroyed, the same as @data(). Inside a template this is the same as this.
+  @currentData: ->
+    Blaze.getData() ? null
+
+  # Method should never be overridden. The implementation should always be exactly the same as class method implementation.
   currentData: ->
-    Blaze.getData() or null
+    @constructor.currentData()
 
   # Useful in templates to get a reference to the component.
   component: ->
@@ -667,11 +671,15 @@ class BlazeComponent extends BaseComponent
 
   # Caller-level component. In most cases the same as @, but in event handlers
   # it returns the component at the place where event originated (target component).
-  currentComponent: ->
+  @currentComponent: ->
     # Template.instance() registers a dependency on the template instance data context,
     # but we do not need that. We just need a template instance to resolve a component.
     Tracker.nonreactive =>
       templateInstanceToComponent Template.instance
+
+  # Method should never be overridden. The implementation should always be exactly the same as class method implementation.
+  currentComponent: ->
+    @constructor.currentComponent()
 
   firstNode: ->
     view = @_componentInternals.templateInstance.view
