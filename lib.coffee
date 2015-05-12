@@ -646,20 +646,17 @@ class BlazeComponent extends BaseComponent
   # Component-level data context. Reactive. Use this to always get the
   # top-level data context used to render the component.
   data: ->
-    # Only components themselves have template instance. If we are called from inside a
-    # mixin, find a component.
-    component = @
-    while component.mixinParent()
-      component = component.mixinParent()
+    if @_componentInternals?.templateInstance?.view
+      return Blaze.getData @_componentInternals.templateInstance.view
 
-    Blaze.getData(component._componentInternals.templateInstance.view) or null
+    undefined
 
   # Caller-level data context. Reactive. Use this to get in event handlers the data
   # context at the place where event originated (target context). In template helpers
   # the data context where template helpers were called. In onCreated, onRendered,
   # and onDestroyed, the same as @data(). Inside a template this is the same as this.
   @currentData: ->
-    Blaze.getData() ? null
+    Blaze.getData() ? undefined
 
   # Method should never be overridden. The implementation should always be exactly the same as class method implementation.
   currentData: ->

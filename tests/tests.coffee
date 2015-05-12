@@ -239,19 +239,19 @@ class FirstMixin extends BlazeComponent
   @calls: []
 
   foobar: ->
-    "#{ @mixinParent().componentName() }/FirstMixin.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{ @mixinParent().componentName() }/FirstMixin.foobar/#{ EJSON.stringify @mixinParent().data() }/#{ EJSON.stringify @mixinParent().currentData() }/#{ @mixinParent().currentComponent().componentName() }"
 
   foobar2: ->
-    "#{ @mixinParent().componentName() }/FirstMixin.foobar2/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{ @mixinParent().componentName() }/FirstMixin.foobar2/#{ EJSON.stringify @mixinParent().data() }/#{ EJSON.stringify @mixinParent().currentData() }/#{ @mixinParent().currentComponent().componentName() }"
 
   foobar3: ->
-    "#{ @mixinParent().componentName() }/FirstMixin.foobar3/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{ @mixinParent().componentName() }/FirstMixin.foobar3/#{ EJSON.stringify @mixinParent().data() }/#{ EJSON.stringify @mixinParent().currentData() }/#{ @mixinParent().currentComponent().componentName() }"
 
   isMainComponent: ->
     @mixinParent().constructor is WithMixinsComponent
 
   onClick: (event) ->
-    @constructor.calls.push [@mixinParent().componentName(), 'FirstMixin.onClick', @data(), @currentData(), @currentComponent().componentName()]
+    @constructor.calls.push [@mixinParent().componentName(), 'FirstMixin.onClick', @mixinParent().data(), @mixinParent().currentData(), @mixinParent().currentComponent().componentName()]
 
   events: -> [
     'click': @onClick
@@ -264,15 +264,15 @@ class SecondMixin extends BlazeComponent
     'MainComponent2'
 
   foobar: ->
-    "#{ @mixinParent().componentName() }/SecondMixin.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{ @mixinParent().componentName() }/SecondMixin.foobar/#{ EJSON.stringify @mixinParent().data() }/#{ EJSON.stringify @mixinParent().currentData() }/#{ @mixinParent().currentComponent().componentName() }"
 
   foobar2: ->
-    "#{ @mixinParent().componentName() }/SecondMixin.foobar2/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{ @mixinParent().componentName() }/SecondMixin.foobar2/#{ EJSON.stringify @mixinParent().data() }/#{ EJSON.stringify @mixinParent().currentData() }/#{ @mixinParent().currentComponent().componentName() }"
 
   # We on purpose do not provide foobar3.
 
   onClick: (event) ->
-    @constructor.calls.push [@mixinParent().componentName(), 'SecondMixin.onClick', @data(), @currentData(), @currentComponent().componentName()]
+    @constructor.calls.push [@mixinParent().componentName(), 'SecondMixin.onClick', @mixinParent().data(), @mixinParent().currentData(), @mixinParent().currentComponent().componentName()]
 
   events: -> [
     'click': @onClick
