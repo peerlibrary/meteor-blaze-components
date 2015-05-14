@@ -7,7 +7,8 @@ ES6](#javascript-and-es6-support).
 
 See [live tutorial](http://components.meteor.com/) for an introduction.
 
-Adding this package to your Meteor application adds `BlazeComponent` class into the global scope.
+Adding this package to your Meteor application adds `BlazeComponent` and `BlazeComponentDebug` classes into the
+global scope.
 
 Client side only.
 
@@ -33,6 +34,7 @@ Client side only.
     * [Utilities](#utilities)
     * [Low-level DOM manipulation hooks](#low-level-dom-manipulation-hooks)
     * [Mixins](#mixins-1)
+* [Debugging](#debugging)
 * [Related projects](#related-projects)
 
 Installation
@@ -1400,6 +1402,39 @@ If mixin is already added to the component the method does nothing.
 
 Use `requireMixin` to manually add additional mixins after a component was created. For example, to add
 dependencies required by automatically added mixins as a result of [`mixins`](#user-content-reference_instance_mixins).
+
+Debugging
+---------
+
+To help with debugging, `BlazeComponentDebug` class is available. It contains class methods which can help
+you introspect the current state of rendered components.
+
+<a name="debugging_class_dumpComponentSubtree"></a>
+```coffee
+@dumpComponentSubtree: (componentOrElement) ->
+```
+
+For a provided component instance or DOM element rendered by a component instance this class method prints
+to the browser web console the tree structure of component instances for which the provided component instance
+is an ancestor.
+
+<a name="debugging_class_dumpComponentTree"></a>
+```coffee
+@dumpComponentTree: (componentOrElement) ->
+```
+
+For a provided component instance or DOM element rendered by a component instance this class method prints
+to the browser web console the whole tree structure of component instances in which the provided component
+instance exists, from the root component instance down.
+
+The provided component instance's name is underlined.
+
+<a name="debugging_class_dumpAllComponents"></a>
+```coffee
+@dumpAllComponents: ->
+```
+
+Prints to the browser web console tree structures of all component instances currently rendered.
 
 Related projects
 ----------------
