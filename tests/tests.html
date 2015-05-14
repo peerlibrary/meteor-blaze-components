@@ -319,7 +319,7 @@
     <thead>
       <tr>
         <th>Name</th>
-        <th>Email</th>
+        <th class="insideBlockHelper">Email</th>
         <th>Component ({{componentName}}/{{currentComponent.componentName}})</th>
       </tr>
     </thead>
@@ -336,7 +336,7 @@
   {{#ExtraTableWrapperBlockComponent block='43'}}
     <tr>
       <td>Foo</td>
-      <td>foo@example.com</td>
+      <td class="insideContent">foo@example.com</td>
       <td>{{componentName}}/{{currentComponent.componentName}}</td>
     </tr>
     {{> RowComponent name='Bar' email='bar@example.com'}}
@@ -354,7 +354,7 @@
 <template name="RowComponent">
   <tr>
     <td>{{name}}</td>
-    <td>{{email}}</td>
+    <td class="insideContentComponent">{{email}}</td>
     <td>{{componentName}}/{{currentComponent.componentName}}</td>
   </tr>
 </template>
@@ -362,7 +362,7 @@
 <template name="FootComponent">
   <tr>
     <th>Name</th>
-    <th>Email</th>
+    <th class="insideBlockHelperComponent">Email</th>
     <th>Component ({{componentName}}/{{currentComponent.componentName}})</th>
   </tr>
 </template>
@@ -383,7 +383,7 @@
 
 <template name="caption">
   {{> CaptionComponent}}
-  <h3>({{componentName}}/{{currentComponent.componentName}})</h3>
+  <h3 class="insideBlockHelperTemplate">({{componentName}}/{{currentComponent.componentName}})</h3>
 </template>
 
 <template name="renderRowTemplate">

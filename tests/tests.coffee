@@ -1904,76 +1904,76 @@ class BasicTestCase extends ClassyTestCase
     ->
       @assertEqual trim($('.extraTestBlockComponent').html()), trim """
         <h2>Names and emails and components (CaptionComponent/CaptionComponent)</h2>
-        <h3>(ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent)</h3>
+        <h3 class="insideBlockHelperTemplate">(ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent)</h3>
         <table>
           <thead>
             <tr>
               <th>Name</th>
-              <th>Email</th>
+              <th class="insideBlockHelper">Email</th>
               <th>Component (ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent)</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>Foo</td>
-              <td>foo@example.com</td>
+              <td class="insideContent">foo@example.com</td>
               <td>TestBlockComponent/TestBlockComponent</td>
             </tr>
             <tr>
               <td>Bar</td>
-              <td>bar@example.com</td>
+              <td class="insideContentComponent">bar@example.com</td>
               <td>RowComponent/RowComponent</td>
             </tr>
             <tr>
               <td>Baz</td>
-              <td>baz@example.com</td>
+              <td class="insideContentComponent">baz@example.com</td>
               <td>RowComponent/RowComponent</td>
             </tr>
             <tr>
               <td>Works</td>
-              <td>nameFromComponent1@example.com</td>
+              <td class="insideContentComponent">nameFromComponent1@example.com</td>
               <td>RowComponent/RowComponent</td>
             </tr>
             <tr>
               <td>Bac</td>
-              <td>bac@example.com</td>
+              <td class="insideContentComponent">bac@example.com</td>
               <td>RowComponent/RowComponent</td>
             </tr>
             <tr>
               <td>Works</td>
-              <td>nameFromComponent2@example.com</td>
+              <td class="insideContentComponent">nameFromComponent2@example.com</td>
               <td>RowComponent/RowComponent</td>
             </tr>
             <tr>
               <td>Works</td>
-              <td>nameFromComponent3@example.com</td>
+              <td class="insideContentComponent">nameFromComponent3@example.com</td>
               <td>RowComponent/RowComponent</td>
             </tr>
             <tr>
               <td>Bam</td>
-              <td>bam@example.com</td>
+              <td class="insideContentComponent">bam@example.com</td>
               <td>RowComponent/RowComponent</td>
             </tr>
             <tr>
               <td>Bav</td>
-              <td>bav@example.com</td>
+              <td class="insideContentComponent">bav@example.com</td>
               <td>RowComponent/RowComponent</td>
             </tr>
             <tr>
               <td>Bak</td>
-              <td>bak@example.com</td>
+              <td class="insideContentComponent">bak@example.com</td>
               <td>RowComponent/RowComponent</td>
             </tr>
             <tr>
               <td>Bal</td>
-              <td>bal@example.com</td>
+              <td class="insideContentComponent">bal@example.com</td>
               <td>RowComponent/RowComponent</td>
             </tr>
           </tbody>
           <tfoot>
             <tr>
               <th>Name</th>
-              <th>Email</th>
+              <th class="insideBlockHelperComponent">Email</th>
               <th>Component (FootComponent/FootComponent)</th>
             </tr>
           </tfoot>
@@ -2050,6 +2050,12 @@ class BasicTestCase extends ClassyTestCase
         ,
           {}
         ]
+
+      @assertEqual BlazeComponent.getComponentForElement($('.insideContent').get(0)).componentName(), 'TestBlockComponent'
+      @assertEqual BlazeComponent.getComponentForElement($('.insideContentComponent').get(0)).componentName(), 'RowComponent'
+      @assertEqual BlazeComponent.getComponentForElement($('.insideBlockHelper').get(0)).componentName(), 'ExtraTableWrapperBlockComponent'
+      @assertEqual BlazeComponent.getComponentForElement($('.insideBlockHelperComponent').get(0)).componentName(), 'FootComponent'
+      @assertEqual BlazeComponent.getComponentForElement($('.insideBlockHelperTemplate').get(0)).componentName(), 'ExtraTableWrapperBlockComponent'
 
       Blaze.remove @renderedComponent
   ]
