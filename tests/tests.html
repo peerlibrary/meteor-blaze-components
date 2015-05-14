@@ -312,3 +312,91 @@
     {{> Template.dynamic template='SubComponent'}}
   {{/if}}
 </template>
+
+<template name="ExtraTableWrapperBlockComponent">
+  {{> caption}}
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Component ({{componentName}}/{{currentComponent.componentName}})</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{> Template.contentBlock}}
+    </tbody>
+    <tfoot>
+      {{> FootComponent}}
+    </tfoot>
+  </table>
+</template>
+
+<template name="TestBlockComponent">
+  {{#ExtraTableWrapperBlockComponent block='43'}}
+    <tr>
+      <td>Foo</td>
+      <td>foo@example.com</td>
+      <td>{{componentName}}/{{currentComponent.componentName}}</td>
+    </tr>
+    {{> RowComponent name='Bar' email='bar@example.com'}}
+    {{> RowComponent name='Baz' email='baz@example.com'}}
+    {{> RowComponent name=nameFromComponent email='nameFromComponent1@example.com'}}
+    {{> row name='Bac' email='bac@example.com'}}
+    {{> row name=nameFromComponent email='nameFromComponent2@example.com'}}
+    {{> rowWith}}
+    {{> renderRow name='Bam' email='bam@example.com'}}
+    {{> renderRowTemplate}}
+    {{> RenderRowComponent}}
+  {{/ExtraTableWrapperBlockComponent}}
+</template>
+
+<template name="RowComponent">
+  <tr>
+    <td>{{name}}</td>
+    <td>{{email}}</td>
+    <td>{{componentName}}/{{currentComponent.componentName}}</td>
+  </tr>
+</template>
+
+<template name="FootComponent">
+  <tr>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Component ({{componentName}}/{{currentComponent.componentName}})</th>
+  </tr>
+</template>
+
+<template name="CaptionComponent">
+  <h2>Names and emails and components ({{componentName}}/{{currentComponent.componentName}})</h2>
+</template>
+
+<template name="row">
+  {{> RowComponent}}
+</template>
+
+<template name="rowWith">
+  {{#with name=nameFromComponent email='nameFromComponent3@example.com'}}
+    {{> row}}
+  {{/with}}
+</template>
+
+<template name="caption">
+  {{> CaptionComponent}}
+  <h3>({{componentName}}/{{currentComponent.componentName}})</h3>
+</template>
+
+<template name="renderRowTemplate">
+  {{> renderRow name='Bav' email='bav@example.com'}}
+</template>
+
+<template name="RenderRowComponent">
+  {{> componentParent.renderRow name='Bak' email='bak@example.com'}}
+  {{> componentParentRenderRow name='Bal' email='bal@example.com'}}
+</template>
+
+<template name="extraTestBlockComponent">
+  <div class="extraTestBlockComponent">
+    {{> TestBlockComponent top='42'}}
+  </div>
+</template>

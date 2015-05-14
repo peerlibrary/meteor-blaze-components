@@ -1,6 +1,6 @@
 getTemplateInstance = (view) ->
   while view and not view._templateInstance
-    view = view.originalParentView or view.parentView
+    view = view.parentView
 
   view?._templateInstance
 
@@ -18,7 +18,7 @@ templateInstanceToComponent = (templateInstanceFunc) ->
   while templateInstance
     return templateInstance.component if 'component' of templateInstance
 
-    templateInstance = getTemplateInstance templateInstance.view.originalParentView or templateInstance.view.parentView
+    templateInstance = getTemplateInstance templateInstance.view.parentView
 
   null
 

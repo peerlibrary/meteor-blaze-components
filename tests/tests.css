@@ -9,6 +9,7 @@
 .outerComponent,
 .namespacedArgumentsTestTemplate,
 .ourNamespacedArgumentsTestTemplate,
-.ourNamespaceComponentArgumentsTestTemplate {
+.ourNamespaceComponentArgumentsTestTemplate,
+.extraTestBlockComponent {
   display: none;
 }

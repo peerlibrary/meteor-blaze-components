@@ -540,6 +540,63 @@ class TemplateDynamicTestComponent extends MainComponent
   isMainComponent: ->
     @constructor is TemplateDynamicTestComponent
 
+class ExtraTableWrapperBlockComponent extends BlazeComponent
+  @register 'ExtraTableWrapperBlockComponent'
+
+class TestBlockComponent extends BlazeComponent
+  @register 'TestBlockComponent'
+
+  nameFromComponent: ->
+    "Works"
+
+  renderRow: ->
+    BlazeComponent.getComponent('RowComponent').renderComponent @currentComponent()
+
+class RowComponent extends BlazeComponent
+  @register 'RowComponent'
+
+class FootComponent extends BlazeComponent
+  @register 'FootComponent'
+
+class CaptionComponent extends BlazeComponent
+  @register 'CaptionComponent'
+
+class RenderRowComponent extends BlazeComponent
+  @register 'RenderRowComponent'
+
+  componentParentRenderRow: ->
+    @componentParent().renderRow()
+
+class TestingComponentDebug extends BlazeComponentDebug
+  @structure: {}
+
+  stack = []
+
+  @lastElement: (structure) ->
+    return structure if 'children' not of structure
+
+    stack[stack.length - 1] = structure.children
+    @lastElement structure.children[structure.children.length - 1]
+
+  @startComponent: (component) ->
+    stack.push null
+    element = @lastElement @structure
+
+    element.component = component.componentName()
+    element.data = component.data()
+    element.children = [{}]
+
+  @endComponent: (component) ->
+    # Only the top-level stack element stays null and is not set to a children array.
+    stack[stack.length - 1].push {} if stack.length > 1
+    stack.pop()
+
+  @startMarkedComponent: (component) ->
+    @startComponent component
+
+  @endMarkedComponent: (component) ->
+    @endComponent component
+
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
 
@@ -1834,6 +1891,165 @@ class BasicTestCase extends ClassyTestCase
 
       @assertEqual BlazeComponent.getComponentForElement($('.outerComponent').get(0)), @outerComponent
       @assertEqual BlazeComponent.getComponentForElement($('.innerComponent').get(0)), @innerComponent
+
+      Blaze.remove @renderedComponent
+  ]
+
+  testBlockHelpersStructure: [
+    ->
+      @renderedComponent = Blaze.render Template.extraTestBlockComponent, $('body').get(0)
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.extraTestBlockComponent').html()), trim """
+        <h2>Names and emails and components (CaptionComponent/CaptionComponent)</h2>
+        <h3>(ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent)</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Component (ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Foo</td>
+              <td>foo@example.com</td>
+              <td>TestBlockComponent/TestBlockComponent</td>
+            </tr>
+            <tr>
+              <td>Bar</td>
+              <td>bar@example.com</td>
+              <td>RowComponent/RowComponent</td>
+            </tr>
+            <tr>
+              <td>Baz</td>
+              <td>baz@example.com</td>
+              <td>RowComponent/RowComponent</td>
+            </tr>
+            <tr>
+              <td>Works</td>
+              <td>nameFromComponent1@example.com</td>
+              <td>RowComponent/RowComponent</td>
+            </tr>
+            <tr>
+              <td>Bac</td>
+              <td>bac@example.com</td>
+              <td>RowComponent/RowComponent</td>
+            </tr>
+            <tr>
+              <td>Works</td>
+              <td>nameFromComponent2@example.com</td>
+              <td>RowComponent/RowComponent</td>
+            </tr>
+            <tr>
+              <td>Works</td>
+              <td>nameFromComponent3@example.com</td>
+              <td>RowComponent/RowComponent</td>
+            </tr>
+            <tr>
+              <td>Bam</td>
+              <td>bam@example.com</td>
+              <td>RowComponent/RowComponent</td>
+            </tr>
+            <tr>
+              <td>Bav</td>
+              <td>bav@example.com</td>
+              <td>RowComponent/RowComponent</td>
+            </tr>
+            <tr>
+              <td>Bak</td>
+              <td>bak@example.com</td>
+              <td>RowComponent/RowComponent</td>
+            </tr>
+            <tr>
+              <td>Bal</td>
+              <td>bal@example.com</td>
+              <td>RowComponent/RowComponent</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Component (FootComponent/FootComponent)</th>
+            </tr>
+          </tfoot>
+        </table>
+      """
+
+      TestingComponentDebug.structure = {}
+      TestingComponentDebug.dumpComponentTree $('.extraTestBlockComponent table').get(0)
+
+      @assertEqual TestingComponentDebug.structure,
+        component: 'TestBlockComponent'
+        data: {top: '42'}
+        children: [
+          component: 'ExtraTableWrapperBlockComponent'
+          data: {block: '43'}
+          children: [
+            component: 'CaptionComponent'
+            data: {block: '43'}
+            children: [{}]
+          ,
+            component: 'FootComponent'
+            data: {block: '43'}
+            children: [{}]
+          ,
+            {}
+          ]
+        ,
+          component: 'RowComponent'
+          data: {name: 'Bar', email: 'bar@example.com'}
+          children: [{}]
+        ,
+          component: 'RowComponent'
+          data: {name: 'Baz', email: 'baz@example.com'}
+          children: [{}]
+        ,
+          component: 'RowComponent'
+          data: {name: 'Works', email: 'nameFromComponent1@example.com'}
+          children: [{}]
+        ,
+          component: 'RowComponent'
+          data: {name: 'Bac', email: 'bac@example.com'}
+          children: [{}]
+        ,
+          component: 'RowComponent'
+          data: {name: 'Works', email: 'nameFromComponent2@example.com'}
+          children: [{}]
+        ,
+          component: 'RowComponent'
+          data: {name: 'Works', email: 'nameFromComponent3@example.com'}
+          children: [{}]
+        ,
+          component: 'RowComponent'
+          data: {name: 'Bam', email: 'bam@example.com'}
+          children: [{}]
+        ,
+          component: 'RowComponent'
+          data: {name: 'Bav', email: 'bav@example.com'}
+          children: [{}]
+        ,
+          component: 'RenderRowComponent'
+          data: {top: '42'}
+          children: [
+# TODO: Currently does not register component parent correctly because of: https://github.com/meteor/meteor/issues/4386
+#            component: 'RowComponent'
+#            data: {name: 'Bak', email: 'bak@example.com'}
+#            children: [{}]
+#          ,
+            component: 'RowComponent'
+            data: {name: 'Bal', email: 'bal@example.com'}
+            children: [{}]
+          ,
+            {}
+          ]
+        ,
+          {}
+        ]
 
       Blaze.remove @renderedComponent
   ]
