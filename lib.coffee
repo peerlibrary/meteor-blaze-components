@@ -649,7 +649,7 @@ class BlazeComponent extends BaseComponent
   # the data context where template helpers were called. In onCreated, onRendered,
   # and onDestroyed, the same as @data(). Inside a template this is the same as this.
   @currentData: ->
-    Blaze.getData() ? undefined
+    Blaze.getData()
 
   # Method should never be overridden. The implementation should always be exactly the same as class method implementation.
   currentData: ->
