@@ -23,6 +23,7 @@ Client side only.
 * [Mixins](#mixins)
 * [Namespaces](#namespaces)
 * [Use with existing classes](#use-with-existing-classes)
+* [FlowLayout support](#flowlayout-support)
 * [Reference](#reference)
   * [Class methods](#class-methods)
   * [Instance methods](#instance-methods)
@@ -797,7 +798,61 @@ for property, value of BlazeComponent when property not in ['__super__']
 for property, value of (BlazeComponent::) when property not in ['constructor']
   YourBaseClass::[property] = value
 ```
+FlowLayout support
+------------------
+Blaze Components is compatible with [FlowLayout](https://github.com/meteorhacks/flow-layout) version `1.3.0` and above. To ensure you have at least version `1.3.0`, type `meteor add meteorhacks:flow-layout@1.3.0`.
 
+### Setup ####
+By default, FlowLayout creates a **root DOM node** and attaches it to `body`, something like:
+```
+<body>
+  <div id="__flow-root"></div>
+</body>
+````
+In order to dynamically render Blaze Components, we need the **root DOM node** to be a Blaze Component. To do this, we tell FlowLayout not to create `<div id="__flow-root"></div>`; instead we will provide it.
+
+Step 1: Create the template 
+````
+<template name="FlowLayoutRoot">
+  <div id="fl-root"></div> 
+</template>
+````
+Step 2: Create the component
+```coffee
+class FlowLayoutRoot extends BlazeComponent
+  @register 'FlowLayoutRoot'
+```
+Step 3: Include the component
+````
+<body>
+  {{> FlowLayoutRoot}}
+</body>
+````
+Step 4: Tell FlowLayout to use our **root DOM node**
+```coffee
+FlowLayout.setRoot '#fl-root'
+```
+Now you can use FlowLayout as normal. 
+
+### Example ###
+````
+<template name="appLayout">
+  {{> Template.dynamic template=template}}
+</template>
+````
+
+```coffee
+Tracker.autorun ->
+  if Meteor.userId()
+   FlowLayout.render 'appLayout',
+    template: 'dashboardComponent'
+  else if Meteor.loggingIn()
+   FlowLayout.render 'appLayout',
+    template: 'loadingComponent'
+  else
+   FlowLayout.render 'appLayout',
+    template: 'loginComponent'
+```
 Reference
 ---------
 
