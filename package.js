@@ -22,7 +22,7 @@ Package.onUse(function (api) {
 
   // Internal dependencies.
   api.use([
-    'peerlibrary:base-component@0.9.2'
+    'peerlibrary:base-component@0.10.0'
   ]);
 
   // 3rd party dependencies.
@@ -34,11 +34,14 @@ Package.onUse(function (api) {
   // TODO: Move to a separate package. Possibly one with debugOnly set to true.
   api.export('BlazeComponentDebug');
 
-  // Client.
   api.addFiles([
     'lookup.js',
     'lib.coffee',
     'debug.coffee'
+  ]);
+
+  api.addFiles([
+    'client.coffee'
   ], 'client');
 });
 
