@@ -102,7 +102,7 @@ class AnimatedListComponent extends BlazeComponent
       translateY: [0]
     ,
       duration: 1000
-      complete: ->
+      complete: (complete) =>
         $node.css(
           # After it finishes, we remove display and z-index.
           position: ''
