@@ -225,7 +225,7 @@ class BlazeComponent extends BaseComponent
     throw new Error "Expected DOM element." unless domElement.nodeType is Node.ELEMENT_NODE
 
     templateInstanceToComponent =>
-      Blaze.getView(domElement)?._templateInstance
+      getTemplateInstance Blaze.getView domElement
 
   mixins: ->
     []
