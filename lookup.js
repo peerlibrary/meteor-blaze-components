@@ -1,7 +1,8 @@
-/* This file is a direct copy of Blaze lookup.js with modifications described
-   in this pull request: https://github.com/meteor/meteor/pull/4036
+/* This file backports Blaze lookup.js from Meteor 1.2 so that required
+   Blaze features to support Blaze Components are available also in
+   older Meteor versions.
 
-   TODO: Remove this file once the pull request is merged in.
+   TODO: Remove this file eventually.
  */
 
 // If `x` is a function, binds the value of `this` for that function
