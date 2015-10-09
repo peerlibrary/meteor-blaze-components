@@ -31,12 +31,12 @@ class ExampleComponent extends BlazeComponent {
   }
 }
 
-ExampleComponent.register('ExampleComponentES6');
+ExampleComponent.register('ExampleComponentES2015');
 
 var MyComponent = BlazeComponent.getComponent('MyComponent');
 class OurComponent extends MyComponent {
   template() {
-    // By default it would use "OurComponentES6" name.
+    // By default it would use "OurComponentES2015" name.
     return 'MyComponent';
   }
 
@@ -45,4 +45,4 @@ class OurComponent extends MyComponent {
   }
 }
 
-OurComponent.register('OurComponentES6');
+OurComponent.register('OurComponentES2015');

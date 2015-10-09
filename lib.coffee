@@ -452,7 +452,7 @@ class BlazeComponent extends BaseComponent
 
       # Create a new component template based on the Blaze template. We want our own template
       # because the same Blaze template could be reused between multiple components.
-      # TODO: Should we cache these templates based on (componentName, templateBase) pair? We could use tow levels of ES6 Maps, componentName -> templateBase -> template. What about component arguments changing?
+      # TODO: Should we cache these templates based on (componentName, templateBase) pair? We could use two levels of ES2015 Maps, componentName -> templateBase -> template. What about component arguments changing?
       template = new Blaze.Template "BlazeComponent.#{ component.componentName() or 'unnamed' }", templateBase.renderFunction
 
       # We on purpose do not reuse helpers, events, and hooks. Templates are used only for HTML rendering.

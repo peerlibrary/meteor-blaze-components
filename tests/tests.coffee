@@ -1423,9 +1423,9 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
   ]
 
-  testReadmeExampleES6: [
+  testReadmeExampleES2015: [
     ->
-      @renderedComponent = Blaze.render BlazeComponent.getComponent('ExampleComponentES6').renderComponent(), $('body').get(0)
+      @renderedComponent = Blaze.render BlazeComponent.getComponent('ExampleComponentES2015').renderComponent(), $('body').get(0)
 
       Tracker.afterFlush @expect()
   ,
@@ -1462,9 +1462,9 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
   ]
 
-  testMixinsExampleWithES6: [
+  testMixinsExampleWithES2015: [
     ->
-      @renderedComponent = Blaze.renderWithData BlazeComponent.getComponent('OurComponentES6').renderComponent(), {top: '42'}, $('body').get(0)
+      @renderedComponent = Blaze.renderWithData BlazeComponent.getComponent('OurComponentES2015').renderComponent(), {top: '42'}, $('body').get(0)
 
       Tracker.afterFlush @expect()
   ,

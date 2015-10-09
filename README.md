@@ -2,8 +2,8 @@ Meteor Blaze Components
 =======================
 
 Blaze Components for [Meteor](https://meteor.com/) are a system for easily developing complex UI elements
-that need to be reused around your Meteor app. You can use them in [CoffeeScript, vanilla JavaScript and
-ES6](#javascript-and-es6-support).
+that need to be reused around your Meteor app. You can use them in [ES2015, vanilla JavaScript, and
+CoffeeScript](#javascript-and-coffeescript-support).
 
 See [live tutorial](http://components.meteor.com/) for an introduction.
 
@@ -14,7 +14,7 @@ Client side only.
 
 * [Installation](#installation)
 * [Components](#components)
-* [JavaScript and ES6 support](#javascript-and-es6-support)
+* [JavaScript and CoffeeScript support](#javascript-and-coffeescript-support)
 * [Accessing data context](#accessing-data-context)
 * [Passing arguments](#passing-arguments)
 * [Life-cycle hooks](#life-cycle-hooks)
@@ -115,11 +115,11 @@ You can see how to [register a component](#user-content-reference_class_register
 
 All template helpers, methods, event handlers, life-cycle hooks have `@`/`this` bound to the component.
 
-JavaScript and ES6 support
---------------------------
+JavaScript and CoffeeScript support
+-----------------------------------
 
 While documentation is in [CoffeeScript](http://coffeescript.org/), Blaze Components are designed to be
-equally easy to use with vanilla JavaScript and ES6 classes as well.
+equally easy to use with vanilla JavaScript and ES2015 classes as well.
 
 Example above in vanilla JavaScript:
 
@@ -153,7 +153,7 @@ var ExampleComponent = BlazeComponent.extendComponent({
 }).register('ExampleComponent');
 ```
 
-Example in ES6:
+Example in ES2015:
 
 ```javascript
 class ExampleComponent extends BlazeComponent {
