@@ -98,7 +98,7 @@
 
 <template name="PostMessageButtonComponent">
   <div class="postMessageButtonComponent">
-    <button>{{color.get}}</button>
+    <button>{{color}}</button>
   </div>
 </template>
 
@@ -209,7 +209,7 @@
 <!-- We use camelCase to distinguish it from the component's template. -->
 <template name="subTemplate">
   {{! You can access component's properties. }}
-  <p>Counter: {{counter.get}}</p>
+  <p>Counter: {{counter}}</p>
   {{! And component's methods. }}
   <p>Message: {{customHelper}}</p>
 </template>

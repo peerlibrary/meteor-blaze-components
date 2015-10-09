@@ -80,9 +80,9 @@ class AnimatedListComponent extends BlazeComponent
 
   onCreated: ->
     # To test inserts, moves, and removals.
-    @_list = new ReactiveVar [1, 2, 3, 4, 5]
+    @_list = new ReactiveField [1, 2, 3, 4, 5]
     @_handle = Meteor.setInterval =>
-      list = @_list.get()
+      list = @_list()
 
       # Moves the last number to the first place.
       list = [list[4]].concat list[0...4]
@@ -93,14 +93,14 @@ class AnimatedListComponent extends BlazeComponent
       # Adds one more number, one larger than the current largest.
       list = list.concat [_.max(list) + 1]
 
-      @_list.set list
+      @_list list
     , 1000 # ms
 
   onDestroyed: ->
     Meteor.clearInterval @_handle
 
   list: ->
-    _id: i for i in @_list.get()
+    _id: i for i in @_list()
 
   insertDOMElement: (parent, node, before) ->
     @constructor.calls.push ['insertDOMElement', @componentName(), trim(parent.outerHTML), trim(node.outerHTML), trim(before?.outerHTML or '')]
@@ -171,36 +171,36 @@ class OurNamespace.ArgumentsComponent extends ArgumentsComponent
     # template, but we want to test if a template name with dots works.
     'OurNamespace.ArgumentsComponent'
 
-reactiveContext = new ReactiveVar {}
-reactiveArguments = new ReactiveVar {}
+reactiveContext = new ReactiveField {}
+reactiveArguments = new ReactiveField {}
 
 Template.argumentsTestTemplate.helpers
   reactiveContext: ->
-    reactiveContext.get()
+    reactiveContext()
 
   reactiveArguments: ->
-    reactiveArguments.get()
+    reactiveArguments()
 
 Template.namespacedArgumentsTestTemplate.helpers
   reactiveContext: ->
-    reactiveContext.get()
+    reactiveContext()
 
   reactiveArguments: ->
-    reactiveArguments.get()
+    reactiveArguments()
 
 Template.ourNamespacedArgumentsTestTemplate.helpers
   reactiveContext: ->
-    reactiveContext.get()
+    reactiveContext()
 
   reactiveArguments: ->
-    reactiveArguments.get()
+    reactiveArguments()
 
 Template.ourNamespaceComponentArgumentsTestTemplate.helpers
   reactiveContext: ->
-    reactiveContext.get()
+    reactiveContext()
 
   reactiveArguments: ->
-    reactiveArguments.get()
+    reactiveArguments()
 
 class ExistingClassHierarchyBase
   foobar: ->
@@ -307,11 +307,11 @@ BlazeComponent.register 'AfterCreateValueComponent', AfterCreateValueComponent
 
 class PostMessageButtonComponent extends BlazeComponent
   onCreated: ->
-    @color = new ReactiveVar "Red"
+    @color = new ReactiveField "Red"
 
     $(window).on 'message.buttonComponent', (event) =>
       if color = event.originalEvent.data?.color
-        @color.set color
+        @color color
 
   onDestroyed: ->
     $(window).off '.buttonComponent'
@@ -344,8 +344,8 @@ Template.testBlockComponent.helpers
       email: 'foo@example.com'
     ]
 
-reactiveChild1 = new ReactiveVar false
-reactiveChild2 = new ReactiveVar false
+reactiveChild1 = new ReactiveField false
+reactiveChild2 = new ReactiveField false
 
 class ChildComponent extends BlazeComponent
   template: ->
@@ -354,25 +354,25 @@ class ChildComponent extends BlazeComponent
   constructor: (@childName) ->
 
   onCreated: ->
-    @domChanged = new ReactiveVar 0
+    @domChanged = new ReactiveField 0
 
   insertDOMElement: (parent, node, before) ->
     super
 
-    @domChanged.set Tracker.nonreactive =>
-      @domChanged.get() + 1
+    @domChanged Tracker.nonreactive =>
+      @domChanged() + 1
 
   moveDOMElement: (parent, node, before) ->
     super
 
-    @domChanged.set Tracker.nonreactive =>
-      @domChanged.get() + 1
+    @domChanged Tracker.nonreactive =>
+      @domChanged() + 1
 
   removeDOMElement: (parent, node) ->
     super
 
-    @domChanged.set Tracker.nonreactive =>
-      @domChanged.get() + 1
+    @domChanged Tracker.nonreactive =>
+      @domChanged() + 1
 
 BlazeComponent.register 'ChildComponent', ChildComponent
 
@@ -381,10 +381,10 @@ class ParentComponent extends BlazeComponent
     'ParentComponent'
 
   child1: ->
-    reactiveChild1.get()
+    reactiveChild1()
 
   child2: ->
-    reactiveChild2.get()
+    reactiveChild2()
 
 BlazeComponent.register 'ParentComponent', ParentComponent
 
@@ -476,7 +476,7 @@ class ExampleComponent extends BlazeComponent
 
   # Life-cycle hook to initialize component's state.
   onCreated: ->
-    @counter = new ReactiveVar 0
+    @counter = new ReactiveField 0
 
   # Mapping between events and their handlers.
   events: -> [
@@ -486,13 +486,13 @@ class ExampleComponent extends BlazeComponent
   ]
 
   onClick: (event) ->
-    @counter.set @counter.get() + 1
+    @counter @counter() + 1
 
   # Any component's method is available as a template helper in the template.
   customHelper: ->
-    if @counter.get() > 10
+    if @counter() > 10
       "Too many times"
-    else if @counter.get() is 10
+    else if @counter() is 10
       "Just enough"
     else
       "Click more"
@@ -869,8 +869,8 @@ class BasicTestCase extends ClassyTestCase
     ->
       ArgumentsComponent.calls = []
 
-      reactiveContext.set {}
-      reactiveArguments.set {}
+      reactiveContext {}
+      reactiveArguments {}
 
       @renderedComponent = Blaze.renderWithData Template.argumentsTestTemplate, {top: '42'}, $('body').get(0)
 
@@ -896,7 +896,7 @@ class BasicTestCase extends ClassyTestCase
         <p>Arguments: [{},{"hash":{}}]</p>
       """
 
-      reactiveContext.set {a: '10', b: '11'}
+      reactiveContext {a: '10', b: '11'}
 
       Tracker.afterFlush @expect()
   ,
@@ -920,7 +920,7 @@ class BasicTestCase extends ClassyTestCase
         <p>Arguments: [{},{"hash":{}}]</p>
       """
 
-      reactiveArguments.set {a: '12', b: '13'}
+      reactiveArguments {a: '12', b: '13'}
 
       Tracker.afterFlush @expect()
   ,
@@ -1164,8 +1164,8 @@ class BasicTestCase extends ClassyTestCase
 
   testComponentParent: [
     ->
-      reactiveChild1.set false
-      reactiveChild2.set false
+      reactiveChild1 false
+      reactiveChild2 false
 
       @component = new ParentComponent()
 
@@ -1185,7 +1185,7 @@ class BasicTestCase extends ClassyTestCase
           # particular test (it passes without it as well). On the other hand domChanged
           # also does not capture all changes. We are searching for an element by CSS class
           # and domChanged is not changed when a class changes on a DOM element.
-          #child.domChanged.get()
+          #child.domChanged()
           child.$('.child1').length
 
       @renderedComponent = Blaze.render @component.renderComponent(), $('body').get(0)
@@ -1195,7 +1195,7 @@ class BasicTestCase extends ClassyTestCase
     ->
       @assertEqual @component.componentChildren(), []
 
-      reactiveChild1.set true
+      reactiveChild1 true
 
       Tracker.afterFlush @expect()
   ,
@@ -1206,7 +1206,7 @@ class BasicTestCase extends ClassyTestCase
 
       @assertEqual @child1Component.componentParent(), @component
 
-      reactiveChild2.set true
+      reactiveChild2 true
 
       Tracker.afterFlush @expect()
   ,
@@ -1217,7 +1217,7 @@ class BasicTestCase extends ClassyTestCase
 
       @assertEqual @child2Component.componentParent(), @component
 
-      reactiveChild1.set false
+      reactiveChild1 false
 
       Tracker.afterFlush @expect()
   ,
@@ -1225,7 +1225,7 @@ class BasicTestCase extends ClassyTestCase
       @assertEqual @component.componentChildren(), [@child2Component]
       @assertEqual @child1Component.componentParent(), null
 
-      reactiveChild2.set false
+      reactiveChild2 false
 
       Tracker.afterFlush @expect()
   ,
@@ -1262,9 +1262,9 @@ class BasicTestCase extends ClassyTestCase
 
   testCases: [
     ->
-      @dataContext = new ReactiveVar {case: 'left'}
+      @dataContext = new ReactiveField {case: 'left'}
 
-      @renderedComponent = Blaze.renderWithData Template.useCaseTemplate, (=> @dataContext.get()), $('body').get(0)
+      @renderedComponent = Blaze.renderWithData Template.useCaseTemplate, (=> @dataContext()), $('body').get(0)
 
       Tracker.afterFlush @expect()
     ->
@@ -1272,7 +1272,7 @@ class BasicTestCase extends ClassyTestCase
         <p>Left</p>
       """
 
-      @dataContext.set {case: 'middle'}
+      @dataContext {case: 'middle'}
 
       Tracker.afterFlush @expect()
     ->
@@ -1280,7 +1280,7 @@ class BasicTestCase extends ClassyTestCase
         <p>Middle</p>
       """
 
-      @dataContext.set {case: 'right'}
+      @dataContext {case: 'right'}
 
       Tracker.afterFlush @expect()
     ->
@@ -1288,7 +1288,7 @@ class BasicTestCase extends ClassyTestCase
         <p>Right</p>
       """
 
-      @dataContext.set {case: 'unknown'}
+      @dataContext {case: 'unknown'}
 
       Tracker.afterFlush @expect()
     ->
@@ -1535,8 +1535,8 @@ class BasicTestCase extends ClassyTestCase
     ->
       MyNamespace.Foo.ArgumentsComponent.calls = []
 
-      reactiveContext.set {}
-      reactiveArguments.set {}
+      reactiveContext {}
+      reactiveArguments {}
 
       @renderedComponent = Blaze.renderWithData Template.namespacedArgumentsTestTemplate, {top: '42'}, $('body').get(0)
 
@@ -1562,7 +1562,7 @@ class BasicTestCase extends ClassyTestCase
         <p>Arguments: [{},{"hash":{}}]</p>
       """
 
-      reactiveContext.set {a: '10', b: '11'}
+      reactiveContext {a: '10', b: '11'}
 
       Tracker.afterFlush @expect()
   ,
@@ -1586,7 +1586,7 @@ class BasicTestCase extends ClassyTestCase
         <p>Arguments: [{},{"hash":{}}]</p>
       """
 
-      reactiveArguments.set {a: '12', b: '13'}
+      reactiveArguments {a: '12', b: '13'}
 
       Tracker.afterFlush @expect()
   ,
@@ -1628,8 +1628,8 @@ class BasicTestCase extends ClassyTestCase
     ->
       OurNamespace.ArgumentsComponent.calls = []
 
-      reactiveContext.set {}
-      reactiveArguments.set {}
+      reactiveContext {}
+      reactiveArguments {}
 
       @renderedComponent = Blaze.renderWithData Template.ourNamespacedArgumentsTestTemplate, {top: '42'}, $('body').get(0)
 
@@ -1655,7 +1655,7 @@ class BasicTestCase extends ClassyTestCase
         <p>Arguments: [{},{"hash":{}}]</p>
       """
 
-      reactiveContext.set {a: '10', b: '11'}
+      reactiveContext {a: '10', b: '11'}
 
       Tracker.afterFlush @expect()
   ,
@@ -1679,7 +1679,7 @@ class BasicTestCase extends ClassyTestCase
         <p>Arguments: [{},{"hash":{}}]</p>
       """
 
-      reactiveArguments.set {a: '12', b: '13'}
+      reactiveArguments {a: '12', b: '13'}
 
       Tracker.afterFlush @expect()
   ,
@@ -1721,8 +1721,8 @@ class BasicTestCase extends ClassyTestCase
     ->
       OurNamespace.calls = []
 
-      reactiveContext.set {}
-      reactiveArguments.set {}
+      reactiveContext {}
+      reactiveArguments {}
 
       @renderedComponent = Blaze.renderWithData Template.ourNamespaceComponentArgumentsTestTemplate, {top: '42'}, $('body').get(0)
 
@@ -1748,7 +1748,7 @@ class BasicTestCase extends ClassyTestCase
         <p>Arguments: [{},{"hash":{}}]</p>
       """
 
-      reactiveContext.set {a: '10', b: '11'}
+      reactiveContext {a: '10', b: '11'}
 
       Tracker.afterFlush @expect()
   ,
@@ -1772,7 +1772,7 @@ class BasicTestCase extends ClassyTestCase
         <p>Arguments: [{},{"hash":{}}]</p>
       """
 
-      reactiveArguments.set {a: '12', b: '13'}
+      reactiveArguments {a: '12', b: '13'}
 
       Tracker.afterFlush @expect()
   ,

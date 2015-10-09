@@ -54,23 +54,23 @@ $.fn.outerOffset = ->
 
 class AnimatedListComponent extends BlazeComponent
   onCreated: ->
-    @_list = new ReactiveVar [1...6]
+    @_list = new ReactiveField [1...6]
     @_handle = Meteor.setInterval =>
-      list = @_list.get()
+      list = @_list()
       assert list.length > 1
       indexFrom = parseInt Random.fraction() * list.length
       indexTo = indexFrom
       while indexTo is indexFrom
         indexTo = parseInt Random.fraction() * list.length
       list.splice indexTo, 0, list.splice(indexFrom, 1)[0]
-      @_list.set list
+      @_list list
     , 2000 # ms
 
   onDestroyed: ->
     Meteor.clearInterval @_handle
 
   list: ->
-    _id: i for i in @_list.get()
+    _id: i for i in @_list()
 
   moveDOMElement: (parent, node, before) ->
     $node = $(node)

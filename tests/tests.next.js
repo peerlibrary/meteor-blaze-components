@@ -5,7 +5,7 @@ class ExampleComponent extends BlazeComponent {
   }
 
   onCreated() {
-    this.counter = new ReactiveVar(0);
+    this.counter = new ReactiveField(0);
   }
 
   events() {
@@ -15,14 +15,14 @@ class ExampleComponent extends BlazeComponent {
   }
 
   onClick(event) {
-    this.counter.set(this.counter.get() + 1);
+    this.counter(this.counter() + 1);
   }
 
   customHelper() {
-    if (this.counter.get() > 10) {
+    if (this.counter() > 10) {
       return "Too many times";
     }
-    else if (this.counter.get() === 10) {
+    else if (this.counter() === 10) {
       return "Just enough";
     }
     else {

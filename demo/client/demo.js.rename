@@ -96,12 +96,12 @@ var PersistentInputComponent = AutoSelectInputComponent.extendComponent({
   onCreated: function () {
     PersistentInputComponent.__super__.onCreated.call(this);
     // This will store the value at the start of editing.
-    this.storedValue = new ReactiveVar();
+    this.storedValue = new ReactiveField();
   },
 
   value: function () {
     // Return stored value during editing or normal otherwise.
-    return this.storedValue.get() || PersistentInputComponent.__super__.value.call(this);
+    return this.storedValue() || PersistentInputComponent.__super__.value.call(this);
   },
 
   events: function () {
@@ -113,12 +113,12 @@ var PersistentInputComponent = AutoSelectInputComponent.extendComponent({
 
   onFocus: function (event) {
     // Store the current value when starting to edit.
-    this.storedValue.set(this.value());
+    this.storedValue(this.value());
   },
 
   onBlur: function (event) {
     // We are no longer editing, so return to normal.
-    this.storedValue.set(null);
+    this.storedValue(null);
   }
 }).register('PersistentInputComponent');
 
@@ -179,11 +179,11 @@ var RealTimeInputMixin = BlazeComponent.extendComponent({
 
 var PersistentInputMixin = BlazeComponent.extendComponent({
   onCreated: function () {
-    this.storedValue = new ReactiveVar();
+    this.storedValue = new ReactiveField();
   },
 
   value: function () {
-    return this.storedValue.get();
+    return this.storedValue();
   },
 
   events: function () {
@@ -194,11 +194,11 @@ var PersistentInputMixin = BlazeComponent.extendComponent({
   },
 
   onFocus: function (event) {
-    this.storedValue.set(this.mixinParent().value());
+    this.storedValue(this.mixinParent().value());
   },
 
   onBlur: function (event) {
-    this.storedValue.set(null);
+    this.storedValue(null);
   }
 });
 
@@ -206,11 +206,11 @@ var PersistentInputMixin = BlazeComponent.extendComponent({
 
 var PersistentInputMixin2 = BlazeComponent.extendComponent({
   onCreated: function () {
-    this.storedValue = new ReactiveVar();
+    this.storedValue = new ReactiveField();
   },
 
   value: function () {
-    return this.storedValue.get() || this.mixinParent().callFirstWith(this, 'value');
+    return this.storedValue() || this.mixinParent().callFirstWith(this, 'value');
   },
 
   events: function () {
@@ -221,11 +221,11 @@ var PersistentInputMixin2 = BlazeComponent.extendComponent({
   },
 
   onFocus: function (event) {
-    this.storedValue.set(this.mixinParent().callFirstWith(null, 'value'));
+    this.storedValue(this.mixinParent().callFirstWith(null, 'value'));
   },
 
   onBlur: function (event) {
-    this.storedValue.set(null);
+    this.storedValue(null);
   }
 });
 
@@ -297,7 +297,7 @@ var CancelableInputMixin = BlazeComponent.extendComponent({
   onKeyDown: function (event) {
     // Undo renaming on escape.
     if (event.keyCode === 27) {
-      var storedValue = this.mixinParent().getMixin(PersistentInputMixin2).storedValue.get();
+      var storedValue = this.mixinParent().getMixin(PersistentInputMixin2).storedValue();
       $(event.target).val(storedValue).change().blur();
     }
   }

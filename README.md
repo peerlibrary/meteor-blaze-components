@@ -61,7 +61,7 @@ component and few methods which will be called through a lifetime of a component
 for the list of all methods used and/or provided by Blaze Components.
 
 A basic component might look like the following (using the
-[peerlibrary:reactive-field](https://github.com/peerlibrary/meteor-reactive-field)) package as well).
+[reactive-field](https://github.com/peerlibrary/meteor-reactive-field)) package as well).
 
 ```javascript
 class ExampleComponent extends BlazeComponent {

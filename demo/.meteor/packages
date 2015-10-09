@@ -26,3 +26,4 @@ random
 ejson
 spacebars
 check
+peerlibrary:reactive-field

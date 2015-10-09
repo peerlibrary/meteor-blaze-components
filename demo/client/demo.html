@@ -398,9 +398,10 @@
     <p>Try opening another browser side by side and observe as the values change in both windows. In the example below,
   we are simulating a change every 3 seconds for convenience.</p>
   <p>In such collaborative environments, we need to make sure that the value in the input box doesn't change while you're
-  editing it. To enable this, we'll store the current value when the input box gets focus and keep returning it to
-    the rendering engine while we're editing, even if the reactive change would demand otherwise. This will trick the
-    rendering engine to think that nothing has changed and will not cause re-rendering.</p>
+  editing it. To enable this, we'll store the current value (using
+    <a href="https://github.com/peerlibrary/meteor-reactive-field">reactive-field</a> package) when the input box gets
+    focus and keep returning it to the rendering engine while we're editing, even if the reactive change would demand
+    otherwise. This will trick the rendering engine to think that nothing has changed and will not cause re-rendering.</p>
 
   <div class="demo">
     <div class="live">
@@ -421,11 +422,11 @@
     onCreated: -&gt;
       super
       # This will store the value at the start of editing.
-      @storedValue = new ReactiveVar()
+      @storedValue = new ReactiveField()
 
     value: -&gt;
       # Return stored value during editing or normal otherwise.
-      @storedValue.get() or super
+      @storedValue() or super
 
     events: -&gt;
       super.concat
@@ -434,22 +435,22 @@
 
     onFocus: (event) -&gt;
       # Store the current value when starting to edit.
-      @storedValue.set @value()
+      @storedValue @value()
 
     onBlur: (event) -&gt;
       # We are no longer editing, so return to normal.
-      @storedValue.set null</code></pre>{{/if}}
+      @storedValue null</code></pre>{{/if}}
 
   {{#if isJavaScript}}<pre><code class="language-javascript">var PersistentInputComponent = AutoSelectInputComponent.extendComponent({
     onCreated: function () {
       PersistentInputComponent.__super__.onCreated.call(this);
       // This will store the value at the start of editing.
-      this.storedValue = new ReactiveVar();
+      this.storedValue = new ReactiveField();
     },
 
     value: function () {
       // Return stored value during editing or normal otherwise.
-      return this.storedValue.get() || PersistentInputComponent.__super__.value.call(this);
+      return this.storedValue() || PersistentInputComponent.__super__.value.call(this);
     },
 
     events: function () {
@@ -461,12 +462,12 @@
 
     onFocus: function (event) {
       // Store the current value when starting to edit.
-      this.storedValue.set(this.value());
+      this.storedValue(this.value());
     },
 
     onBlur: function (event) {
       // We are no longer editing, so return to normal.
-      this.storedValue.set(null);
+      this.storedValue(null);
     }
   }).register('PersistentInputComponent');</code></pre>{{/if}}
 
@@ -674,10 +675,10 @@
 
   {{#if isCoffeeScript}}<pre><code class="language-coffeescript">class PersistentInputMixin extends BlazeComponent
     onCreated: -&gt;
-      @storedValue = new ReactiveVar()
+      @storedValue = new ReactiveField()
 
     value: -&gt;
-      @storedValue.get()
+      @storedValue()
 
     events: -&gt; [
       'focus input': @onFocus
@@ -685,18 +686,18 @@
     ]
 
     onFocus: (event) -&gt;
-      @storedValue.set @mixinParent().value()
+      @storedValue @mixinParent().value()
 
     onBlur: (event) -&gt;
-      @storedValue.set null</code></pre>{{/if}}
+      @storedValue null</code></pre>{{/if}}
 
   {{#if isJavaScript}}<pre><code class="language-javascript">var PersistentInputMixin = BlazeComponent.extendComponent({
     onCreated: function () {
-      this.storedValue = new ReactiveVar();
+      this.storedValue = new ReactiveField();
     },
 
     value: function () {
-      return this.storedValue.get();
+      return this.storedValue();
     },
 
     events: function () {
@@ -707,11 +708,11 @@
     },
 
     onFocus: function (event) {
-      this.storedValue.set(this.mixinParent().value());
+      this.storedValue(this.mixinParent().value());
     },
 
     onBlur: function (event) {
-      this.storedValue.set(null);
+      this.storedValue(null);
     }
   });</code></pre>{{/if}}
 
@@ -883,7 +884,7 @@
     onKeyDown: (event) -&gt;
       # Undo renaming on escape.
       if event.keyCode is 27
-        storedValue = @mixinParent().getMixin(PersistentInputMixin).storedValue.get()
+        storedValue = @mixinParent().getMixin(PersistentInputMixin).storedValue()
         $(event.target).val(storedValue).change().blur()</code></pre>{{/if}}
 
   {{#if isJavaScript}}<pre><code class="language-javascript">var CancelableInputMixin = BlazeComponent.extendComponent({
@@ -903,7 +904,7 @@
     onKeyDown: function (event) {
       // Undo renaming on escape.
       if (event.keyCode === 27) {
-        var storedValue = this.mixinParent().getMixin(PersistentInputMixin).storedValue.get();
+        var storedValue = this.mixinParent().getMixin(PersistentInputMixin).storedValue();
         $(event.target).val(storedValue).change().blur();
       }
     }
@@ -926,10 +927,10 @@
 
   {{#if isCoffeeScript}}<pre><code class="language-coffeescript">class PersistentInputMixin extends BlazeComponent
     onCreated: -&gt;
-      @storedValue = new ReactiveVar()
+      @storedValue = new ReactiveField()
 
     value: -&gt;
-      @storedValue.get() or @mixinParent().callFirstWith(@, 'value')
+      @storedValue() or @mixinParent().callFirstWith(@, 'value')
 
     events: -&gt; [
       'focus input': @onFocus
@@ -937,18 +938,18 @@
     ]
 
     onFocus: (event) -&gt;
-      @storedValue.set @mixinParent().callFirstWith(null, 'value')
+      @storedValue @mixinParent().callFirstWith(null, 'value')
 
     onBlur: (event) -&gt;
-      @storedValue.set null</code></pre>{{/if}}
+      @storedValue null</code></pre>{{/if}}
 
   {{#if isJavaScript}}<pre><code class="language-javascript">var PersistentInputMixin = BlazeComponent.extendComponent({
     onCreated: function () {
-      this.storedValue = new ReactiveVar();
+      this.storedValue = new ReactiveField();
     },
 
     value: function () {
-      return this.storedValue.get() || this.mixinParent().callFirstWith(this, 'value');
+      return this.storedValue() || this.mixinParent().callFirstWith(this, 'value');
     },
 
     events: function () {
@@ -959,11 +960,11 @@
     },
 
     onFocus: function (event) {
-      this.storedValue.set(this.mixinParent().callFirstWith(null, 'value'));
+      this.storedValue(this.mixinParent().callFirstWith(null, 'value'));
     },
 
     onBlur: function (event) {
-      this.storedValue.set(null);
+      this.storedValue(null);
     }
   });</code></pre>{{/if}}
 
@@ -971,10 +972,10 @@
   Let's look in more detail into two snippets.
 
   {{#if isCoffeeScript}}<pre><code class="language-coffeescript">value: -&gt;
-    @storedValue.get() or @mixinParent().callFirstWith(@, 'value')</code></pre>{{/if}}
+    @storedValue() or @mixinParent().callFirstWith(@, 'value')</code></pre>{{/if}}
 
   {{#if isJavaScript}}<pre><code class="language-javascript">value: function () {
-    return this.storedValue.get() || this.mixinParent().callFirstWith(this, 'value');
+    return this.storedValue() || this.mixinParent().callFirstWith(this, 'value');
   },</code></pre>{{/if}}
 
   <p>We pass {{#if isCoffeeScript}}<code class="language-coffeescript">@</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">this</code>{{/if}} as the first argument to the
@@ -992,10 +993,10 @@
     method.</p>
 
   {{#if isCoffeeScript}}<pre><code class="language-coffeescript">onFocus: (event) -&gt;
-    @storedValue.set @mixinParent().callFirstWith(null, 'value')</code></pre>{{/if}}
+    @storedValue @mixinParent().callFirstWith(null, 'value')</code></pre>{{/if}}
 
   {{#if isJavaScript}}<pre><code class="language-javascript">onFocus: function (event) {
-    this.storedValue.set(this.mixinParent().callFirstWith(null, 'value'));
+    this.storedValue(this.mixinParent().callFirstWith(null, 'value'));
   },</code></pre>{{/if}}
 
   <p>Here we pass {{#if isCoffeeScript}}<code class="language-coffeescript">null</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">null</code>{{/if}}

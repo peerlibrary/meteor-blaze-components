@@ -65,7 +65,8 @@ Package.onTest(function (api) {
   // 3rd party dependencies.
   api.use([
     'peerlibrary:classy-test@0.2.9',
-    'mquandalle:harmony@1.3.79'
+    'mquandalle:harmony@1.3.79',
+    'peerlibrary:reactive-field@0.1.0'
   ]);
 
   api.addFiles([

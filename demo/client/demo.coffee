@@ -95,11 +95,11 @@ class PersistentInputComponent extends AutoSelectInputComponent
   onCreated: ->
     super
     # This will store the value at the start of editing.
-    @storedValue = new ReactiveVar()
+    @storedValue = new ReactiveField()
 
   value: ->
     # Return stored value during editing or normal otherwise.
-    @storedValue.get() or super
+    @storedValue() or super
 
   events: ->
     super.concat
@@ -108,11 +108,11 @@ class PersistentInputComponent extends AutoSelectInputComponent
 
   onFocus: (event) ->
     # Store the current value when starting to edit.
-    @storedValue.set @value()
+    @storedValue @value()
 
   onBlur: (event) ->
     # We are no longer editing, so return to normal.
-    @storedValue.set null
+    @storedValue null
 
 ### Smart (auto-select, real-time, persistent) input component ###
 
@@ -153,10 +153,10 @@ class RealTimeInputMixin extends BlazeComponent
 
 class PersistentInputMixin extends BlazeComponent
   onCreated: ->
-    @storedValue = new ReactiveVar()
+    @storedValue = new ReactiveField()
 
   value: ->
-    @storedValue.get()
+    @storedValue()
 
   events: -> [
     'focus input': @onFocus
@@ -164,19 +164,19 @@ class PersistentInputMixin extends BlazeComponent
   ]
 
   onFocus: (event) ->
-    @storedValue.set @mixinParent().value()
+    @storedValue @mixinParent().value()
 
   onBlur: (event) ->
-    @storedValue.set null
+    @storedValue null
 
 ### Extreme decomposition (auto-select, real-time, persistent, cancelable, form field, storage) input component ###
 
 class PersistentInputMixin2 extends BlazeComponent
   onCreated: ->
-    @storedValue = new ReactiveVar()
+    @storedValue = new ReactiveField()
 
   value: ->
-    @storedValue.get() or @mixinParent().callFirstWith(@, 'value')
+    @storedValue() or @mixinParent().callFirstWith(@, 'value')
 
   events: -> [
     'focus input': @onFocus
@@ -184,10 +184,10 @@ class PersistentInputMixin2 extends BlazeComponent
   ]
 
   onFocus: (event) ->
-    @storedValue.set @mixinParent().callFirstWith(null, 'value')
+    @storedValue @mixinParent().callFirstWith(null, 'value')
 
   onBlur: (event) ->
-    @storedValue.set null
+    @storedValue null
 
 class ExtremeInputComponent extends BlazeComponent
   @register 'ExtremeInputComponent'
@@ -236,5 +236,5 @@ class CancelableInputMixin extends BlazeComponent
   onKeyDown: (event) ->
     # Undo renaming on escape.
     if event.keyCode is 27
-      storedValue = @mixinParent().getMixin(PersistentInputMixin2).storedValue.get()
+      storedValue = @mixinParent().getMixin(PersistentInputMixin2).storedValue()
       $(event.target).val(storedValue).change().blur()
