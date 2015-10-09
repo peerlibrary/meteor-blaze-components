@@ -60,36 +60,46 @@ A Blaze Component is defined as a class providing few methods Blaze Components s
 component and few methods which will be called through a lifetime of a component. See the [reference](#reference)
 for the list of all methods used and/or provided by Blaze Components.
 
-A basic component might look like the following.
+A basic component might look like the following (using the
+[peerlibrary:reactive-field](https://github.com/peerlibrary/meteor-reactive-field)) package as well).
 
-```coffee
-class ExampleComponent extends BlazeComponent
-  # Register a component so that it can be included in templates. It also
-  # gives the component the name. The convention is to use the class name.
-  @register 'ExampleComponent'
+```javascript
+class ExampleComponent extends BlazeComponent {
+  // Life-cycle hook to initialize component's state.
+  onCreated() {
+    this.counter = new ReactiveField(0);
+  }
 
-  # Life-cycle hook to initialize component's state.
-  onCreated: ->
-    @counter = new ReactiveVar 0
+  // Mapping between events and their handlers.
+  events() {
+    return [{
+      // You could inline the handler, but the best is to make
+      // it a method so that it can be extended later on.
+      'click .increment': this.onClick
+    }];
+  }
 
-  # Mapping between events and their handlers.
-  events: -> [
-    # You could inline the handler, but the best is to make
-    # it a method so that it can be extended later on.
-    'click .increment': @onClick
-  ]
+  onClick(event) {
+    this.counter(this.counter() + 1);
+  }
 
-  onClick: (event) ->
-    @counter.set @counter.get() + 1
+  // Any component's method is available as a template helper in the template.
+  customHelper() {
+    if (this.counter() > 10) {
+      return "Too many times";
+    }
+    else if (this.counter() === 10) {
+      return "Just enough";
+    }
+    else {
+      return "Click more";
+    }
+  }
+}
 
-  # Any component's method is available as a template helper in the template.
-  customHelper: ->
-    if @counter.get() > 10
-      "Too many times"
-    else if @counter.get() is 10
-      "Just enough"
-    else
-      "Click more"
+// Register a component so that it can be included in templates. It also
+// gives the component the name. The convention is to use the class name.
+ExampleComponent.register('ExampleComponent');
 ```
 
 ```handlebars
@@ -103,7 +113,7 @@ class ExampleComponent extends BlazeComponent
 <!-- We use camelCase to distinguish it from the component's template. -->
 <template name="subTemplate">
   {{! You can access component's properties. }}
-  <p>Counter: {{counter.get}}</p>
+  <p>Counter: {{counter}}</p>
   {{! And component's methods. }}
   <p>Message: {{customHelper}}</p>  
 </template>
@@ -113,20 +123,20 @@ You can see how to [register a component](#user-content-reference_class_register
 [template](#user-content-reference_instance_template), define a [life-cycle hook](#life-cycle-hooks),
 [event handlers](#user-content-reference_instance_events), and a custom helper as a component method.
 
-All template helpers, methods, event handlers, life-cycle hooks have `@`/`this` bound to the component.
+All template helpers, methods, event handlers, life-cycle hooks have `this` bound to the component.
 
 JavaScript and CoffeeScript support
 -----------------------------------
 
-While documentation is in [CoffeeScript](http://coffeescript.org/), Blaze Components are designed to be
-equally easy to use with vanilla JavaScript and ES2015 classes as well.
+While documentation is in ES2015, Blaze Components are designed to be
+equally easy to use with vanilla JavaScript and CoffeeScript classes as well.
 
 Example above in vanilla JavaScript:
 
 ```javascript
 var ExampleComponent = BlazeComponent.extendComponent({
   onCreated: function () {
-    this.counter = new ReactiveVar(0);
+    this.counter = new ReactiveField(0);
   },
 
   events: function () {
@@ -136,14 +146,14 @@ var ExampleComponent = BlazeComponent.extendComponent({
   },
 
   onClick: function (event) {
-    this.counter.set(this.counter.get() + 1);
+    this.counter(this.counter() + 1);
   },
 
   customHelper: function () {
-    if (this.counter.get() > 10) {
+    if (this.counter() > 10) {
       return "Too many times";
     }
-    else if (this.counter.get() === 10) {
+    else if (this.counter() === 10) {
       return "Just enough";
     }
     else {
@@ -153,38 +163,29 @@ var ExampleComponent = BlazeComponent.extendComponent({
 }).register('ExampleComponent');
 ```
 
-Example in ES2015:
+Example in CoffeeScript:
 
-```javascript
-class ExampleComponent extends BlazeComponent {
-  onCreated() {
-    this.counter = new ReactiveVar(0);
-  }
+```coffee
+class ExampleComponent extends BlazeComponent
+  @register 'ExampleComponent'
 
-  events() {
-    return [{
-      'click .increment': this.onClick
-    }];
-  }
+  onCreated: ->
+    @counter = new ReactiveField 0
 
-  onClick(event) {
-    this.counter.set(this.counter.get() + 1);
-  }
+  events: -> [
+    'click .increment': @onClick
+  ]
 
-  customHelper() {
-    if (this.counter.get() > 10) {
-      return "Too many times";
-    }
-    else if (this.counter.get() === 10) {
-      return "Just enough";
-    }
-    else {
-      return "Click more";
-    }
-  }
-}
+  onClick: (event) ->
+    @counter @counter() + 1
 
-ExampleComponent.register('ExampleComponent');
+  customHelper: ->
+    if @counter() > 10
+      "Too many times"
+    else if @counter() is 10
+      "Just enough"
+    else
+      "Click more"
 ```
 
 Accessing data context
@@ -436,17 +437,20 @@ Example:
 </template>
 ```
 
-```coffee
-class CaseComponent extends BlazeComponent
-  @register 'CaseComponent'
+```javascript
+class CaseComponent extends BlazeComponent {
+  constructor(kwargs) {
+    this.cases = kwargs.hash;
+  }
 
-  constructor: (kwargs) ->
-    @cases = kwargs.hash
+  renderCase() {
+    let caseComponent = this.cases[this.data().case];
+    if (!caseComponent) return null;
+    return BlazeComponent.getComponent(caseComponent).renderComponent(this.currentComponent());
+  }
+}
 
-  renderCase: ->
-    caseComponent = @cases[@data().case]
-    return null unless caseComponent
-    BlazeComponent.getComponent(caseComponent).renderComponent @currentComponent()
+CaseComponent.register('CaseComponent');
 ```
 
 If you use `CaseComponent` now in the `{case: 'left'}` data context, a `LeftComponent`
@@ -481,18 +485,21 @@ implementation of [`insertDOMElement`](#user-content-reference_instance_insertDO
 try to call mixins. So for components where you want to enable mixin animations for, you should extend those methods
 with something like:
 
-```coffee
-insertDOMElement: (parent, node, before) ->
-  @callFirstWith @, 'insertDOMElement', parent, node, before
-  super
+```javascript
+insertDOMElement(parent, node, before) {
+  this.callFirstWith(this, 'insertDOMElement', parent, node, before);
+  super.insertDOMElement(parent, node, before);
+}
 
-moveDOMElement: (parent, node, before) ->
-  @callFirstWith @, 'moveDOMElement', parent, node, before
-  super
+moveDOMElement(parent, node, before) {
+  this.callFirstWith(this, 'moveDOMElement', parent, node, before);
+  super.moveDOMElement(parent, node, before);
+}
 
-removeDOMElement: (parent, node) ->
-  @callFirstWith @, 'removeDOMElement', parent, node
-  super
+removeDOMElement(parent, node) {
+  this.callFirstWith(this, 'removeDOMElement', parent, node);
+  super.removeDOMElement(parent, node);
+}
 ```
 
 *See [Momentum Meteor package](https://github.com/percolatestudio/meteor-momentum) for more information on how to
@@ -514,55 +521,75 @@ Most commonly mixin is an instance of a provided mixin class.
 
 A contrived example to showcase various features of mixins:
 
-```coffee
-class MyComponent extends BlazeComponent
-  @register 'MyComponent'
+```javascript
+class MyComponent extends BlazeComponent {
+  mixins() {
+    return [FirstMixin, new SecondMixin('foobar')];
+  }
 
-  mixins: ->
-    [FirstMixin, new SecondMixin 'foobar']
+  alternativeName() {
+    return this.callFirstWith(null, 'templateHelper');
+  }
 
-  alternativeName: ->
-    @callFirstWith null, 'templateHelper'
+  values() {
+    return 'a' + (this.callFirstWith(this, 'values') || '');
+  }
+}
 
-  values: ->
-    'a' + (@callFirstWith(@, 'values') or '')
+MyComponent.register('MyComponent');
 
-class FirstMixinBase extends BlazeComponent
-  templateHelper: ->
-    "42"
+class FirstMixinBase extends BlazeComponent {
+  templateHelper() {
+    return "42";
+  }
 
-  extendedHelper: ->
-    1
+  extendedHelper() {
+    return 1;
+  }
 
-  onClick: ->
-    throw new Error() if @values() isnt @valuesPredicton
+  onClick() {
+    if (this.values() !== this.valuesPrediction) throw new Error();
+  }
+}
 
-class FirstMixin extends FirstMixinBase
-  extendedHelper: ->
-    super + 2
+class FirstMixin extends FirstMixinBase {
+  extendedHelper() {
+    return super.extendedHelper() + 2;
+  }
 
-  values: ->
-    'b' + (@mixinParent().callFirstWith(@, 'values') or '')
+  values() {
+    return 'b' + (this.mixinParent().callFirstWith(this, 'values') || '');
+  }
 
-  dataContext: ->
-    EJSON.stringify @mixinParent().data()
+  dataContext() {
+    return EJSON.stringify(this.mixinParent().data());
+  }
 
-  events: ->
-    super.concat
-      'click': @onClick
+  events() {
+    return super.events().concat({
+      'click': this.onClick
+    });
+  }
 
-  onCreated: ->
-    @valuesPredicton = 'bc'
+  onCreated() {
+    this.valuesPrediction = 'bc';
+  }
+}
 
-class SecondMixin
-  constructor: (@name) ->
+class SecondMixin {
+  constructor(name) {
+    this.name = name;
+  }
 
-  mixinParent: (mixinParent) ->
-    @_mixinParent = mixinParent if mixinParent
-    @_mixinParent
+  mixinParent(mixinParent) {
+    if (mixinParent) this._mixinParent = mixinParent;
+    return this._mixinParent;
+  }
 
-  values: ->
-    'c' + (@mixinParent().callFirstWith(@, 'values') or '')
+  values() {
+    return 'c' + (this.mixinParent().callFirstWith(this, 'values') || '');
+  }
+}
 ```
 
 ```handlebars
@@ -591,7 +618,7 @@ We can visualize class structure and mixins.
 
 ![Example mixins visualization](https://cdn.rawgit.com/peerlibrary/meteor-blaze-components/master/mixins.svg)
 
-Full lines represent JavaScript/CoffeeScript inheritance. Dashed lines represent mixins relationships based
+Full lines represent JavaScript inheritance. Dashed lines represent mixins relationships based
 on the order of mixins specified.
 
 Let's dissect the example.
@@ -601,17 +628,19 @@ component, then mixins. On the diagram from left to right. First implementation 
 implementation wants to continue with the traversal it can do it by itself, probably using
 [`callFirstWith`](#user-content-reference_instance_callFirstWith).
 
-```coffee
-mixins: ->
-  [FirstMixin, new SecondMixin 'foobar']
+```javascript
+mixins() {
+  return [FirstMixin, new SecondMixin('foobar')];
+}
 ```
 
 We can see that mixins can be also already made instances. And that mixins do not have to extend
 `BlazeComponent`. You get some methods for free, but you can use whatever you want to provide your features.
 
-```coffee
-alternativeName: ->
-  @callFirstWith null, 'templateHelper'
+```javascript
+alternativeName() {
+  return this.callFirstWith(null, 'templateHelper');
+}
 ```
 
 Wa call [`callFirstWith`](#user-content-reference_instance_callFirstWith) with `null` which makes it traverse
@@ -621,15 +650,16 @@ This allows us to not assume much about where the `templateHelper` is implemente
 would do the same back, calling the `alternativeName` on the whole structure, you might get into an inifinite loop.
 
 On the diagram of our example, this starts traversal on `MyComponent`, checking for the `templateHelper` on
-its instance through JavaScript/CoffeeScript inheritance. Afterwards it moves to `FirstMixin`, looking at its
+its instance through JavaScript inheritance. Afterwards it moves to `FirstMixin`, looking at its
 instance and its inheritance parent, where it finds it.
 
-```coffee
-values: ->
-  'a' + (@callFirstWith(@, 'values') or '')
+```javascript
+values() {
+  return 'a' + (this.callFirstWith(this, 'values') || '');
+}
 ```
 
-`values` method is passing `@` to [`callFirstWith`](#user-content-reference_instance_callFirstWith), signaling that only
+`values` method is passing `this` to [`callFirstWith`](#user-content-reference_instance_callFirstWith), signaling that only
 mixins after the component should be traversed.
 
 This is a general pattern for traversal which all `values` methods in this example use. Similar to how you would use
@@ -643,17 +673,18 @@ which continues searching on `FirstMixin`, where it is found again. That method 
 [`callFirstWith`](#user-content-reference_instance_callFirstWith), which now finds `values` again, this time on
 `SecondMixin`. Call from the `SecondMixin` does not find any more implementations. The result is thus:
 
-```coffee
+```javascript
 'a' + ('b' + ('c' + ''))
 ```
 
-```coffee
-onClick: ->
-  throw new Error() if @values() isnt @valuesPredicton
+```javascript
+onClick() {
+  if (this.values() !== this.valuesPrediction) throw new Error();
+}
 ```
 
-Event handlers (and all other methods) have `@`/`this` bound to the mixin instance, not the component. Here we can see
-how the event handler can access `values` and `valuesPredicton` on mixin's instance and how normal JavaScript/CoffeeScript
+Event handlers (and all other methods) have `this` bound to the mixin instance, not the component. Here we can see
+how the event handler can access `values` and `valuesPrediction` on mixin's instance and how normal JavaScript
 inheritance works between `FirstMixinBase` and `FirstMixin`.
 
 Event handlers are independent from other mixins and the component's event handlers. They are attached to DOM in the
@@ -663,35 +694,39 @@ To control how events are propagated between the component and mixins you can us
 [`stopPropagation`](https://api.jquery.com/event.stopPropagation/) and
 [`stopImmediatePropagation`](https://api.jquery.com/event.stopImmediatePropagation/).
 
-```coffee
-extendedHelper: ->
-  super + 2
+```javascript
+extendedHelper() {
+  return super.extendedHelper() + 2;
+}
 ```
 
-You can use normal JavaScript/CoffeeScript inheritance in your mixins. On the diagram of our example `super` traverses
+You can use normal JavaScript inheritance in your mixins. On the diagram of our example `super` traverses
 upwards.
 
-```coffee
-dataContext: ->
-  EJSON.stringify @mixinParent().data()
+```javascript
+dataContext() {
+  return EJSON.stringify(this.mixinParent().data());
+}
 ```
 
 To access the data context used for the component you first access the component, and then its data context.
 
-```coffee
-onCreated: ->
-  @valuesPredicton = 'bc'
+```javascript
+onCreated() {
+  this.valuesPrediction = 'bc';
+}
 ```
 
 Mixin's life-cycle matches that of the component and mixin's life-cycle hooks are automatically called by Blaze
 Components when the component is [created](#user-content-reference_instance_onCreated),
 [rendered](#user-content-reference_instance_onRendered), and [destroyed](#user-content-reference_instance_onDestroyed).
-`@`/`this` is bound to the mixin instance.
+`this` is bound to the mixin instance.
 
-```coffee
-mixinParent: (mixinParent) ->
-  @_mixinParent = mixinParent if mixinParent
-  @_mixinParent
+```javascript
+mixinParent(mixinParent) {
+  if (mixinParent) this._mixinParent = mixinParent;
+  return this._mixinParent;
+}
 ```
 
 Because `SecondMixin` does not extend `BlazeComponent` we have to provide the
@@ -703,10 +738,11 @@ component your mixin might need. Extend it and your additional logic.
 
 Example:
 
-```coffee
-mixinParent: (mixinParent) ->
-  mixinParent.requireMixin DependencyMixin if mixinParent
-  super
+```javascript
+mixinParent(mixinParent) {
+  if (mixinParent) mixinParent.requireMixin(DependencyMixin);
+  return super.mixinParent(mixinParent);
+}
 ```
 
 Don't forget to call `super`.
@@ -722,14 +758,16 @@ provide multi-level namespacing, with `.` character as a separator.
 
 Example:
 
-```coffee
-class Buttons
+```javascript
+class Buttons {}
 
-class Buttons.Red extends BlazeComponent
-  @register 'Buttons.Red'
+class Buttons.Red extends BlazeComponent {}
 
-class Buttons.Blue extends BlazeComponent
-  @register 'Buttons.Blue'
+Buttons.Red.register('Buttons.Red');
+
+class Buttons.Blue extends BlazeComponent {}
+
+Buttons.Blue.register('Buttons.Blue');
 ```
 
 ```handlebars
@@ -758,19 +796,22 @@ Let's imagine thar your package exports `Buttons` class above. Then you could do
 </template>
 ```
 
-```coffee
-class OtherComponent extends BlazeComponent
-  @register 'OtherComponent'
+```javascript
+class OtherComponent extends BlazeComponent {
+  renderButton() {
+    return Buttons.Red.renderComponent(this.currentComponent());
+  }
+}
 
-  renderButton: ->
-    Buttons.Red.renderComponent @currentComponent()
+OtherComponent.register('OtherComponent');
 ```
 
 If you would leave your components registered, you could still do:
 
-```coffee
-renderButton: ->
-  BlazeComponent.getComponent('Buttons.Red').renderComponent @currentComponent()
+```javascript
+renderButton() {
+  return BlazeComponent.getComponent('Buttons.Red').renderComponent(this.currentComponent());
+}
 ```
 
 You do not even have to create a namespacing class in your code like we did in the example above. It does make the
@@ -791,11 +832,16 @@ with the system. The easiest way to bootstrap your class hierarchy is to copy de
 
 Example:
 
-```coffee
-for property, value of BlazeComponent when property not in ['__super__']
-  YourBaseClass[property] = value
-for property, value of (BlazeComponent::) when property not in ['constructor']
-  YourBaseClass::[property] = value
+```javascript
+for (let property in BlazeComponent) {
+  if (property === '__super__') continue;
+  YourBaseClass[property] = BlazeComponent[property];
+}
+
+for (let property in BlazeComponent.prototype) {
+  if (property === 'constructor') continue;
+  YourBaseClass.prototype[property] = BlazeComponent.prototype[property];
+}
 ```
 
 Reference
@@ -804,48 +850,48 @@ Reference
 ### Class methods ###
 
 <a name="reference_class_register"></a>
-```coffee
-@register: (componentName, [componentClass]) ->
+```javascript
+static register(componentName, [componentClass])
 ```
 
 Registers a new component with the name `componentName`. This makes it available in templates and elsewhere
 in the component system under that name, and assigns the name to the component. If `componentClass`
-argument is omitted, class on which `@register` is called is used.
+argument is omitted, class on which `register` is called is used.
 
 <a name="reference_class_getComponent"></a>
-```coffee
-@getComponent: (componentName) ->
+```javascript
+static getComponent(componentName)
 ```
 
 Retrieves the component class with `componentName` name. If such component does not exist, `null` is returned.
 
 <a name="reference_class_getComponentForElement"></a>
-```coffee
-@getComponentForElement: (domElement) ->
+```javascript
+static getComponentForElement(domElement)
 ```
 
 Returns a component instance used to render a particular DOM element, if it was rendered using Blaze Components.
 Otherwise `null`.
 
 <a name="reference_class_currentData"></a>
-```coffee
-@currentData: ->
+```javascript
+static currentData()
 ```
 
 This is a complementary class method to the [`currentData`](#user-content-reference_instance_currentData)
 instance method. Use it when you do not have a component instance available.
 
 <a name="reference_class_currentComponent"></a>
-```coffee
-@currentComponent: ->
+```javascript
+static currentComponent()
 ```
 
 This is a complementary class method to the [`currentComponent`](#user-content-reference_instance_currentComponent)
 instance method. Use it when you do not have a component instance available.
 
 <a name="reference_class_componentName"></a>
-```coffee
-@componentName: ([componentName]) ->
+```javascript
+static componentName([componentName])
 ```
 
 When called without a `componentName` argument it returns the component name.
@@ -853,12 +899,12 @@ When called without a `componentName` argument it returns the component name.
 When called with a `componentName` argument it sets the component name.
 
 *Setting the component name yourself is needed and required only for unregistered classes because
-[`@register`](#user-content-reference_class_register) sets the component name automatically otherwise. All component
+[`register`](#user-content-reference_class_register) sets the component name automatically otherwise. All component
 should have a component name associated with them.*
 
 <a name="reference_class_extendComponent"></a>
-```coffee
-@extendComponent: ([constructor], methods) ->
+```javascript
+static extendComponent([constructor], methods)
 ```
 
 A helper method to extend a component into a new component when using vanilla JavaScript. It configures
@@ -869,7 +915,7 @@ of the parent component.
 Inside a method you can use `this.constructor` to access the class. Parent class prototype is stored into `__super__`
 for you convenience. You can use it to do `super` calls.
 
-Example:
+Example (in vanilla JavaScript):
 
 ```javascript
 var OurComponent = MyComponent.extendComponent({
@@ -879,13 +925,15 @@ var OurComponent = MyComponent.extendComponent({
 });
 ```
 
+In ES2015 and CoffeeScript you do not have to use `__super__` but can use languages' `super`.
+
 ### Instance methods ###
 
 #### Event handlers ####
 
 <a name="reference_instance_events"></a>
-```coffee
-events: ->
+```javascript
+events()
 ```
 
 Extend this method and return event hooks for the component's DOM content. Method should return an array of event maps,
@@ -903,24 +951,29 @@ subclasses to extend the event handlers logic through inheritance.
 
 Example:
 
-```coffee
-events: ->
-  super.concat
-    'click': @onClick
-    'click .accept': @onAccept
-    'click .accept, focus .accept, keypress': @onMultiple
-    
-# Fires when any element is clicked.
-onClick: (event) ->
+```javascript
+events() {
+  return super.events().concat({
+    'click': this.onClick,
+    'click .accept': this.onAccept,
+    'click .accept, focus .accept, keypress': this.onMultiple
+  });
+}
+   
+// Fires when any element is clicked.
+onClick(event) {
+}
 
-# Fires when any element with the "accept" class is clicked.
-onAccept: (event) ->
+// Fires when any element with the "accept" class is clicked.
+onAccept(event) {
+}
 
-# Fires when 'accept' is clicked or focused, or a key is pressed.
-onMultiple: (event) ->
+// Fires when 'accept' is clicked or focused, or a key is pressed.
+onMultiple(event) {
+}
 ```
 
-Blaze Components make sure that event handlers are called bound with the component itself in `this`/`@`.
+Blaze Components make sure that event handlers are called bound with the component itself in `this`.
 This means you can [normally access data context and the component itself](#access-to-data-context-and-components)
 in the event handler.
 
@@ -940,8 +993,8 @@ and [jQuery documentation](https://api.jquery.com/category/events/event-object/)
 #### DOM content ####
 
 <a name="reference_instance_template"></a>
-```coffee
-template: ->
+```javascript
+template()
 ```
 
 Extend this method and return the name of a [Blaze template](http://docs.meteor.com/#/full/templates_api) or template
@@ -951,7 +1004,7 @@ Template content will be used to render component's DOM content, but all preexis
 event handlers and life-cycle hooks will be ignored.
 
 All component methods are available in the template as template helpers. Template helpers are bound to the component
-itself in `this`/`@`.
+itself in `this`.
 
 You can include other templates (to keep individual templates manageable) and components.
 
@@ -968,8 +1021,8 @@ language.*
 #### Access to rendered content ####
 
 <a name="reference_instance_$"></a>
-```coffee
-$: (selector) ->
+```javascript
+$(selector)
 ```
 
 Finds all DOM elements matching the `selector` in the rendered content of the component, and returns them
@@ -981,8 +1034,8 @@ sub-components can match parts of the selector.
 *Wrapper around [Blaze's `$`](http://docs.meteor.com/#/full/template_$).*
 
 <a name="reference_instance_find"></a>
-```coffee
-find: (selector) ->
+```javascript
+find(selector)
 ```
 
 Finds one DOM element matching the `selector` in the rendered content of the component, or returns `null`
@@ -991,11 +1044,11 @@ if there are no such elements.
 The component serves as the document root for the selector. Only elements inside the component and its
 sub-components can match parts of the selector.
 
-*Wrapper around [Blaze's `find`](http://docs.meteor.com/#/full/template_find).*
+*Wrapper around [Blaze's `find`](http://docs.meteor.com/#/full/templƒate_find).*
 
 <a name="reference_instance_findAll"></a>
-```coffee
-findAll: (selector) ->
+```javascript
+findAll(selector)
 ```
 
 Finds all DOM element matching the `selector` in the rendered content of the component. Returns an array.
@@ -1006,8 +1059,8 @@ sub-components can match parts of the selector.
 *Wrapper around [Blaze's `findAll`](http://docs.meteor.com/#/full/template_findAll).*
 
 <a name="reference_instance_firstNode"></a>
-```coffee
-firstNode: ->
+```javascript
+firstNode()
 ```
 
 Returns the first top-level DOM node in the rendered content of the component.
@@ -1019,8 +1072,8 @@ component includes these nodes, their intervening siblings, and their descendent
 *Wrapper around [Blaze's `firstNode`](http://docs.meteor.com/#/full/template_firstNode).*
 
 <a name="reference_instance_lastNode"></a>
-```coffee
-lastNode: ->
+```javascript
+lastNode()
 ```
 
 Returns the last top-level DOM node in the rendered content of the component.
@@ -1030,8 +1083,8 @@ Returns the last top-level DOM node in the rendered content of the component.
 #### Access to data context and components ####
 
 <a name="reference_instance_data"></a>
-```coffee
-data: ->
+```javascript
+data()
 ```
 
 Returns current component-level data context. A reactive data source.
@@ -1039,8 +1092,8 @@ Returns current component-level data context. A reactive data source.
 Use this to always get the top-level data context used to render the component.
 
 <a name="reference_instance_currentData"></a>
-```coffee
-currentData: ->
+```javascript
+currentData()
 ```
 
 Returns current caller-level data context. A reactive data source.
@@ -1049,37 +1102,37 @@ In [event handlers](#event-handlers) use `currentData` to get the data context a
 In template helpers `currentData` returns the data context where a template helper was called. In life-cycle
 hooks [`onCreated`](#user-content-reference_instance_onCreated), [`onRendered`](#user-content-reference_instance_onRendered),
 and [`onDestroyed`](#user-content-reference_instance_onDestroyed), it is the same as [`data`](#user-content-reference_instance_data).
-Inside a template accessing the method as a template helper `currentData` is the same as `this`/`@`.
+Inside a template accessing the method as a template helper `currentData` is the same as `this`.
 
 <a name="reference_instance_component"></a>
-```coffee
-component: ->
+```javascript
+component()
 ```
 
 Returns the component. Useful in templates to get a reference to the component.
 
 <a name="reference_instance_currentComponent"></a>
-```coffee
-currentComponent: ->
+```javascript
+currentComponent()
 ```
 
 Similar to [`currentData`](#user-content-reference_instance_currentData), `currentComponent` returns current
 caller-level component.
 
-In most cases the same as `this`/`@`, but in event handlers it returns the component at the place where
+In most cases the same as `this`, but in event handlers it returns the component at the place where
 event originated (target component).
 
 <a name="reference_instance_componentName"></a>
-```coffee
-componentName: ->
+```javascript
+componentName()
 ```
 
-This is a complementary instance method which calls [`@componentName`](#user-content-reference_class_componentName)
+This is a complementary instance method which calls [`componentName`](#user-content-reference_class_componentName)
 class method.
 
 <a name="reference_instance_componentParent"></a>
-```coffee
-componentParent: ->
+```javascript
+componentParent()
 ```
 
 Returns the component's parent component, if it exists, or `null`. A reactive data source.
@@ -1088,8 +1141,8 @@ The parent component is available only after the component has been [created](#u
 and until is [destroyed](#user-content-reference_instance_onDestroyed).
 
 <a name="reference_instance_componentChildren"></a>
-```coffee
-componentChildren: ([nameOrComponent]) ->
+```javascript
+componentChildren([nameOrComponent])
 ```
 
 Returns an array of component's children components. A reactive data source. The order of children components in the
@@ -1101,8 +1154,8 @@ The children components are in the array only after they have been [created](#us
 and until they are [destroyed](#user-content-reference_instance_onDestroyed).
 
 <a name="reference_instance_componentChildrenWith"></a>
-```coffee
-componentChildrenWith: (propertyOrMatcherOrFunction) ->
+```javascript
+componentChildrenWith(propertyOrMatcherOrFunction)
 ```
 
 Returns an array of component's children components which match a `propertyOrMatcherOrFunction` predicate. A reactive
@@ -1113,16 +1166,17 @@ A `propertyOrMatcherOrFunction` predicate can be:
 * a matcher object specifying mapping between property names and their values, in this case all children components
 which have all properties fom the matcher object equal to given values are matched (if a property is a function, it
 is called and its return value is compared instead)
-* a function which receives `(child, parent)` with `this`/`@` bound to `parent`, in this case all children components
+* a function which receives `(child, parent)` with `this` bound to `parent`, in this case all children components
 for which the function returns a true value are matched
 
 Examples:
 
-```coffee
-component.componentChildrenWith 'propertyName'
-component.componentChildrenWith propertyName: 42
-component.componentChildrenWith (child, parent) ->
-  child.propertyName is 42
+```javascript
+component.componentChildrenWith('propertyName');
+component.componentChildrenWith({propertyName: 42});
+component.componentChildrenWith((child, parent) => {
+  child.propertyName === 42;
+});
 ```
 
 The children components are in the array only after they have been [created](#user-content-reference_instance_onCreated),
@@ -1131,8 +1185,8 @@ and until they are [destroyed](#user-content-reference_instance_onDestroyed).
 #### Life-cycle hooks ####
 
 <a name="reference_instance_constructor"></a>
-```coffee
-constructor: (args...) ->
+```javascript
+constructor([args...])
 ```
 
 When a component is created, its constructor is first called. There are no restrictions on component's constructor
@@ -1156,8 +1210,8 @@ when instantiating the component's class. Keyword arguments are wrapped into
 After the component is instantiated, all its [mixins](#user-content-reference_instance_mixins) are instantiated as well.
 
 <a name="reference_instance_onCreated"></a>
-```coffee
-onCreated: ->
+```javascript
+onCreated()
 ```
 
 Extend this method to do any initialization of the component before it is rendered for the first time. This is a better
@@ -1169,24 +1223,28 @@ A recommended use is to initialize any reactive variables and subscriptions inte
 
 Example:
 
-```coffee
-class ButtonComponent extends BlazeComponent
-  @register 'ButtonComponent'
+```javascript
+class ButtonComponent extends BlazeComponent {
+  onCreated() {
+    this.color = new ReactiveField("Red");
 
-  onCreated: ->
-    @color = new ReactiveVar "Red"
+    $(window).on('message.buttonComponent', (event) => {
+      let color = event.originalEvent.data && event.originalEvent.data.color;
+      if (color) this.color(color);
+    });
+  }
 
-    $(window).on 'message.buttonComponent', (event) =>
-      if color = event.originalEvent.data?.color
-        @color.set color
+  onDestroyed() {
+    $(window).off('.buttonComponent');
+  }
+}
 
-  onDestroyed: ->
-    $(window).off '.buttonComponent'
+ButtonComponent.register('ButtonComponent');
 ```
 
 ```handlebars
 <template name="ButtonComponent">
-  <button>{{color.get}}</button>
+  <button>{{color}}</button>
 </template>
 ```
 
@@ -1196,8 +1254,8 @@ like `{color: "Blue"}` which would reactively change the label of the button.
 When [mixins](#mixins-1) provide `onCreated` method, they are called after the component in mixins order automatically.
 
 <a name="reference_instance_onRendered"></a>
-```coffee
-onRendered: ->
+```javascript
+onRendered()
 ```
 
 This method is called once when a component is rendered into DOM nodes and put into the document for the first time.
@@ -1212,8 +1270,8 @@ so consider reimplementing the 3rd party library as a Blaze Component instead.
 When [mixins](#mixins-1) provide `onRendered` method, they are called after the component in mixins order automatically.
 
 <a name="reference_instance_onDestroyed"></a>
-```coffee
-onDestroyed: ->
+```javascript
+onDestroyed()
 ```
 
 This method is called when an occurrence of a component is taken off the page for any reason and not replaced
@@ -1225,23 +1283,23 @@ or [`onRendered`](#user-content-reference_instance_onRendered) methods. See the 
 When [mixins](#mixins-1) provide `onDestroyed` method, they are called after the component in mixins order automatically.
 
 <a name="reference_instance_isCreated"></a>
-```coffee
-isCreated: ->
+```javascript
+isCreated()
 ```
 
 Returns `true` if the component is created, possibly rendered, but not (yet) destroyed. Otherwise `false`. A reactive
 data source.
 
 <a name="reference_instance_isRendered"></a>
-```coffee
-isRendered: ->
+```javascript
+isRendered()
 ```
 
 Returns `true` if the component is rendered, but not (yet) destroyed. Otherwise `false`. A reactive data source.
 
 <a name="reference_instance_isDestroyed"></a>
-```coffee
-isDestroyed: ->
+```javascript
+isDestroyed()
 ```
 
 Returns `true` if the component is destroyed. Otherwise `false`. If component was never created, it was also never
@@ -1250,8 +1308,8 @@ destroyed so initially the value is `false`. A reactive data source.
 #### Utilities ####
 
 <a name="reference_instance_autorun"></a>
-```coffee
-autorun: (runFunc) ->
+```javascript
+autorun(runFunc)
 ```
 
 A version of [`Tracker.autorun`](http://docs.meteor.com/#/full/tracker_autorun) that is stopped when the component is
@@ -1259,8 +1317,8 @@ destroyed. You can use `autorun` from an [`onCreated`](#user-content-reference_i
 [`onRendered`](#user-content-reference_instance_onRendered) life-cycle hooks to reactively update the DOM or the component.
 
 <a name="reference_instance_subscribe"></a>
-```coffee
-subscribe: (name, args..., [callbacks]) ->
+```javascript
+subscribe(name, [args...], [callbacks])
 ```
 
 A version of [`Meteor.subscribe`](http://docs.meteor.com/#meteor_subscribe) that is stopped when the component is
@@ -1268,8 +1326,8 @@ destroyed. You can use `subscribe` from an [`onCreated`](#user-content-reference
 specify which data publications this component depends on.
 
 <a name="reference_instance_subscriptionsReady"></a>
-```coffee
-subscriptionsReady: ->
+```javascript
+subscriptionsReady()
 ```
 
 This method returns `true` when all of the subscriptions called with [`subscribe`](#user-content-reference_instance_subscribe)
@@ -1278,8 +1336,8 @@ are ready. Same as with all other methods, you can use it as a template helper i
 #### Low-level DOM manipulation hooks ####
 
 <a name="reference_instance_insertDOMElement"></a>
-```coffee
-insertDOMElement: (parent, node, before) ->
+```javascript
+insertDOMElement(parent, node, before)
 ```
 
 Every time Blaze wants to insert a new DOM element into the component's DOM content it calls this method. The default
@@ -1293,8 +1351,8 @@ If you want to use [mixins](#mixins-1) with the `insertDOMElement` method, you w
 method to call them in the way you want.
 
 <a name="reference_instance_moveDOMElement"></a>
-```coffee
-moveDOMElement: (parent, node, before) ->
+```javascript
+moveDOMElement(parent, node, before)
 ```
 
 Every time Blaze wants to move a DOM element to a new position between siblings it calls this method. The default
@@ -1308,8 +1366,8 @@ If you want to use [mixins](#mixins-1) with the `moveDOMElement` method, you wil
 method to call them in the way you want.
 
 <a name="reference_instance_removeDOMElement"></a>
-```coffee
-removeDOMElement: (parent, node) ->
+```javascript
+removeDOMElement(parent, node)
 ```
 
 Every time Blaze wants to remove a DOM element it calls this method. The default implementation is that
@@ -1324,8 +1382,8 @@ method to call them in the way you want.
 #### Mixins ####
 
 <a name="reference_instance_mixins"></a>
-```coffee
-mixins: ->
+```javascript
+mixins()
 ```
 
 Extend this method and return mixins for the component. Mixins can be components themselves, or just classes or
@@ -1337,8 +1395,8 @@ When component instance is created, all mixins' instances are created as well, i
 instance. Life-cycle of mixin instances matches that of the component.
 
 <a name="reference_instance_getMixin"></a>
-```coffee
-getMixin: (nameOrMixin) ->
+```javascript
+getMixin(nameOrMixin)
 ```
 
 Returns the component's mixin instance for a given name, class, or instance. Returns `null` if mixin is not found.
@@ -1346,8 +1404,8 @@ Returns the component's mixin instance for a given name, class, or instance. Ret
 You can use it to check if a given mixin is used by the component.
 
 <a name="reference_instance_getFirstWith"></a>
-```coffee
-getFirstWith: (afterComponentOrMixin, propertyName) ->
+```javascript
+getFirstWith(afterComponentOrMixin, propertyName)
 ```
 
 It searchers the component and its mixins in order to find the first with a property `propertyName`. If
@@ -1357,20 +1415,20 @@ it starts with the first mixin. Otherwise it starts with the mixin after `afterC
 Returns `null` if such component or mixin is not found.
 
 <a name="reference_instance_callFirstWith"></a>
-```coffee
-callFirstWith: (afterComponentOrMixin, propertyName, args...) ->
+```javascript
+callFirstWith(afterComponentOrMixin, propertyName, [args...])
 ```
 
 It searchers the component and its mixins in order to find the first with a property `propertyName`
-and if it is a function, calls it with `args...` as arguments, otherwise returns the value of the property.
+and if it is a function, calls it with `args` as arguments, otherwise returns the value of the property.
 If `afterComponentOrMixin` is `null`, it starts with the component itself. If `afterComponentOrMixin` is the component,
 it starts with the first mixin. Otherwise it starts with the mixin after `afterComponentOrMixin`.
 
 Returns `undefined` if such component or mixin is not found.
 
 <a name="reference_instance_mixinParent"></a>
-```coffee
-mixinParent: ([mixinParent]) ->
+```javascript
+mixinParent([mixinParent])
 ```
 
 When called without a `mixinParent` argument it returns the mixin's parent. For a component instance's mixins it
@@ -1383,8 +1441,8 @@ When called with a `mixinParent` argument it sets the mixin's parent.
 the parent using [`requireMixin`](#user-content-reference_instance_requireMixin). Make sure you call `super` as well.*
 
 <a name="reference_instance_requireMixin"></a>
-```coffee
-requireMixin: (nameOrMixin) ->
+```javascript
+requireMixin(nameOrMixin)
 ```
 
 Adds a mixin after already added mixins. `nameOrMixin` can be a registered component name, mixin class, or
@@ -1402,8 +1460,8 @@ To help with debugging, `BlazeComponentDebug` class is available. It contains cl
 you introspect the current state of rendered components.
 
 <a name="debugging_class_dumpComponentSubtree"></a>
-```coffee
-@dumpComponentSubtree: (componentOrElement) ->
+```javascript
+static dumpComponentSubtree(componentOrElement)
 ```
 
 For a provided component instance or DOM element rendered by a component instance this class method prints
@@ -1411,8 +1469,8 @@ to the browser web console the tree structure of component instances for which t
 is an ancestor.
 
 <a name="debugging_class_dumpComponentTree"></a>
-```coffee
-@dumpComponentTree: (componentOrElement) ->
+```javascript
+static dumpComponentTree(componentOrElement)
 ```
 
 For a provided component instance or DOM element rendered by a component instance this class method prints
@@ -1422,8 +1480,8 @@ instance exists, from the root component instance down.
 The provided component instance's name is underlined.
 
 <a name="debugging_class_dumpAllComponents"></a>
-```coffee
-@dumpAllComponents: ->
+```javascript
+static dumpAllComponents()
 ```
 
 Prints to the browser web console tree structures of all component instances currently rendered.
