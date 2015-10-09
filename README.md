@@ -1509,3 +1509,7 @@ should be using data binding or event handlers, Blaze Components provide traditi
 build on top of it data binding in the way you want, when you want/need it; you can even create a mixin for that and
 reuse it across components; moreover, Blaze Components' main focus is on providing a good and extensible components
 system and its power shows exactly because you can build such features through opt-in mixins
+* [Blaze Plus](https://github.com/kadirahq/blaze-plus/) – Blaze Plus adds props and state management functionality to
+Blaze, allowing one to pass data from the top to the bottom. These ideas are inspired by React.
+A proposed way to limit rerenders in Blaze Components if one wants to pass data from the top to the bottom is to use
+[computed field](https://github.com/peerlibrary/meteor-computed-field) package.
