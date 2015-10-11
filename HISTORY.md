@@ -1,7 +1,8 @@
 ## vNEXT
 
-* Now multiple methods which access data context and DOM are additionally reactive any you can use them even before the
-  component is rendered or even created and they will trigger invalidation when DOM, for example, becomes ready.
+* Now multiple methods (`data`, `subscriptionsReady`, `$`, `find`, `findAll`, `firstNode`, `lastNode`) which access
+  data context and DOM are additionally reactive any you can use them even before the component is rendered or even
+  created and they will trigger invalidation when DOM, for example, becomes ready.
   Fixes [#62](https://github.com/peerlibrary/meteor-blaze-components/issues/62).
 * Constructor is now never in a reactive context. Previously, constructor was sometimes in a reactive context. Same
   for `onDestroyed`.
