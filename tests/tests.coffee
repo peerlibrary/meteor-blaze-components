@@ -7,6 +7,8 @@ class MainComponent extends BlazeComponent
   @calls: []
 
   template: ->
+    assert not Tracker.active
+
     # To test when name of the component mismatches the template name. Template name should have precedence.
     'MainComponent2'
 
@@ -23,11 +25,16 @@ class MainComponent extends BlazeComponent
     @constructor is MainComponent
 
   onClick: (event) ->
+    assert not Tracker.active
+
     @constructor.calls.push [@componentName(), 'MainComponent.onClick', @data(), @currentData(), @currentComponent().componentName()]
 
-  events: -> [
-    'click': @onClick
-  ]
+  events: ->
+    assert not Tracker.active
+
+    [
+      'click': @onClick
+    ]
 
 BlazeComponent.register 'MainComponent', MainComponent
 
@@ -76,9 +83,13 @@ class AnimatedListComponent extends BlazeComponent
   @calls: []
 
   template: ->
+    assert not Tracker.active
+
     'AnimatedListComponent'
 
   onCreated: ->
+    assert not Tracker.active
+
     # To test inserts, moves, and removals.
     @_list = new ReactiveField [1, 2, 3, 4, 5]
     @_handle = Meteor.setInterval =>
@@ -97,20 +108,28 @@ class AnimatedListComponent extends BlazeComponent
     , 1000 # ms
 
   onDestroyed: ->
+    assert not Tracker.active
+
     Meteor.clearInterval @_handle
 
   list: ->
     _id: i for i in @_list()
 
   insertDOMElement: (parent, node, before) ->
+    assert not Tracker.active
+
     @constructor.calls.push ['insertDOMElement', @componentName(), trim(parent.outerHTML), trim(node.outerHTML), trim(before?.outerHTML or '')]
     super
 
   moveDOMElement: (parent, node, before) ->
+    assert not Tracker.active
+
     @constructor.calls.push ['moveDOMElement', @componentName(), trim(parent.outerHTML), trim(node.outerHTML), trim(before?.outerHTML or '')]
     super
 
   removeDOMElement: (parent, node) ->
+    assert not Tracker.active
+
     @constructor.calls.push ['removeDOMElement', @componentName(), trim(parent.outerHTML), trim(node.outerHTML)]
     super
 
@@ -120,11 +139,25 @@ class ArgumentsComponent extends BlazeComponent
   @calls: []
 
   template: ->
+    assert not Tracker.active
+
     'ArgumentsComponent'
 
   constructor: ->
+    assert not Tracker.active
+
     @constructor.calls.push arguments[0]
     @arguments = arguments
+
+  onCreated: ->
+    assert not Tracker.active
+
+    super
+
+  onDestroyed: ->
+    assert not Tracker.active
+
+    super
 
   dataContext: ->
     EJSON.stringify @data()
@@ -150,6 +183,8 @@ class MyNamespace.Foo.ArgumentsComponent extends ArgumentsComponent
   @register 'MyNamespace.Foo.ArgumentsComponent'
 
   template: ->
+    assert not Tracker.active
+
     # We could simply use "ArgumentsComponent" here and not have to copy the
     # template, but we want to test if a template name with dots works.
     'MyNamespace.Foo.ArgumentsComponent'
@@ -159,6 +194,8 @@ class OurNamespace extends ArgumentsComponent
   @register 'OurNamespace'
 
   template: ->
+    assert not Tracker.active
+
     # We could simply use "ArgumentsComponent" here and not have to copy the
     # template, but we want to test if a template name with dots works.
     'OurNamespace'
@@ -167,6 +204,8 @@ class OurNamespace.ArgumentsComponent extends ArgumentsComponent
   @register 'OurNamespace.ArgumentsComponent'
 
   template: ->
+    assert not Tracker.active
+
     # We could simply use "ArgumentsComponent" here and not have to copy the
     # template, but we want to test if a template name with dots works.
     'OurNamespace.ArgumentsComponent'
@@ -223,6 +262,8 @@ for property, value of (BlazeComponent::) when property not in ['constructor']
 
 class ExistingClassHierarchyComponent extends ExistingClassHierarchyBaseComponent
   template: ->
+    assert not Tracker.active
+
     'MainComponent2'
 
   foobar: ->
@@ -261,6 +302,8 @@ class SecondMixin extends BlazeComponent
   @calls: []
 
   template: ->
+    assert not Tracker.active
+
     'MainComponent2'
 
   foobar: ->
@@ -274,11 +317,16 @@ class SecondMixin extends BlazeComponent
   onClick: (event) ->
     @constructor.calls.push [@mixinParent().componentName(), 'SecondMixin.onClick', @mixinParent().data(), @mixinParent().currentData(), @mixinParent().currentComponent().componentName()]
 
-  events: -> [
-    'click': @onClick
-  ]
+  events: ->
+    assert not Tracker.active
+
+    [
+      'click': @onClick
+    ]
 
   onCreated: ->
+    assert not Tracker.active
+
     # To test if adding a dependency during onCreated will make sure
     # to call onCreated on the added dependency as well.
     @mixinParent().requireMixin DependencyMixin
@@ -287,19 +335,27 @@ class DependencyMixin extends BlazeComponent
   @calls: []
 
   onCreated: ->
+    assert not Tracker.active
+
     @constructor.calls.push true
 
 class WithMixinsComponent extends BlazeComponent
   mixins: ->
+    assert not Tracker.active
+
     [SecondMixin, FirstMixin]
 
 BlazeComponent.register 'WithMixinsComponent', WithMixinsComponent
 
 class AfterCreateValueComponent extends BlazeComponent
   template: ->
+    assert not Tracker.active
+
     'AfterCreateValueComponent'
 
   onCreated: ->
+    assert not Tracker.active
+
     @foobar = '42'
     @_foobar = '43'
 
@@ -307,6 +363,8 @@ BlazeComponent.register 'AfterCreateValueComponent', AfterCreateValueComponent
 
 class PostMessageButtonComponent extends BlazeComponent
   onCreated: ->
+    assert not Tracker.active
+
     @color = new ReactiveField "Red"
 
     $(window).on 'message.buttonComponent', (event) =>
@@ -320,6 +378,8 @@ BlazeComponent.register 'PostMessageButtonComponent', PostMessageButtonComponent
 
 class TableWrapperBlockComponent extends BlazeComponent
   template: ->
+    assert not Tracker.active
+
     'TableWrapperBlockComponent'
 
   currentDataContext: ->
@@ -349,26 +409,37 @@ reactiveChild2 = new ReactiveField false
 
 class ChildComponent extends BlazeComponent
   template: ->
+    assert not Tracker.active
+
     'ChildComponent'
 
   constructor: (@childName) ->
+    assert not Tracker.active
 
   onCreated: ->
+    assert not Tracker.active
+
     @domChanged = new ReactiveField 0
 
   insertDOMElement: (parent, node, before) ->
+    assert not Tracker.active
+
     super
 
     @domChanged Tracker.nonreactive =>
       @domChanged() + 1
 
   moveDOMElement: (parent, node, before) ->
+    assert not Tracker.active
+
     super
 
     @domChanged Tracker.nonreactive =>
       @domChanged() + 1
 
   removeDOMElement: (parent, node) ->
+    assert not Tracker.active
+
     super
 
     @domChanged Tracker.nonreactive =>
@@ -378,6 +449,8 @@ BlazeComponent.register 'ChildComponent', ChildComponent
 
 class ParentComponent extends BlazeComponent
   template: ->
+    assert not Tracker.active
+
     'ParentComponent'
 
   child1: ->
@@ -392,6 +465,8 @@ class CaseComponent extends BlazeComponent
   @register 'CaseComponent'
 
   constructor: (kwargs) ->
+    assert not Tracker.active
+
     @cases = kwargs.hash
 
   renderCase: ->
@@ -403,24 +478,33 @@ class LeftComponent extends BlazeComponent
   @register 'LeftComponent'
 
   template: ->
+    assert not Tracker.active
+
     'LeftComponent'
 
 class MiddleComponent extends BlazeComponent
   @register 'MiddleComponent'
 
   template: ->
+    assert not Tracker.active
+
     'MiddleComponent'
 
 class RightComponent extends BlazeComponent
   @register 'RightComponent'
 
   template: ->
+    assert not Tracker.active
+
     'RightComponent'
 
 class MyComponent extends BlazeComponent
   @register 'MyComponent'
 
-  mixins: -> [FirstMixin2, new SecondMixin2 'foobar']
+  mixins: ->
+    assert not Tracker.active
+
+    [FirstMixin2, new SecondMixin2 'foobar']
 
   alternativeName: ->
     @callFirstWith null, 'templateHelper'
@@ -452,14 +536,19 @@ class FirstMixin2 extends FirstMixinBase
     EJSON.stringify @mixinParent().data()
 
   events: ->
+    assert not Tracker.active
+
     super.concat
       'click': @onClick
 
   onCreated: ->
+    assert not Tracker.active
+
     @valuesPredicton = 'bc'
 
 class SecondMixin2
   constructor: (@name) ->
+    assert not Tracker.active
 
   mixinParent: (mixinParent) ->
     @_mixinParent = mixinParent if mixinParent
@@ -476,14 +565,19 @@ class ExampleComponent extends BlazeComponent
 
   # Life-cycle hook to initialize component's state.
   onCreated: ->
+    assert not Tracker.active
+
     @counter = new ReactiveField 0
 
   # Mapping between events and their handlers.
-  events: -> [
-    # You could inline the handler, but the best is to make
-    # it a method so that it can be extended later on.
-    'click .increment': @onClick
-  ]
+  events: ->
+    assert not Tracker.active
+
+    [
+      # You could inline the handler, but the best is to make
+      # it a method so that it can be extended later on.
+      'click .increment': @onClick
+    ]
 
   onClick: (event) ->
     @counter @counter() + 1
@@ -503,30 +597,46 @@ class OuterComponent extends BlazeComponent
   @calls: []
 
   template: ->
+    assert not Tracker.active
+
     'OuterComponent'
 
   onCreated: ->
+    assert not Tracker.active
+
     OuterComponent.calls.push 'OuterComponent onCreated'
 
   onRendered: ->
+    assert not Tracker.active
+
     OuterComponent.calls.push 'OuterComponent onRendered'
 
   onDestroyed: ->
+    assert not Tracker.active
+
     OuterComponent.calls.push 'OuterComponent onDestroyed'
 
 class InnerComponent extends BlazeComponent
   @register 'InnerComponent'
 
   template: ->
+    assert not Tracker.active
+
     'InnerComponent'
 
   onCreated: ->
+    assert not Tracker.active
+
     OuterComponent.calls.push 'InnerComponent onCreated'
 
   onRendered: ->
+    assert not Tracker.active
+
     OuterComponent.calls.push 'InnerComponent onRendered'
 
   onDestroyed: ->
+    assert not Tracker.active
+
     OuterComponent.calls.push 'InnerComponent onDestroyed'
 
 class TemplateDynamicTestComponent extends MainComponent
@@ -535,6 +645,8 @@ class TemplateDynamicTestComponent extends MainComponent
   @calls: []
 
   template: ->
+    assert not Tracker.active
+
     'TemplateDynamicTestComponent'
 
   isMainComponent: ->

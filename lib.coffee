@@ -249,48 +249,49 @@ class BlazeComponent extends BaseComponent
   requireMixin: (nameOrMixin) ->
     assert @_componentInternals?.mixins
 
-    # Do not do anything if mixin is already required. This allows multiple mixins to call requireMixin
-    # in mixinParent method to add dependencies, but if dependencies are already there, nothing happens.
-    return @ if @getMixin nameOrMixin
+    Tracker.nonreactive =>
+      # Do not do anything if mixin is already required. This allows multiple mixins to call requireMixin
+      # in mixinParent method to add dependencies, but if dependencies are already there, nothing happens.
+      return if @getMixin nameOrMixin
 
-    if _.isString nameOrMixin
-      # It could be that the component is not a real instance of the BlazeComponent class,
-      # so it might not have a constructor pointing back to a BlazeComponent subclass.
-      if @constructor.getComponent
-        mixinInstanceComponent = @constructor.getComponent nameOrMixin
+      if _.isString nameOrMixin
+        # It could be that the component is not a real instance of the BlazeComponent class,
+        # so it might not have a constructor pointing back to a BlazeComponent subclass.
+        if @constructor.getComponent
+          mixinInstanceComponent = @constructor.getComponent nameOrMixin
+        else
+          mixinInstanceComponent = BlazeComponent.getComponent nameOrMixin
+        throw new Error "Unknown mixin '#{ nameOrMixin }'." unless mixinInstanceComponent
+        mixinInstance = new mixinInstanceComponent()
+      else if _.isFunction nameOrMixin
+        mixinInstance = new nameOrMixin()
       else
-        mixinInstanceComponent = BlazeComponent.getComponent nameOrMixin
-      throw new Error "Unknown mixin '#{ nameOrMixin }'." unless mixinInstanceComponent
-      mixinInstance = new mixinInstanceComponent()
-    else if _.isFunction nameOrMixin
-      mixinInstance = new nameOrMixin()
-    else
-      mixinInstance = nameOrMixin
+        mixinInstance = nameOrMixin
 
-    # We add mixin before we call mixinParent so that dependencies come after this mixin,
-    # and that we prevent possible infinite loops because of circular dependencies.
-    # TODO: For now we do not provide an official API to add dependencies before the mixin itself.
-    @_componentInternals.mixins.push mixinInstance
+      # We add mixin before we call mixinParent so that dependencies come after this mixin,
+      # and that we prevent possible infinite loops because of circular dependencies.
+      # TODO: For now we do not provide an official API to add dependencies before the mixin itself.
+      @_componentInternals.mixins.push mixinInstance
 
-    # We allow mixins to not be components, so methods are not necessary available.
+      # We allow mixins to not be components, so methods are not necessary available.
 
-    # Set mixin parent.
-    if mixinInstance.mixinParent
-      mixinInstance.mixinParent @
-      assert.equal mixinInstance.mixinParent(), @
+      # Set mixin parent.
+      if mixinInstance.mixinParent
+        mixinInstance.mixinParent @
+        assert.equal mixinInstance.mixinParent(), @
 
-    # Maybe mixin has its own mixins as well.
-    mixinInstance.createMixins?()
+      # Maybe mixin has its own mixins as well.
+      mixinInstance.createMixins?()
 
-    @_componentInternals.templateInstance ?= new ReactiveVar null
+      @_componentInternals.templateInstance ?= new ReactiveVar null
 
-    # If a mixin is adding a dependency using requireMixin after its mixinParent class (for example, in onCreate)
-    # and this is this dependency mixin, the view might already be created or rendered and callbacks were
-    # already called, so we should call them manually here as well. But only if he view has not been destroyed
-    # already. For those mixins we do not call anything, there is little use for them now.
-    unless @_componentInternals.templateInstance.get()?.view.isDestroyed
-      mixinInstance.onCreated?() if not @_componentInternals.inOnCreated and @_componentInternals.templateInstance.get()?.view.isCreated
-      mixinInstance.onRendered?() if not @_componentInternals.inOnRendered and @_componentInternals.templateInstance.get()?.view.isRendered
+      # If a mixin is adding a dependency using requireMixin after its mixinParent class (for example, in onCreate)
+      # and this is this dependency mixin, the view might already be created or rendered and callbacks were
+      # already called, so we should call them manually here as well. But only if he view has not been destroyed
+      # already. For those mixins we do not call anything, there is little use for them now.
+      unless @_componentInternals.templateInstance.get()?.view.isDestroyed
+        mixinInstance.onCreated?() if not @_componentInternals.inOnCreated and @_componentInternals.templateInstance.get()?.view.isCreated
+        mixinInstance.onRendered?() if not @_componentInternals.inOnRendered and @_componentInternals.templateInstance.get()?.view.isRendered
 
     # To allow chaining.
     @
@@ -396,6 +397,8 @@ class BlazeComponent extends BaseComponent
       # We want to reactively depend on the data context for arguments, so we return a function
       # instead of a template. Function will be run inside an autorun, a reactive context.
       ->
+        assert Tracker.active
+
         # We cannot use Template.getData() inside a normal autorun because current view is not defined inside
         # a normal autorun. But we do not really have to depend reactively on the current view, only on the
         # data context of a known (the closest Blaze.With) view. So we get this view by ourselves.
@@ -403,32 +406,32 @@ class BlazeComponent extends BaseComponent
 
         # By default dataVar in the Blaze.With view uses ReactiveVar with default equality function which
         # sees all objects as different. So invalidations are triggered for every data context assignments
-        # even if data has not really changed. This is why we use our own ReactiveVar with EJSON.equals
-        # which we keep updated inside an autorun. Because it uses EJSON.equals it will invalidate our
-        # function only if really changes. See https://github.com/meteor/meteor/issues/4073
-        reactiveArguments = new ReactiveVar [], EJSON.equals
-
-        # This autorun is nested in the outside autorun so it gets stopped
-        # automatically when the outside autorun gets invalidated.
-        assert Tracker.active
-        Tracker.autorun (computation) ->
+        # even if data has not really changed. This is why wrap it into a ComputedField with EJSON.equals.
+        # Because it uses EJSON.equals it will invalidate our function only if really changes.
+        # See https://github.com/meteor/meteor/issues/4073
+        reactiveArguments = new ComputedField ->
           data = currentWith.dataVar.get()
           assert.equal data?.constructor, share.argumentsConstructor
-          reactiveArguments.set data._arguments
+          data._arguments
+        ,
+          EJSON.equals
 
-        # Use arguments for the constructor. Here we register a reactive dependency on our own ReactiveVar.
-        component = new componentClass reactiveArguments.get()...
+        nonreactiveArguments = reactiveArguments()
 
-        template = component.renderComponent componentParent
+        Tracker.nonreactive ->
+          # Use arguments for the constructor. Here we register a reactive dependency on our own ReactiveVar.
+          component = new componentClass nonreactiveArguments...
 
-        # It has to be the first callback so that other have a correct data context.
-        registerFirstCreatedHook template, ->
-          # Arguments were passed in as a data context. Restore original (parent) data
-          # context. Same logic as in Blaze._InOuterTemplateScope.
-          @view.originalParentView = @view.parentView
-          @view.parentView = @view.parentView.parentView.parentView
+          template = component.renderComponent componentParent
 
-        return template
+          # It has to be the first callback so that other have a correct data context.
+          registerFirstCreatedHook template, ->
+            # Arguments were passed in as a data context. Restore original (parent) data
+            # context. Same logic as in Blaze._InOuterTemplateScope.
+            @view.originalParentView = @view.parentView
+            @view.parentView = @view.parentView.parentView.parentView
+
+          template
 
   renderComponent: (componentParent) ->
     # To make sure we do not introduce any reactive dependency. This is a conscious design decision.
@@ -541,26 +544,26 @@ class BlazeComponent extends BaseComponent
             Tracker.nonreactive =>
               assert.equal @component._componentInternals.isCreated.get(), true
 
-            @component._componentInternals.isCreated.set false
+              @component._componentInternals.isCreated.set false
 
-            @component._componentInternals.isRendered ?= new ReactiveVar false
-            @component._componentInternals.isRendered.set false
+              @component._componentInternals.isRendered ?= new ReactiveVar false
+              @component._componentInternals.isRendered.set false
 
-            @component._componentInternals.isDestroyed ?= new ReactiveVar true
-            @component._componentInternals.isDestroyed.set true
+              @component._componentInternals.isDestroyed ?= new ReactiveVar true
+              @component._componentInternals.isDestroyed.set true
 
-            # @ is a template instance.
-            componentOrMixin = null
-            while componentOrMixin = @component.getFirstWith componentOrMixin, 'onDestroyed'
-              componentOrMixin.onDestroyed()
+              # @ is a template instance.
+              componentOrMixin = null
+              while componentOrMixin = @component.getFirstWith componentOrMixin, 'onDestroyed'
+                componentOrMixin.onDestroyed()
 
-            if componentParent
-              # The component has been destroyed, clear up the parent.
-              component.componentParent null
-              componentParent.removeComponentChild component
+              if componentParent
+                # The component has been destroyed, clear up the parent.
+                component.componentParent null
+                componentParent.removeComponentChild component
 
-            # Remove the reference so that it is clear that template instance is not available anymore.
-            @component._componentInternals.templateInstance.set null
+              # Remove the reference so that it is clear that template instance is not available anymore.
+              @component._componentInternals.templateInstance.set null
 
       template
 
