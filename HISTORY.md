@@ -1,5 +1,9 @@
 ## vNEXT
 
+* Now multiple methods which access data context and DOM are additionally reactive any you can use them even before the
+  component is rendered and they will trigger invalidation when DOM, for example, becomes ready.
+  Fixes [#62](https://github.com/peerlibrary/meteor-blaze-components/issues/62).
+
 ## v0.13.0, 2015-Jun-24
 
 * Fixed `getComponentForElement` to work correctly on DOM elements from non-template views.

@@ -282,13 +282,15 @@ class BlazeComponent extends BaseComponent
     # Maybe mixin has its own mixins as well.
     mixinInstance.createMixins?()
 
+    @_componentInternals.templateInstance ?= new ReactiveVar null
+
     # If a mixin is adding a dependency using requireMixin after its mixinParent class (for example, in onCreate)
     # and this is this dependency mixin, the view might already be created or rendered and callbacks were
     # already called, so we should call them manually here as well. But only if he view has not been destroyed
     # already. For those mixins we do not call anything, there is little use for them now.
-    unless @_componentInternals.templateInstance?.view.isDestroyed
-      mixinInstance.onCreated?() if not @_componentInternals.inOnCreated and @_componentInternals.templateInstance?.view.isCreated
-      mixinInstance.onRendered?() if not @_componentInternals.inOnRendered and @_componentInternals.templateInstance?.view.isRendered
+    unless @_componentInternals.templateInstance.get()?.view.isDestroyed
+      mixinInstance.onCreated?() if not @_componentInternals.inOnCreated and @_componentInternals.templateInstance.get()?.view.isCreated
+      mixinInstance.onRendered?() if not @_componentInternals.inOnRendered and @_componentInternals.templateInstance.get()?.view.isRendered
 
     # To allow chaining.
     @
@@ -373,17 +375,16 @@ class BlazeComponent extends BaseComponent
     Tracker.nonreactive =>
       componentClass = @
 
-      try
+      if Blaze.currentView
         # We check data context in a non-reactive way, because we want just to peek into it
         # and determine if data context contains component arguments or not. And while
         # component arguments might change through time, the fact that they are there at
         # all or not ("args" template helper was used or not) does not change through time.
         # So we can check that non-reactively.
         data = Template.currentData()
-      catch error
-        # The exception can be thrown when there is no current view which happens when
-        # there is no data context yet, thus also no arguments were provided through
-        # "args" template helper, so we just continue normally.
+      else
+        # There is no current view when there is no data context yet, thus also no arguments
+        # were provided through "args" template helper, so we just continue normally.
         data = null
 
       if data?.constructor isnt share.argumentsConstructor
@@ -485,8 +486,10 @@ class BlazeComponent extends BaseComponent
           @component = component
 
           # TODO: Should we support that the same component can be rendered multiple times in parallel? How could we do that? For different component parents or only the same one?
-          assert not @component._componentInternals.templateInstance
-          @component._componentInternals.templateInstance = @
+          assert not Tracker.nonreactive => @component._componentInternals.templateInstance?.get()
+
+          @component._componentInternals.templateInstance ?= new ReactiveVar @, (a, b) -> a is b
+          @component._componentInternals.templateInstance.set @
 
           try
             # We have to know if we should call onCreated on the mixin inside the requireMixin or not. We want to call
@@ -557,7 +560,7 @@ class BlazeComponent extends BaseComponent
               componentParent.removeComponentChild component
 
             # Remove the reference so that it is clear that template instance is not available anymore.
-            delete @component._componentInternals.templateInstance
+            @component._componentInternals.templateInstance.set null
 
       template
 
@@ -614,8 +617,11 @@ class BlazeComponent extends BaseComponent
   # Component-level data context. Reactive. Use this to always get the
   # top-level data context used to render the component.
   data: ->
-    if @_componentInternals?.templateInstance?.view
-      return Blaze.getData @_componentInternals.templateInstance.view
+    @_componentInternals ?= {}
+    @_componentInternals.templateInstance ?= new ReactiveVar null
+
+    if view = @_componentInternals.templateInstance.get()?.view
+      return Blaze.getData view
 
     undefined
 
@@ -624,7 +630,9 @@ class BlazeComponent extends BaseComponent
   # the data context where template helpers were called. In onCreated, onRendered,
   # and onDestroyed, the same as @data(). Inside a template this is the same as this.
   @currentData: ->
-    Blaze.getData()
+    return Blaze.getData() if Blaze.currentView
+
+    undefined
 
   # Method should never be overridden. The implementation should always be exactly the same as class method implementation.
   currentData: ->
@@ -647,21 +655,49 @@ class BlazeComponent extends BaseComponent
     @constructor.currentComponent()
 
   firstNode: ->
-    view = @_componentInternals.templateInstance.view
-    if view._domrange and not view.isDestroyed
-      view._domrange.firstNode()
-    else
-      null
+    return @_componentInternals.templateInstance.get().view._domrange.firstNode() if @isRendered()
+
+    undefined
 
   lastNode: ->
-    view = @_componentInternals.templateInstance.view
-    if view._domrange and not view.isDestroyed
-      view._domrange.lastNode()
-    else
-      null
+    return @_componentInternals.templateInstance.get().view._domrange.lastNode() if @isRendered()
+
+    undefined
+
+SUPPORTS_REACTIVE_INSTANCE = [
+  'subscriptionsReady'
+]
+
+REQUIRE_RENDERED_INSTANCE = [
+  '$',
+  'find',
+  'findAll'
+]
 
 # We copy utility methods ($, findAll, autorun, subscribe, etc.) from the template instance prototype.
 for methodName, method of Blaze.TemplateInstance::
   do (methodName, method) ->
-    BlazeComponent::[methodName] = (args...) ->
-      @_componentInternals.templateInstance[methodName] args...
+    if methodName in SUPPORTS_REACTIVE_INSTANCE
+      BlazeComponent::[methodName] = (args...) ->
+        @_componentInternals ?= {}
+        @_componentInternals.templateInstance ?= new ReactiveVar null
+
+        if templateInstance = @_componentInternals.templateInstance.get()
+          return templateInstance[methodName] args...
+
+        undefined
+
+    else if methodName in REQUIRE_RENDERED_INSTANCE
+      BlazeComponent::[methodName] = (args...) ->
+        return @_componentInternals.templateInstance.get()[methodName] args... if @isRendered()
+
+        undefined
+
+    else
+      BlazeComponent::[methodName] = (args...) ->
+        templateInstance = Tracker.nonreactive =>
+          @_componentInternals.templateInstance.get()
+
+        throw new Error "The component has to be created before calling '#{methodName}'." unless templateInstance
+
+        templateInstance[methodName] args...
