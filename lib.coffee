@@ -283,15 +283,15 @@ class BlazeComponent extends BaseComponent
       # Maybe mixin has its own mixins as well.
       mixinInstance.createMixins?()
 
-      @_componentInternals.templateInstance ?= new ReactiveVar null
+      @_componentInternals.templateInstance ?= new ReactiveField null, (a, b) -> a is b
 
       # If a mixin is adding a dependency using requireMixin after its mixinParent class (for example, in onCreate)
       # and this is this dependency mixin, the view might already be created or rendered and callbacks were
       # already called, so we should call them manually here as well. But only if he view has not been destroyed
       # already. For those mixins we do not call anything, there is little use for them now.
-      unless @_componentInternals.templateInstance.get()?.view.isDestroyed
-        mixinInstance.onCreated?() if not @_componentInternals.inOnCreated and @_componentInternals.templateInstance.get()?.view.isCreated
-        mixinInstance.onRendered?() if not @_componentInternals.inOnRendered and @_componentInternals.templateInstance.get()?.view.isRendered
+      unless @_componentInternals.templateInstance()?.view.isDestroyed
+        mixinInstance.onCreated?() if not @_componentInternals.inOnCreated and @_componentInternals.templateInstance()?.view.isCreated
+        mixinInstance.onRendered?() if not @_componentInternals.inOnRendered and @_componentInternals.templateInstance()?.view.isRendered
 
     # To allow chaining.
     @
@@ -416,10 +416,11 @@ class BlazeComponent extends BaseComponent
         ,
           EJSON.equals
 
+        # Here we register a reactive dependency on the ComputedField.
         nonreactiveArguments = reactiveArguments()
 
         Tracker.nonreactive ->
-          # Use arguments for the constructor. Here we register a reactive dependency on our own ReactiveVar.
+          # Use arguments for the constructor.
           component = new componentClass nonreactiveArguments...
 
           template = component.renderComponent componentParent
@@ -489,10 +490,10 @@ class BlazeComponent extends BaseComponent
           @component = component
 
           # TODO: Should we support that the same component can be rendered multiple times in parallel? How could we do that? For different component parents or only the same one?
-          assert not Tracker.nonreactive => @component._componentInternals.templateInstance?.get()
+          assert not Tracker.nonreactive => @component._componentInternals.templateInstance?()
 
-          @component._componentInternals.templateInstance ?= new ReactiveVar @, (a, b) -> a is b
-          @component._componentInternals.templateInstance.set @
+          @component._componentInternals.templateInstance ?= new ReactiveField @, (a, b) -> a is b
+          @component._componentInternals.templateInstance @
 
           try
             # We have to know if we should call onCreated on the mixin inside the requireMixin or not. We want to call
@@ -506,16 +507,16 @@ class BlazeComponent extends BaseComponent
           finally
             delete @component._componentInternals.inOnCreated
 
-          @component._componentInternals.isCreated ?= new ReactiveVar true
-          @component._componentInternals.isCreated.set true
+          @component._componentInternals.isCreated ?= new ReactiveField true
+          @component._componentInternals.isCreated true
 
           # Maybe we are re-rendering the component. So let's initialize variables just to be sure.
 
-          @component._componentInternals.isRendered ?= new ReactiveVar false
-          @component._componentInternals.isRendered.set false
+          @component._componentInternals.isRendered ?= new ReactiveField false
+          @component._componentInternals.isRendered false
 
-          @component._componentInternals.isDestroyed ?= new ReactiveVar false
-          @component._componentInternals.isDestroyed.set false
+          @component._componentInternals.isDestroyed ?= new ReactiveField false
+          @component._componentInternals.isDestroyed false
 
         onRendered: ->
           # @ is a template instance.
@@ -528,11 +529,11 @@ class BlazeComponent extends BaseComponent
           finally
             delete @component._componentInternals.inOnRendered
 
-          @component._componentInternals.isRendered ?= new ReactiveVar true
-          @component._componentInternals.isRendered.set true
+          @component._componentInternals.isRendered ?= new ReactiveField true
+          @component._componentInternals.isRendered true
 
           Tracker.nonreactive =>
-            assert.equal @component._componentInternals.isCreated.get(), true
+            assert.equal @component._componentInternals.isCreated(), true
 
         onDestroyed: ->
           @autorun (computation) =>
@@ -542,15 +543,15 @@ class BlazeComponent extends BaseComponent
             computation.stop()
 
             Tracker.nonreactive =>
-              assert.equal @component._componentInternals.isCreated.get(), true
+              assert.equal @component._componentInternals.isCreated(), true
 
-              @component._componentInternals.isCreated.set false
+              @component._componentInternals.isCreated false
 
-              @component._componentInternals.isRendered ?= new ReactiveVar false
-              @component._componentInternals.isRendered.set false
+              @component._componentInternals.isRendered ?= new ReactiveField false
+              @component._componentInternals.isRendered false
 
-              @component._componentInternals.isDestroyed ?= new ReactiveVar true
-              @component._componentInternals.isDestroyed.set true
+              @component._componentInternals.isDestroyed ?= new ReactiveField true
+              @component._componentInternals.isDestroyed true
 
               # @ is a template instance.
               componentOrMixin = null
@@ -563,7 +564,7 @@ class BlazeComponent extends BaseComponent
                 componentParent.removeComponentChild component
 
               # Remove the reference so that it is clear that template instance is not available anymore.
-              @component._componentInternals.templateInstance.set null
+              @component._componentInternals.templateInstance null
 
       template
 
@@ -578,21 +579,21 @@ class BlazeComponent extends BaseComponent
 
   isCreated: ->
     @_componentInternals ?= {}
-    @_componentInternals.isCreated ?= new ReactiveVar false
+    @_componentInternals.isCreated ?= new ReactiveField false
 
-    @_componentInternals.isCreated.get()
+    @_componentInternals.isCreated()
 
   isRendered: ->
     @_componentInternals ?= {}
-    @_componentInternals.isRendered ?= new ReactiveVar false
+    @_componentInternals.isRendered ?= new ReactiveField false
 
-    @_componentInternals.isRendered.get()
+    @_componentInternals.isRendered()
 
   isDestroyed: ->
     @_componentInternals ?= {}
-    @_componentInternals.isDestroyed ?= new ReactiveVar false
+    @_componentInternals.isDestroyed ?= new ReactiveField false
 
-    @_componentInternals.isDestroyed.get()
+    @_componentInternals.isDestroyed()
 
   insertDOMElement: (parent, node, before) ->
     before ?= null
@@ -621,9 +622,9 @@ class BlazeComponent extends BaseComponent
   # top-level data context used to render the component.
   data: ->
     @_componentInternals ?= {}
-    @_componentInternals.templateInstance ?= new ReactiveVar null
+    @_componentInternals.templateInstance ?= new ReactiveField null, (a, b) -> a is b
 
-    if view = @_componentInternals.templateInstance.get()?.view
+    if view = @_componentInternals.templateInstance()?.view
       return Blaze.getData view
 
     undefined
@@ -658,12 +659,12 @@ class BlazeComponent extends BaseComponent
     @constructor.currentComponent()
 
   firstNode: ->
-    return @_componentInternals.templateInstance.get().view._domrange.firstNode() if @isRendered()
+    return @_componentInternals.templateInstance().view._domrange.firstNode() if @isRendered()
 
     undefined
 
   lastNode: ->
-    return @_componentInternals.templateInstance.get().view._domrange.lastNode() if @isRendered()
+    return @_componentInternals.templateInstance().view._domrange.lastNode() if @isRendered()
 
     undefined
 
@@ -683,23 +684,23 @@ for methodName, method of Blaze.TemplateInstance::
     if methodName in SUPPORTS_REACTIVE_INSTANCE
       BlazeComponent::[methodName] = (args...) ->
         @_componentInternals ?= {}
-        @_componentInternals.templateInstance ?= new ReactiveVar null
+        @_componentInternals.templateInstance ?= new ReactiveField null, (a, b) -> a is b
 
-        if templateInstance = @_componentInternals.templateInstance.get()
+        if templateInstance = @_componentInternals.templateInstance()
           return templateInstance[methodName] args...
 
         undefined
 
     else if methodName in REQUIRE_RENDERED_INSTANCE
       BlazeComponent::[methodName] = (args...) ->
-        return @_componentInternals.templateInstance.get()[methodName] args... if @isRendered()
+        return @_componentInternals.templateInstance()[methodName] args... if @isRendered()
 
         undefined
 
     else
       BlazeComponent::[methodName] = (args...) ->
         templateInstance = Tracker.nonreactive =>
-          @_componentInternals.templateInstance.get()
+          @_componentInternals.templateInstance()
 
         throw new Error "The component has to be created before calling '#{methodName}'." unless templateInstance
 

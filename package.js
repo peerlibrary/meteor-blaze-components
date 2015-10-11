@@ -28,6 +28,7 @@ Package.onUse(function (api) {
   // 3rd party dependencies.
   api.use([
     'peerlibrary:assert@0.2.5',
+    'peerlibrary:reactive-field@0.1.0',
     'peerlibrary:computed-field@0.3.0'
   ]);
 
