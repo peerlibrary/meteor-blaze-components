@@ -1298,7 +1298,7 @@ class BasicTestCase extends ClassyTestCase
           # also does not capture all changes. We are searching for an element by CSS class
           # and domChanged is not changed when a class changes on a DOM element.
           #child.domChanged()
-          child.$('.child1').length
+          child.$('.child1')?.length
 
       @renderedComponent = Blaze.render @component.renderComponent(), $('body').get(0)
 
