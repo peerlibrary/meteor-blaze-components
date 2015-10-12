@@ -233,7 +233,6 @@ class BlazeComponent extends BaseComponent
   # When a component is used as a mixin, createMixins will call this method to set the parent
   # component using this mixin. Extend this method if you want to do any action when parent is
   # set, for example, add dependency mixins to the parent. Make sure you call super as well.
-  # TODO: Should this be a list of parents? So that the same mixin instance could be reused across components? And serve to communicate across them?
   mixinParent: (mixinParent) ->
     @_componentInternals ?= {}
 
@@ -278,7 +277,6 @@ class BlazeComponent extends BaseComponent
       # Set mixin parent.
       if mixinInstance.mixinParent
         mixinInstance.mixinParent @
-        assert.equal mixinInstance.mixinParent(), @
 
       # Maybe mixin has its own mixins as well.
       mixinInstance.createMixins?()
