@@ -712,7 +712,7 @@ for methodName, method of Blaze.TemplateInstance::
     else
       BlazeComponent::[methodName] = (args...) ->
         templateInstance = Tracker.nonreactive =>
-          @_componentInternals.templateInstance()
+          @_componentInternals?.templateInstance?()
 
         throw new Error "The component has to be created before calling '#{methodName}'." unless templateInstance
 
