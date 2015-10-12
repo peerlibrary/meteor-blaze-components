@@ -56,7 +56,8 @@ Package.onTest(function (api) {
     'reactive-var',
     'underscore',
     'tracker',
-    'ejson'
+    'ejson',
+    'random'
   ]);
 
   // Internal dependencies.

@@ -137,6 +137,8 @@ BlazeComponent.register 'AnimatedListComponent', AnimatedListComponent
 
 class ArgumentsComponent extends BlazeComponent
   @calls: []
+  @constructorStateChanges: []
+  @onCreatedStateChanges: []
 
   template: ->
     assert not Tracker.active
@@ -149,15 +151,57 @@ class ArgumentsComponent extends BlazeComponent
     @constructor.calls.push arguments[0]
     @arguments = arguments
 
+    @componentId = Random.id()
+
+    @handles = []
+
+    @collectStateChanges @constructor.constructorStateChanges
+
   onCreated: ->
     assert not Tracker.active
 
     super
 
+    @collectStateChanges @constructor.onCreatedStateChanges
+
+  collectStateChanges: (output) ->
+    output.push
+      componentId: @componentId
+      view: Blaze.currentView
+      templateInstance: Template.instance()
+
+    for method in ['isCreated', 'isRendered', 'isDestroyed', 'data', 'currentData', 'component', 'currentComponent', 'firstNode', 'lastNode', 'subscriptionsReady']
+      do (method) =>
+        @handles.push Tracker.autorun (computation) =>
+          data =
+            componentId: @componentId
+          data[method] = @[method]()
+
+          output.push data
+
+    @handles.push Tracker.autorun (computation) =>
+      output.push
+        componentId: @componentId
+        find: @find('*')
+
+    @handles.push Tracker.autorun (computation) =>
+      output.push
+        componentId: @componentId
+        findAll: @findAll('*')
+
+    @handles.push Tracker.autorun (computation) =>
+      output.push
+        componentId: @componentId
+        $: @$('*')
+
   onDestroyed: ->
     assert not Tracker.active
 
     super
+
+    Tracker.afterFlush =>
+      while handle = @handles.pop()
+        handle.stop()
 
   dataContext: ->
     EJSON.stringify @data()
@@ -213,7 +257,9 @@ class OurNamespace.ArgumentsComponent extends ArgumentsComponent
 reactiveContext = new ReactiveField {}
 reactiveArguments = new ReactiveField {}
 
-Template.argumentsTestTemplate.helpers
+class ArgumentsTestComponent extends BlazeComponent
+  @register 'ArgumentsTestComponent'
+
   reactiveContext: ->
     reactiveContext()
 
@@ -977,9 +1023,418 @@ class BasicTestCase extends ClassyTestCase
       @assertEqual AnimatedListComponent.calls, []
   ]
 
+  assertArgumentsConstructorStateChanges: (stateChanges, wrappedInComponent=true) ->
+    firstSteps = (dataContext) =>
+      change = stateChanges.shift()
+      componentId = change.componentId
+      @assertTrue change.view
+      @assertTrue change.templateInstance
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertFalse change.isCreated
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertFalse change.isRendered
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertFalse change.isDestroyed
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertIsUndefined change.data
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertEqual change.currentData, dataContext
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertInstanceOf change.component, ArgumentsComponent
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      if wrappedInComponent
+        @assertInstanceOf change.currentComponent, ArgumentsTestComponent
+      else
+        @assertIsNull change.currentComponent
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertIsUndefined change.firstNode
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertIsUndefined change.lastNode
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertIsUndefined change.subscriptionsReady
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertIsUndefined change.find
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertIsUndefined change.findAll
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertIsUndefined change.$
+
+      componentId
+
+    firstComponentId = firstSteps a: "1", b: "2"
+    secondComponentId = firstSteps a:"3a", b: "4a"
+    thirdComponentId = firstSteps a: "5", b: "6"
+    forthComponentId = firstSteps {}
+
+    secondSteps = (componendId, dataContext) =>
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertEqual change.data, dataContext
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertTrue change.subscriptionsReady
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertTrue change.isCreated
+
+    secondSteps firstComponentId, a: "1", b: "2"
+    secondSteps secondComponentId, a:"3a", b: "4a"
+    secondSteps thirdComponentId, a: "5", b: "6"
+    secondSteps forthComponentId, {}
+
+    thirdSteps = (componentId) =>
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertTrue change.isRendered
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertEqual change.firstNode?.nodeName, "P"
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertEqual change.lastNode?.nodeName, "P"
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertEqual change.find?.nodeName, "P"
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertEqual (c?.nodeName for c in change.findAll), ["P", "P", "P", "P"]
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertEqual (c?.nodeName for c in change.$), ["P", "P", "P", "P"]
+
+    thirdSteps firstComponentId
+    thirdSteps secondComponentId
+    thirdSteps thirdComponentId
+    thirdSteps forthComponentId
+
+    # TODO: This change is probably unnecessary? Could we prevent it?
+    change = stateChanges.shift()
+    @assertEqual change.componentId, forthComponentId
+    @assertEqual change.data, a: "10", b: "11"
+
+    # TODO: Not sure why this change happens?
+    change = stateChanges.shift()
+    @assertEqual change.componentId, forthComponentId
+    @assertIsUndefined change.currentData
+
+    fifthComponentId = firstSteps a: "10", b: "11"
+
+    forthSteps = (componendId) =>
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertFalse change.isCreated
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertFalse change.isRendered
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertIsUndefined change.firstNode
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertIsUndefined change.lastNode
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertIsUndefined change.find
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertIsUndefined change.findAll
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertIsUndefined change.$
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertTrue change.isDestroyed
+
+      # TODO: Not sure why this change happens?
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertIsUndefined change.data
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertIsUndefined change.subscriptionsReady
+
+    forthSteps forthComponentId
+
+    change = stateChanges.shift()
+    @assertEqual change.componentId, fifthComponentId
+    @assertEqual change.data, a: "10", b: "11"
+
+    change = stateChanges.shift()
+    @assertEqual change.componentId, fifthComponentId
+    @assertTrue change.subscriptionsReady
+
+    change = stateChanges.shift()
+    @assertEqual change.componentId, fifthComponentId
+    @assertTrue change.isCreated
+
+    forthSteps firstComponentId
+    forthSteps secondComponentId
+    forthSteps thirdComponentId
+
+    change = stateChanges.shift()
+    @assertEqual change.componentId, fifthComponentId
+    @assertFalse change.isCreated
+
+    # TODO: Why is isRendered not set to false and all related other fields which require it (firstNode, lastNode, find, findAll, $)?
+
+    change = stateChanges.shift()
+    @assertEqual change.componentId, fifthComponentId
+    @assertTrue change.isDestroyed
+
+    # TODO: Not sure why this change happens?
+    change = stateChanges.shift()
+    @assertEqual change.componentId, fifthComponentId
+    @assertIsUndefined change.data
+
+    change = stateChanges.shift()
+    @assertEqual change.componentId, fifthComponentId
+    @assertIsUndefined change.subscriptionsReady
+
+    @assertEqual stateChanges, []
+
+  assertArgumentsOnCreatedStateChanges: (stateChanges) ->
+    firstSteps = (dataContext) =>
+      change = stateChanges.shift()
+      componentId = change.componentId
+      @assertTrue change.view
+      @assertTrue change.templateInstance
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertFalse change.isCreated
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertFalse change.isRendered
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertFalse change.isDestroyed
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertEqual change.data, dataContext
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertEqual change.currentData, dataContext
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertInstanceOf change.component, ArgumentsComponent
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertInstanceOf change.currentComponent, ArgumentsComponent
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertIsUndefined change.firstNode
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertIsUndefined change.lastNode
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertTrue change.subscriptionsReady
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertIsUndefined change.find
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertIsUndefined change.findAll
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertIsUndefined change.$
+
+      componentId
+
+    firstComponentId = firstSteps a: "1", b: "2"
+    secondComponentId = firstSteps a:"3a", b: "4a"
+    thirdComponentId = firstSteps a: "5", b: "6"
+    forthComponentId = firstSteps {}
+
+    change = stateChanges.shift()
+    @assertEqual change.componentId, firstComponentId
+    @assertTrue change.isCreated
+
+    change = stateChanges.shift()
+    @assertEqual change.componentId, secondComponentId
+    @assertTrue change.isCreated
+
+    change = stateChanges.shift()
+    @assertEqual change.componentId, thirdComponentId
+    @assertTrue change.isCreated
+
+    change = stateChanges.shift()
+    @assertEqual change.componentId, forthComponentId
+    @assertTrue change.isCreated
+
+    thirdSteps = (componentId) =>
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertTrue change.isRendered
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertEqual change.firstNode?.nodeName, "P"
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertEqual change.lastNode?.nodeName, "P"
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertEqual change.find?.nodeName, "P"
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertEqual (c?.nodeName for c in change.findAll), ["P", "P", "P", "P"]
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componentId
+      @assertEqual (c?.nodeName for c in change.$), ["P", "P", "P", "P"]
+
+    thirdSteps firstComponentId
+    thirdSteps secondComponentId
+    thirdSteps thirdComponentId
+    thirdSteps forthComponentId
+
+    # TODO: This change is probably unnecessary? Could we prevent it?
+    change = stateChanges.shift()
+    @assertEqual change.componentId, forthComponentId
+    @assertEqual change.data, a: "10", b: "11"
+
+    # TODO: Not sure why this change happens?
+    change = stateChanges.shift()
+    @assertEqual change.componentId, forthComponentId
+    @assertIsUndefined change.currentData
+
+    fifthComponentId = firstSteps a: "10", b: "11"
+
+    forthSteps = (componendId) =>
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertFalse change.isCreated
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertFalse change.isRendered
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertIsUndefined change.firstNode
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertIsUndefined change.lastNode
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertIsUndefined change.find
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertIsUndefined change.findAll
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertIsUndefined change.$
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertTrue change.isDestroyed
+
+      # TODO: Not sure why this change happens?
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertIsUndefined change.data
+
+      change = stateChanges.shift()
+      @assertEqual change.componentId, componendId
+      @assertIsUndefined change.subscriptionsReady
+
+    forthSteps forthComponentId
+
+    change = stateChanges.shift()
+    @assertEqual change.componentId, fifthComponentId
+    @assertTrue change.isCreated
+
+    forthSteps firstComponentId
+    forthSteps secondComponentId
+    forthSteps thirdComponentId
+
+    change = stateChanges.shift()
+    @assertEqual change.componentId, fifthComponentId
+    @assertFalse change.isCreated
+
+    # TODO: Why is isRendered not set to false and all related other fields which require it (firstNode, lastNode, find, findAll, $)?
+
+    change = stateChanges.shift()
+    @assertEqual change.componentId, fifthComponentId
+    @assertTrue change.isDestroyed
+
+    # TODO: Not sure why this change happens?
+    change = stateChanges.shift()
+    @assertEqual change.componentId, fifthComponentId
+    @assertIsUndefined change.data
+
+    change = stateChanges.shift()
+    @assertEqual change.componentId, fifthComponentId
+    @assertIsUndefined change.subscriptionsReady
+
+    @assertEqual stateChanges, []
+
   testArguments: [
     ->
       ArgumentsComponent.calls = []
+      ArgumentsComponent.constructorStateChanges = []
+      ArgumentsComponent.onCreatedStateChanges = []
 
       reactiveContext {}
       reactiveArguments {}
@@ -1070,6 +1525,12 @@ class BasicTestCase extends ClassyTestCase
         {}
         {a: '12', b: '13'}
       ]
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertArgumentsConstructorStateChanges ArgumentsComponent.constructorStateChanges
+      @assertArgumentsOnCreatedStateChanges ArgumentsComponent.onCreatedStateChanges
   ]
 
   testExistingClassHierarchy: =>
@@ -1646,6 +2107,8 @@ class BasicTestCase extends ClassyTestCase
   testNamespacedArguments: [
     ->
       MyNamespace.Foo.ArgumentsComponent.calls = []
+      MyNamespace.Foo.ArgumentsComponent.constructorStateChanges = []
+      MyNamespace.Foo.ArgumentsComponent.onCreatedStateChanges = []
 
       reactiveContext {}
       reactiveArguments {}
@@ -1736,9 +2199,17 @@ class BasicTestCase extends ClassyTestCase
         {}
         {a: '12', b: '13'}
       ]
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertArgumentsConstructorStateChanges MyNamespace.Foo.ArgumentsComponent.constructorStateChanges, false
+      @assertArgumentsOnCreatedStateChanges MyNamespace.Foo.ArgumentsComponent.onCreatedStateChanges
   ,
     ->
       OurNamespace.ArgumentsComponent.calls = []
+      OurNamespace.ArgumentsComponent.constructorStateChanges = []
+      OurNamespace.ArgumentsComponent.onCreatedStateChanges = []
 
       reactiveContext {}
       reactiveArguments {}
@@ -1829,9 +2300,17 @@ class BasicTestCase extends ClassyTestCase
         {}
         {a: '12', b: '13'}
       ]
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertArgumentsConstructorStateChanges OurNamespace.ArgumentsComponent.constructorStateChanges, false
+      @assertArgumentsOnCreatedStateChanges OurNamespace.ArgumentsComponent.onCreatedStateChanges
   ,
     ->
       OurNamespace.calls = []
+      OurNamespace.constructorStateChanges = []
+      OurNamespace.onCreatedStateChanges = []
 
       reactiveContext {}
       reactiveArguments {}
@@ -1922,6 +2401,12 @@ class BasicTestCase extends ClassyTestCase
         {}
         {a: '12', b: '13'}
       ]
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertArgumentsConstructorStateChanges OurNamespace.constructorStateChanges, false
+      @assertArgumentsOnCreatedStateChanges OurNamespace.onCreatedStateChanges
   ]
 
   # Test for https://github.com/peerlibrary/meteor-blaze-components/issues/30.
