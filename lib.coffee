@@ -145,6 +145,13 @@ wrapHelper = (f, templateFunc) ->
     Blaze.Template._withTemplateInstanceFunc templateFunc, ->
       Blaze._wrapCatchingExceptions(f, 'template helper').apply self, args
 
+if Blaze.Template._withTemplateInstanceFunc
+  withTemplateInstanceFunc = Blaze.Template._withTemplateInstanceFunc
+else
+  # XXX COMPAT WITH METEOR 1.0.3.2.
+  withTemplateInstanceFunc = (templateInstance, f) ->
+    f()
+
 addEvents = (view, component) ->
   eventsList = component.events()
 
@@ -160,13 +167,6 @@ addEvents = (view, component) ->
 
           currentView = Blaze.getView event.currentTarget
           templateInstance = getTemplateInstanceFunction currentView
-
-          if Template._withTemplateInstanceFunc
-            withTemplateInstanceFunc = Template._withTemplateInstanceFunc
-          else
-            # XXX COMPAT WITH METEOR 1.0.3.2.
-            withTemplateInstanceFunc = (templateInstance, f) ->
-              f()
 
           # We set template instance based on the current target so that inside event handlers
           # BlazeComponent.currentComponent() returns the component of event target.
@@ -389,8 +389,13 @@ class BlazeComponent extends BaseComponent
         data = null
 
       if data?.constructor isnt share.argumentsConstructor
-        component = new componentClass()
-        return component.renderComponent componentParent
+        templateInstance = getTemplateInstanceFunction Blaze.currentView
+
+        # So that currentComponent in the constructor can return the component inside which this component has been constructed.
+        return withTemplateInstanceFunc templateInstance, ->
+          component = new componentClass()
+
+          return component.renderComponent componentParent
 
       # Arguments were provided through "args" template helper.
 
@@ -420,10 +425,14 @@ class BlazeComponent extends BaseComponent
         nonreactiveArguments = reactiveArguments()
 
         Tracker.nonreactive ->
-          # Use arguments for the constructor.
-          component = new componentClass nonreactiveArguments...
+          templateInstance = getTemplateInstanceFunction Blaze.currentView
 
-          template = component.renderComponent componentParent
+          # So that currentComponent in the constructor can return the component inside which this component has been constructed.
+          template = withTemplateInstanceFunc templateInstance, ->
+            # Use arguments for the constructor.
+            component = new componentClass nonreactiveArguments...
+
+            return component.renderComponent componentParent
 
           # It has to be the first callback so that other have a correct data context.
           registerFirstCreatedHook template, ->
