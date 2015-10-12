@@ -7,6 +7,7 @@
 * Constructor is now never in a reactive context. Previously, constructor was sometimes in a reactive context. Same
   for `onDestroyed`.
 * Made parent template/component available in the component constructor.
+* Made correct data context available in the component constructor when passing arguments to the component.
 
 ## v0.13.0, 2015-Jun-24
 

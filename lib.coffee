@@ -425,14 +425,17 @@ class BlazeComponent extends BaseComponent
         nonreactiveArguments = reactiveArguments()
 
         Tracker.nonreactive ->
-          templateInstance = getTemplateInstanceFunction Blaze.currentView
+          # Arguments were passed in as a data context. We want currentData in the constructor to return the
+          # original (parent) data context. Like we were not passing in arguments as a data context.
+          template = Blaze._withCurrentView Blaze.currentView.parentView.parentView, =>
+            templateInstance = getTemplateInstanceFunction Blaze.currentView
 
-          # So that currentComponent in the constructor can return the component inside which this component has been constructed.
-          template = withTemplateInstanceFunc templateInstance, ->
-            # Use arguments for the constructor.
-            component = new componentClass nonreactiveArguments...
+            # So that currentComponent in the constructor can return the component inside which this component has been constructed.
+            return withTemplateInstanceFunc templateInstance, ->
+              # Use arguments for the constructor.
+              component = new componentClass nonreactiveArguments...
 
-            return component.renderComponent componentParent
+              return component.renderComponent componentParent
 
           # It has to be the first callback so that other have a correct data context.
           registerFirstCreatedHook template, ->
