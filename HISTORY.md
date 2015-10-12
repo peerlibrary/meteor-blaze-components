@@ -8,6 +8,7 @@
   for `onDestroyed`.
 * Made parent template/component available in the component constructor.
 * Made correct data context available in the component constructor when passing arguments to the component.
+* Added `removeComponent` method.
 
 ## v0.13.0, 2015-Jun-24
 

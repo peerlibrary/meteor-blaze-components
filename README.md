@@ -273,8 +273,8 @@ Example:
 *See [Spacebars documentation](https://github.com/meteor/meteor/blob/devel/packages/spacebars/README.md) for more
 information how to specify and work with the data context in templates.*
 
-*Specifying a data context to a component in the code will be provided through the `renderComponent` method
-which is not yet public.*
+*Specifying a data context to a component in the code will be provided through the
+[`renderComponent`](#user-content-reference_instance_renderComponent) method which is not yet public.*
 
 Passing arguments
 -----------------
@@ -348,7 +348,8 @@ by Blaze Components.
 
 *Life-cycle of a component is is the common case linked with its life in the DOM. But you can create an instance of
 a component which you can keep a reference to and reuse it multiple times, thus keeping its state between multiple
-renderings. You can do this using the `renderComponent` method which is not yet public.*
+renderings. You can do this using the [`renderComponent`](#user-content-reference_instance_renderComponent) method
+which is not yet public.*
 
 Component-based block helpers
 -----------------------------
@@ -457,7 +458,7 @@ If you use `CaseComponent` now in the `{case: 'left'}` data context, a `LeftComp
 component will be rendered. If you want to control in which data context `LeftComponent`
 is rendered, you can specify data context as `{{> renderCase dataContext}}`.
 
-*Example above is using `renderComponent` method which is not yet public.*
+*Example above is using [`renderComponent`](#user-content-reference_instance_renderComponent) method which is not yet public.*
 
 Animations
 ----------
@@ -820,7 +821,7 @@ code more readable and uniform, though.
 How exactly you structure your code and components depends on various factors. Blaze Components provide multiple
 ways to keep your components structured, tidy, and reusable.
 
-*Example above is using `renderComponent` method which is not yet public.*
+*Example above is using [`renderComponent`](#user-content-reference_instance_renderComponent) method which is not yet public.*
 
 Use with existing classes
 -------------------------
@@ -1304,6 +1305,64 @@ isDestroyed()
 
 Returns `true` if the component is destroyed. Otherwise `false`. If component was never created, it was also never
 destroyed so initially the value is `false`. A reactive data source.
+
+#### Programmatic rendering ####
+
+Blaze Components are most often automatically rendered by Blaze when included in templates. In that case Blaze
+takes care of the whole life-cycle of a component. Sometimes you might want to render a component programmatically
+by yourself. In that case you have to keep in mind that Blaze Components are first rendered to Blaze template, which
+are then rendered by Blaze to DOM.
+
+<a name="reference_instance_renderComponent"></a>
+```javascript
+renderComponent(componentParent)
+```
+
+Renders a Blaze Component into a Blaze template.
+
+In the case you want to render the Blaze template further to DOM, you can use that Blaze template as an input to
+[`Blaze.render`](http://docs.meteor.com/#/full/blaze_render) or
+[`Blaze.renderWithData`](http://docs.meteor.com/#/full/blaze_renderwithdata).
+
+Alternatively, you can return that Blaze template from a Blaze Component method to have a dynamic include in the
+template:
+
+```javascript
+class DynamicComponent extends BlazeComponent {
+  renderButton(componentParent) {
+    componentParent ||= this.currentComponent();
+    return ButtonComponent.renderComponent(componentParent);
+  }
+}
+
+DynamicComponent.register('DynamicComponent');
+```
+
+```handlebars
+<template name="DynamicComponent">
+  {{> renderButton}}
+</template>
+```
+
+Notice the use of [`currentComponent`](#user-content-reference_instance_currentComponent) as the default
+`componentParent` argument.
+This makes `componentParent` be set to the correct value when `renderButton` method is used in a template include,
+but also allows calling `renderButton` from elsewhere in the code with a provided `componentParent`.
+
+*Despite being documented, `renderComponent` method is not yet considered public and is subject to change.*
+
+<a name="reference_instance_removeComponent"></a>
+```javascript
+removeComponent()
+```
+
+Removes rendered-to-DOM Blaze Component from DOM, destroys the underlying Blaze template, and destroys the Blaze Component.
+
+You should call this method only if you have previously programmatically rendered the Blaze Component to DOM
+(using [`Blaze.render`](http://docs.meteor.com/#/full/blaze_render) or
+[`Blaze.renderWithData`](http://docs.meteor.com/#/full/blaze_renderwithdata)). In all other cases Blaze Components
+will be removed from DOM and destroyed automatically by Blaze: you should not interfere with Blaze by removing
+rendered DOM by yourself.
 
 #### Utilities ####
 

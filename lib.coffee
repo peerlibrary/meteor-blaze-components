@@ -580,6 +580,9 @@ class BlazeComponent extends BaseComponent
 
       template
 
+  removeComponent: ->
+    Blaze.remove @_componentInternals.templateInstance().view if @isRendered()
+
   template: ->
     @callFirstWith(@, 'template') or @constructor.componentName()
 
