@@ -762,11 +762,11 @@ Example:
 ```javascript
 class Buttons {}
 
-class Buttons.Red extends BlazeComponent {}
+Buttons.Red = class Red extends BlazeComponent {}
 
 Buttons.Red.register('Buttons.Red');
 
-class Buttons.Blue extends BlazeComponent {}
+Buttons.Blue = class Blue extends BlazeComponent {}
 
 Buttons.Blue.register('Buttons.Blue');
 ```
