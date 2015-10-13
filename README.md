@@ -1131,9 +1131,9 @@ componentName()
 This is a complementary instance method which calls [`componentName`](#user-content-reference_class_componentName)
 class method.
 
-<a name="reference_instance_componentParent"></a>
+<a name="reference_instance_parentComponent"></a>
 ```javascript
-componentParent()
+parentComponent()
 ```
 
 Returns the component's parent component, if it exists, or `null`. A reactive data source.
@@ -1141,9 +1141,9 @@ Returns the component's parent component, if it exists, or `null`. A reactive da
 The parent component is available only after the component has been [created](#user-content-reference_instance_onCreated),
 and until is [destroyed](#user-content-reference_instance_onDestroyed).
 
-<a name="reference_instance_componentChildren"></a>
+<a name="reference_instance_childrenComponents"></a>
 ```javascript
-componentChildren([nameOrComponent])
+childrenComponents([nameOrComponent])
 ```
 
 Returns an array of component's children components. A reactive data source. The order of children components in the
@@ -1154,9 +1154,9 @@ You can specify a component name, class, or instance to limit the resulting chil
 The children components are in the array only after they have been [created](#user-content-reference_instance_onCreated),
 and until they are [destroyed](#user-content-reference_instance_onDestroyed).
 
-<a name="reference_instance_componentChildrenWith"></a>
+<a name="reference_instance_childrenComponentsWith"></a>
 ```javascript
-componentChildrenWith(propertyOrMatcherOrFunction)
+childrenComponentsWith(propertyOrMatcherOrFunction)
 ```
 
 Returns an array of component's children components which match a `propertyOrMatcherOrFunction` predicate. A reactive
@@ -1173,9 +1173,9 @@ for which the function returns a true value are matched
 Examples:
 
 ```javascript
-component.componentChildrenWith('propertyName');
-component.componentChildrenWith({propertyName: 42});
-component.componentChildrenWith((child, parent) => {
+component.childrenComponentsWith('propertyName');
+component.childrenComponentsWith({propertyName: 42});
+component.childrenComponentsWith((child, parent) => {
   child.propertyName === 42;
 });
 ```
@@ -1315,7 +1315,7 @@ are then rendered by Blaze to DOM.
 
 <a name="reference_instance_renderComponent"></a>
 ```javascript
-renderComponent(componentParent)
+renderComponent(parentComponent)
 ```
 
 Renders a Blaze Component into a Blaze template.
@@ -1329,9 +1329,9 @@ template:
 
 ```javascript
 class DynamicComponent extends BlazeComponent {
-  renderButton(componentParent) {
-    componentParent ||= this.currentComponent();
-    return ButtonComponent.renderComponent(componentParent);
+  renderButton(parentComponent) {
+    parentComponent ||= this.currentComponent();
+    return ButtonComponent.renderComponent(parentComponent);
   }
 }
 
@@ -1345,9 +1345,9 @@ DynamicComponent.register('DynamicComponent');
 ```
 
 Notice the use of [`currentComponent`](#user-content-reference_instance_currentComponent) as the default
-`componentParent` argument.
-This makes `componentParent` be set to the correct value when `renderButton` method is used in a template include,
-but also allows calling `renderButton` from elsewhere in the code with a provided `componentParent`.
+`parentComponent` argument.
+This makes `parentComponent` be set to the correct value when `renderButton` method is used in a template include,
+but also allows calling `renderButton` from elsewhere in the code with a provided `parentComponent`.
 
 *Despite being documented, `renderComponent` method is not yet considered public and is subject to change.*
 

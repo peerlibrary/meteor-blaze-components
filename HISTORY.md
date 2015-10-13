@@ -8,7 +8,17 @@
   for `onDestroyed`.
 * Made parent template/component available in the component constructor.
 * Made correct data context available in the component constructor when passing arguments to the component.
-* Added `removeComponent` method.
+* Added `removeComponent` method. Partially fixes
+  [#36](https://github.com/peerlibrary/meteor-blaze-components/issues/36).
+* Renamed few methods to more intuitive names and added deprecation warnings if you use a method with an old name.
+  Methods with old names will be removed in a future version.
+  Fixes [#56](https://github.com/peerlibrary/meteor-blaze-components/issues/56).
+  Renamed methods:
+    * `componentChildren` to `childrenComponents`
+    * `componentChildrenWith` to `childrenComponentsWith`
+    * `addComponentChild` to `addChildComponent`
+    * `removeComponentChild` to `removeChildComponent`
+    * `componentParent` to `parentComponent`
 
 ## v0.13.0, 2015-Jun-24
 
