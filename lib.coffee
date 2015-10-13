@@ -530,6 +530,7 @@ class BlazeComponent extends BaseComponent
 
         onRendered: ->
           # @ is a template instance.
+
           try
             # Same as for onCreated above.
             @component._componentInternals.inOnRendered = true
@@ -547,6 +548,8 @@ class BlazeComponent extends BaseComponent
 
         onDestroyed: ->
           @autorun (computation) =>
+            # @ is a template instance.
+
             # We wait for all children components to be destroyed first.
             # See https://github.com/meteor/meteor/issues/4166
             return if @component.componentChildren().length
@@ -563,7 +566,6 @@ class BlazeComponent extends BaseComponent
               @component._componentInternals.isDestroyed ?= new ReactiveField true
               @component._componentInternals.isDestroyed true
 
-              # @ is a template instance.
               componentOrMixin = null
               while componentOrMixin = @component.getFirstWith componentOrMixin, 'onDestroyed'
                 componentOrMixin.onDestroyed()
