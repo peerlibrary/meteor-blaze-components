@@ -67,16 +67,19 @@ A basic component might look like the following (using the
 class ExampleComponent extends BlazeComponent {
   // Life-cycle hook to initialize component's state.
   onCreated() {
+    // It is a good practice to always call super.
+    super.onCreated();
     this.counter = new ReactiveField(0);
   }
 
   // Mapping between events and their handlers.
   events() {
-    return [{
+    // It is a good practice to always call super.
+    return super.events().concat({
       // You could inline the handler, but the best is to make
       // it a method so that it can be extended later on.
       'click .increment': this.onClick
-    }];
+    });
   }
 
   onClick(event) {
@@ -136,13 +139,14 @@ Example above in vanilla JavaScript:
 ```javascript
 var ExampleComponent = BlazeComponent.extendComponent({
   onCreated: function () {
+    ExampleComponent.__super__.onCreated.call(this);
     this.counter = new ReactiveField(0);
   },
 
   events: function () {
-    return [{
+    return ExampleComponent.__super__.events.call(this).concat({
       'click .increment': this.onClick
-    }];
+    });
   },
 
   onClick: function (event) {
@@ -170,11 +174,12 @@ class ExampleComponent extends BlazeComponent
   @register 'ExampleComponent'
 
   onCreated: ->
+    super
     @counter = new ReactiveField 0
 
-  events: -> [
-    'click .increment': @onClick
-  ]
+  events: ->
+    super.concat
+      'click .increment': @onClick
 
   onClick: (event) ->
     @counter @counter() + 1
@@ -441,6 +446,8 @@ Example:
 ```javascript
 class CaseComponent extends BlazeComponent {
   constructor(kwargs) {
+    super();
+
     this.cases = kwargs.hash;
   }
 
@@ -573,12 +580,15 @@ class FirstMixin extends FirstMixinBase {
   }
 
   onCreated() {
+    super.onCreated();
     this.valuesPrediction = 'bc';
   }
 }
 
 class SecondMixin {
   constructor(name) {
+    super();
+
     this.name = name;
   }
 
@@ -714,6 +724,7 @@ To access the data context used for the component you first access the component
 
 ```javascript
 onCreated() {
+  super.onCreated();
   this.valuesPrediction = 'bc';
 }
 ```
@@ -991,6 +1002,8 @@ Returned values from event handlers are ignored. To control how events are propa
 methods like [`stopPropagation`](https://api.jquery.com/event.stopPropagation/) and
 [`stopImmediatePropagation`](https://api.jquery.com/event.stopImmediatePropagation/).
 
+It is a good practice to always call parent class method using `super`.
+
 When [mixins](#mixins-1) provide event handlers, they are attached in order of mixins, with the component first.
 
 *For more information about event maps, event handling, and `event` object, see [Blaze documentation](http://docs.meteor.com/#/full/eventmaps)
@@ -1219,6 +1232,8 @@ Blaze Components will call `ButtonComponent`'s constructor with arguments `12` a
 when instantiating the component's class. Keyword arguments are wrapped into
 [`Spacebars.kw`](https://github.com/meteor/meteor/blob/devel/packages/spacebars/README.md#helper-arguments).
 
+It is a good practice to always call parent class constructor using `super`.
+
 After the component is instantiated, all its [mixins](#user-content-reference_instance_mixins) are instantiated as well.
 
 <a name="reference_instance_onCreated"></a>
@@ -1241,6 +1256,8 @@ Example:
 ```javascript
 class ButtonComponent extends BlazeComponent {
   onCreated() {
+    super.onCreated();
+
     this.color = new ReactiveField("Red");
 
     $(window).on('message.buttonComponent', (event) => {
@@ -1250,6 +1267,8 @@ class ButtonComponent extends BlazeComponent {
   }
 
   onDestroyed() {
+    super.onDestroyed();
+
     $(window).off('.buttonComponent');
   }
 }
@@ -1265,6 +1284,8 @@ ButtonComponent.register('ButtonComponent');
 
 You can now use [`postMessage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage) to send messages
 like `{color: "Blue"}` which would reactively change the label of the button.
+
+It is a good practice to always call parent class method using `super`.
 
 When [mixins](#mixins-1) provide `onCreated` method, they are called after the component in mixins order automatically.
 
@@ -1285,6 +1306,8 @@ This is the place where you can initialize 3rd party libraries to work with the 
 mind that interactions of a 3rd party library with Blaze controlled content might bring unintentional consequences
 so consider reimplementing the 3rd party library as a Blaze Component instead.
 
+It is a good practice to always call parent class method using `super`.
+
 When [mixins](#mixins-1) provide `onRendered` method, they are called after the component in mixins order automatically.
 
 <a name="reference_instance_onDestroyed"></a>
@@ -1300,6 +1323,8 @@ defined on the template returned from the [`template`](#user-content-reference_i
 
 Here you can clean up or undo any external effects of [`onCreated`](#user-content-reference_instance_onCreated)
 or [`onRendered`](#user-content-reference_instance_onRendered) methods. See the example above.
+
+It is a good practice to always call parent class method using `super`.
 
 When [mixins](#mixins-1) provide `onDestroyed` method, they are called after the component in mixins order automatically.
 

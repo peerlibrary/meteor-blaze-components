@@ -605,30 +605,23 @@ class SecondMixin2
 
 # Example from the README.
 class ExampleComponent extends BlazeComponent
-  # Register a component so that it can be included in templates. It also
-  # gives the component the name. The convention is to use the class name.
   @register 'ExampleComponent'
 
-  # Life-cycle hook to initialize component's state.
   onCreated: ->
     assert not Tracker.active
 
+    super
     @counter = new ReactiveField 0
 
-  # Mapping between events and their handlers.
   events: ->
     assert not Tracker.active
 
-    [
-      # You could inline the handler, but the best is to make
-      # it a method so that it can be extended later on.
+    super.concat
       'click .increment': @onClick
-    ]
 
   onClick: (event) ->
     @counter @counter() + 1
 
-  # Any component's method is available as a template helper in the template.
   customHelper: ->
     if @counter() > 10
       "Too many times"
