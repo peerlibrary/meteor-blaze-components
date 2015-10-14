@@ -93,7 +93,6 @@ class PersistentInputComponent extends AutoSelectInputComponent
   @register 'PersistentInputComponent'
 
   onCreated: ->
-    super
     # This will store the value at the start of editing.
     @storedValue = new ReactiveField()
 

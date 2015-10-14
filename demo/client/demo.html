@@ -428,7 +428,6 @@ editing it. To enable this, we'll store the current value (using
   @register 'PersistentInputComponent'
 
   onCreated: -&gt;
-    super
     # This will store the value at the start of editing.
     @storedValue = new ReactiveField()
 
@@ -451,7 +450,6 @@ editing it. To enable this, we'll store the current value (using
 
 {{#if isJavaScript}}<pre><code class="language-javascript">var PersistentInputComponent = AutoSelectInputComponent.extendComponent({
   onCreated: function () {
-    PersistentInputComponent.__super__.onCreated.call(this);
     // This will store the value at the start of editing.
     this.storedValue = new ReactiveField();
   },

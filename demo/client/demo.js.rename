@@ -94,7 +94,6 @@ var RealTimeInputComponent = AutoSelectInputComponent.extendComponent({
 
 var PersistentInputComponent = AutoSelectInputComponent.extendComponent({
   onCreated: function () {
-    PersistentInputComponent.__super__.onCreated.call(this);
     // This will store the value at the start of editing.
     this.storedValue = new ReactiveField();
   },
