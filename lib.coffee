@@ -152,6 +152,41 @@ else
   withTemplateInstanceFunc = (templateInstance, f) ->
     f()
 
+getTemplateBase = (component) ->
+  # We do not allow template to be a reactive method.
+  Tracker.nonreactive ->
+    componentTemplate = component.template()
+    if _.isString componentTemplate
+      templateBase = Template[componentTemplate]
+      throw new Error "Template '#{ componentTemplate }' cannot be found." unless templateBase
+    else if componentTemplate
+      templateBase = componentTemplate
+    else
+      throw new Error "Template for the component '#{ component.componentName() or 'unnamed' }' not provided."
+
+    templateBase
+
+callTemplateBaseHooks = (component, hookName) ->
+  component._componentInternals ?= {}
+
+  # In mixins we do not have a template instance. There is also
+  # no reason for a template instance to extend a Blaze template.
+  return unless component._componentInternals.templateInstance
+
+  templateInstance = Tracker.nonreactive ->
+    component._componentInternals.templateInstance()
+  callbacks = component._componentInternals.templateBase._getCallbacks hookName
+  Template._withTemplateInstanceFunc(
+    ->
+      templateInstance
+  ,
+    ->
+      for callback in callbacks
+        callback.call templateInstance
+  )
+
+  return
+
 addEvents = (view, component) ->
   eventsList = component.events()
 
@@ -181,7 +216,7 @@ addEvents = (view, component) ->
           # handlers is deprecated.
           return
 
-    Blaze._addEventMap view, eventMap
+    Blaze._addEventMap view, eventMap, view
 
   return
 
@@ -455,24 +490,24 @@ class BlazeComponent extends BaseComponent
       # If mixins have not yet been created.
       component.createMixins()
 
-      # We do not allow template to be a reactive method.
-      componentTemplate = component.template()
-      if _.isString componentTemplate
-        templateBase = Template[componentTemplate]
-        throw new Error "Template '#{ componentTemplate }' cannot be found." unless templateBase
-      else if componentTemplate
-        templateBase = componentTemplate
-      else
-        throw new Error "Template for the component '#{ component.componentName() or 'unnamed' }' not provided."
+      templateBase = getTemplateBase component
 
       # Create a new component template based on the Blaze template. We want our own template
       # because the same Blaze template could be reused between multiple components.
       # TODO: Should we cache these templates based on (componentName, templateBase) pair? We could use two levels of ES2015 Maps, componentName -> templateBase -> template. What about component arguments changing?
       template = new Blaze.Template "BlazeComponent.#{ component.componentName() or 'unnamed' }", templateBase.renderFunction
 
-      # We on purpose do not reuse helpers, events, and hooks. Templates are used only for HTML rendering.
+      # We convert helpers to methods (so that they can be extended), if there are any.
+      # Events and hooks are taken care of in the related methods in the base class.
+      for own helperName, helper of templateBase.__helpers
+        do (helper) ->
+          component[helperName.substr(1)] = (args...) ->
+            # Template helpers have data context bound to "this".
+            data = Blaze.getData() ? {}
+            helper.apply data, args
 
-      @component._componentInternals ?= {}
+      component._componentInternals ?= {}
+      component._componentInternals.templateBase = templateBase
 
       registerHooks template,
         onCreated: ->
@@ -587,10 +622,13 @@ class BlazeComponent extends BaseComponent
     @callFirstWith(@, 'template') or @constructor.componentName()
 
   onCreated: ->
+    callTemplateBaseHooks @, 'created'
 
   onRendered: ->
+    callTemplateBaseHooks @, 'rendered'
 
   onDestroyed: ->
+    callTemplateBaseHooks @, 'destroyed'
 
   isCreated: ->
     @_componentInternals ?= {}
@@ -631,7 +669,30 @@ class BlazeComponent extends BaseComponent
     return
 
   events: ->
-    []
+    @_componentInternals ?= {}
+
+    # In mixins we do not have a template instance. There is also
+    # no reason for a template instance to extend a Blaze template.
+    return [] unless @_componentInternals.templateInstance
+
+    view = Tracker.nonreactive =>
+      @_componentInternals.templateInstance().view
+    templateInstance = getTemplateInstanceFunction view
+
+    for events in @_componentInternals.templateBase.__eventMaps
+      eventMap = {}
+
+      for spec, handler of events
+        do (spec, handler) ->
+          eventMap[spec] = (args...) ->
+            # In template event handlers view and template instance are not based on the current target
+            # (like Blaze Components event handlers are) but it is based on the template-level view.
+            # In a way we are reverting here what addEvents does.
+            withTemplateInstanceFunc templateInstance, ->
+              Blaze._withCurrentView view, ->
+                handler.apply view, args
+
+      eventMap
 
   # Component-level data context. Reactive. Use this to always get the
   # top-level data context used to render the component.

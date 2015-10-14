@@ -200,8 +200,14 @@ Template.input.events({
 },</code></pre>{{/if}}
 
 <p>The {{#if isCoffeeScript}}<code class="language-coffeescript">input</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">input</code>{{/if}}
-  template we provided earlier will serve as the markup to be re-used by the component.</p>
-<p>However, all the helpers and events will be provided through the component class.</p>
+  template we provided earlier will serve as the markup to be re-used by the component. It is recommended that you use
+  templates only to specify DOM content, but in our case we already attached helpers and event handlers to the template
+  so Blaze Components will reuse them. This is useful when you want to extend or override the behavior of an existing
+  Blaze template.
+  </p>
+
+<p>For the purpose of this example we will ignore preexisting helpers and event handlers and define them again,
+  but this time in a Blaze Components' way.</p>
 
 <p>
   Helpers are simply instance methods.

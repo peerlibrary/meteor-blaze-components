@@ -950,6 +950,9 @@ The handler function receives one argument, a [jQuery event object](https://api.
 and optional extra arguments for custom events. The common pattern is to simply pass methods as event handlers to allow
 subclasses to extend the event handlers logic through inheritance.
 
+By default the method returns [preexisting event handlers](http://docs.meteor.com/#/full/template_events) defined on the
+template returned from the [`template`](#user-content-reference_instance_template) method call.
+
 Example:
 
 ```javascript
@@ -980,7 +983,9 @@ in the event handler.
 
 When extending this method make sure to not forget about possible ancestor event handlers you can get through
 the `super` call. Concatenate additional event handlers in subclasses and/or modify ancestor event handlers before
-returning them all.
+returning them all. This is also the reason why the method has to return an array. There might be multiple handlers
+for the same event specification (eg., multiple handlers to handle `click` event) and we do not want them to be
+clobbered.
 
 Returned values from event handlers are ignored. To control how events are propagated you can use `event` object
 methods like [`stopPropagation`](https://api.jquery.com/event.stopPropagation/) and
@@ -1001,8 +1006,14 @@ template()
 Extend this method and return the name of a [Blaze template](http://docs.meteor.com/#/full/templates_api) or template
 object itself. By default it returns the [component name](#user-content-reference_class_componentName).
 
-Template content will be used to render component's DOM content, but all preexisting template helpers,
-event handlers and life-cycle hooks will be ignored.
+Template content will be used to render component's DOM content. It is recommended that you use templates only
+to specify DOM content and that you do not define any template helpers, event handlers, and life-cycle hooks on the
+template itself but instead define it at the component level. But to support wrapping existing templates into Blaze
+Components so that you can extend or override their behavior, Blaze Components inherit template helpers, event handlers,
+and life-cycle hooks from the template in a backwards compatible way. All preexisting template helpers are copied
+over to the component as component's methods. Preexisting event handlers are returned from the default
+[`events`](#user-content-reference_instance_events) method. Default [life-cycle hooks](#life-cycle-hooks-1) methods
+call template's preexisting life-cycle hooks as well.
 
 All component methods are available in the template as template helpers. Template helpers are bound to the component
 itself in `this`.
@@ -1220,6 +1231,9 @@ place to do so than a class constructor because it does not depend on the compon
 [mixins](#user-content-reference_instance_mixins) are already initialized, and most Blaze Components methods
 work as expected (component was not yet rendered, so [DOM related methods](#access-to-rendered-content) do not yet work).
 
+By default the method calls preexisting [`onCreated`](http://docs.meteor.com/#/full/template_onCreated) callbacks defined
+on the template returned from the [`template`](#user-content-reference_instance_template) method call.
+
 A recommended use is to initialize any reactive variables and subscriptions internal to the component.
 
 Example:
@@ -1261,6 +1275,9 @@ onRendered()
 
 This method is called once when a component is rendered into DOM nodes and put into the document for the first time.
 
+By default the method calls preexisting [`onRendered`](http://docs.meteor.com/#/full/template_onRendered) callbacks
+defined on the template returned from the [`template`](#user-content-reference_instance_template) method call.
+
 Because your component has been rendered, you can use [DOM related methods](#access-to-rendered-content) to access
 component's DOM nodes.
 
@@ -1277,6 +1294,9 @@ onDestroyed()
 
 This method is called when an occurrence of a component is taken off the page for any reason and not replaced
 with a re-rendering.
+
+By default the method calls preexisting [`onDestroyed`](http://docs.meteor.com/#/full/template_onDestroyed) callbacks
+defined on the template returned from the [`template`](#user-content-reference_instance_template) method call.
 
 Here you can clean up or undo any external effects of [`onCreated`](#user-content-reference_instance_onCreated)
 or [`onRendered`](#user-content-reference_instance_onRendered) methods. See the example above.

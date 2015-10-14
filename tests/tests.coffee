@@ -755,6 +755,80 @@ class TestingComponentDebug extends BlazeComponentDebug
   @endMarkedComponent: (component) ->
     @endComponent component
 
+mainComponent3Calls = []
+
+Template.mainComponent3.events
+  'click': (event, template) ->
+    assert.equal Template.instance(), template
+    assert not Tracker.active
+    if Template.instance().component
+      template = Template.instance().component.constructor
+    else
+      template = Template.instance().view.template
+
+    mainComponent3Calls.push [template, 'mainComponent3.onClick', @, Template.currentData(), Blaze.getData(Template.instance().view), Template.parentData()]
+
+Template.mainComponent3.helpers
+  foobar: ->
+    if Template.instance().component
+      assert.equal Template.instance().component.constructor, MainComponent3
+    else
+      assert.equal Template.instance().view.template, Template.mainComponent3
+
+    "mainComponent3.foobar/#{ EJSON.stringify @ }/#{ EJSON.stringify Template.currentData() }/#{ EJSON.stringify Blaze.getData(Template.instance().view) }/#{ EJSON.stringify Template.parentData() }"
+
+  foobar2: ->
+    if Template.instance().component
+      assert.equal Template.instance().component.constructor, MainComponent3
+    else
+      assert.equal Template.instance().view.template, Template.mainComponent3
+
+    "mainComponent3.foobar2/#{ EJSON.stringify @ }/#{ EJSON.stringify Template.currentData() }/#{ EJSON.stringify Blaze.getData(Template.instance().view) }/#{ EJSON.stringify Template.parentData() }"
+
+  foobar3: ->
+    if Template.instance().component
+      assert.equal Template.instance().component.constructor, MainComponent3
+    else
+      assert.equal Template.instance().view.template, Template.mainComponent3
+
+    "mainComponent3.foobar3/#{ EJSON.stringify @ }/#{ EJSON.stringify Template.currentData() }/#{ EJSON.stringify Blaze.getData(Template.instance().view) }/#{ EJSON.stringify Template.parentData() }"
+
+Template.mainComponent3.onCreated ->
+  assert not Tracker.active
+  assert.equal Template.instance(), @
+  if Template.instance().component
+    template = Template.instance().component.constructor
+  else
+    template = Template.instance().view.template
+
+  mainComponent3Calls.push [template, 'mainComponent3.onCreated', Template.currentData(), Blaze.getData(Template.instance().view), Template.parentData()]
+
+Template.mainComponent3.onRendered ->
+  assert not Tracker.active
+  assert.equal Template.instance(), @
+  if Template.instance().component
+    template = Template.instance().component.constructor
+  else
+    template = Template.instance().view.template
+
+  mainComponent3Calls.push [template, 'mainComponent3.onRendered', Template.currentData(), Blaze.getData(Template.instance().view), Template.parentData()]
+
+Template.mainComponent3.onDestroyed ->
+  assert not Tracker.active
+  assert.equal Template.instance(), @
+  if Template.instance().component
+    template = Template.instance().component.constructor
+  else
+    template = Template.instance().view.template
+
+  mainComponent3Calls.push [template, 'mainComponent3.onDestroyed', Template.currentData(), Blaze.getData(Template.instance().view), Template.parentData()]
+
+class MainComponent3 extends BlazeComponent
+  @register 'MainComponent3'
+
+  template: ->
+    'mainComponent3'
+
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
 
@@ -2660,6 +2734,74 @@ class BasicTestCase extends ClassyTestCase
       @assertEqual BlazeComponent.getComponentForElement($('.insideBlockHelperTemplate').get(0)).componentName(), 'ExtraTableWrapperBlockComponent'
 
       Blaze.remove @renderedComponent
+  ]
+
+  testExtendingTemplate: [
+    ->
+      mainComponent3Calls = []
+
+      # To make sure we know what to expect from a template, we first test the template.
+      @renderedTemplate = Blaze.renderWithData Template.mainComponent3Test, {top: '42'}, $('body').get(0)
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.mainComponent3').html()), trim """
+        <button>Foo1</button>
+        <p>mainComponent3.foobar/{"a":"1","b":"2"}/{"a":"1","b":"2"}/{"a":"1","b":"2"}/{"top":"42"}</p>
+        <button>Foo2</button>
+        <p>mainComponent3.foobar2/{"a":"3","b":"4"}/{"a":"3","b":"4"}/{"a":"1","b":"2"}/{"a":"1","b":"2"}</p>
+        <p>mainComponent3.foobar3/{"a":"1","b":"2"}/{"a":"1","b":"2"}/{"a":"1","b":"2"}/{"top":"42"}</p>
+      """
+
+      $('.mainComponent3 button').each (i, button) =>
+        $(button).click()
+
+      Blaze.remove @renderedTemplate
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual mainComponent3Calls, [
+        [Template.mainComponent3, 'mainComponent3.onCreated', {a: "1", b: "2"}, {a: "1", b: "2"}, {top: "42"}]
+        [Template.mainComponent3, 'mainComponent3.onRendered', {a: "1", b: "2"}, {a: "1", b: "2"}, {top: "42"}]
+        [Template.mainComponent3, 'mainComponent3.onClick', {a: "1", b: "2"}, {a: "1", b: "2"}, {a: "1", b: "2"}, {top: "42"}]
+        [Template.mainComponent3, 'mainComponent3.onClick', {a: "3", b: "4"}, {a: "1", b: "2"}, {a: "1", b: "2"}, {top: "42"}]
+        [Template.mainComponent3, 'mainComponent3.onDestroyed', {a: "1", b: "2"}, {a: "1", b: "2"}, {top: "42"}]
+      ]
+  ,
+    ->
+      mainComponent3Calls = []
+
+      # And now we make a component which extends it.
+      @renderedTemplate = Blaze.renderWithData Template.mainComponent3ComponentTest, {top: '42'}, $('body').get(0)
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.mainComponent3').html()), trim """
+        <button>Foo1</button>
+        <p>mainComponent3.foobar/{"a":"1","b":"2"}/{"a":"1","b":"2"}/{"a":"1","b":"2"}/{"top":"42"}</p>
+        <button>Foo2</button>
+        <p>mainComponent3.foobar2/{"a":"3","b":"4"}/{"a":"3","b":"4"}/{"a":"1","b":"2"}/{"a":"1","b":"2"}</p>
+        <p>mainComponent3.foobar3/{"a":"1","b":"2"}/{"a":"1","b":"2"}/{"a":"1","b":"2"}/{"top":"42"}</p>
+      """
+
+      $('.mainComponent3 button').each (i, button) =>
+        $(button).click()
+
+      Blaze.remove @renderedTemplate
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual mainComponent3Calls, [
+        [MainComponent3, 'mainComponent3.onCreated', {a: "1", b: "2"}, {a: "1", b: "2"}, {top: "42"}]
+        [MainComponent3, 'mainComponent3.onRendered', {a: "1", b: "2"}, {a: "1", b: "2"}, {top: "42"}]
+        [MainComponent3, 'mainComponent3.onClick', {a: "1", b: "2"}, {a: "1", b: "2"}, {a: "1", b: "2"}, {top: "42"}]
+        [MainComponent3, 'mainComponent3.onClick', {a: "3", b: "4"}, {a: "1", b: "2"}, {a: "1", b: "2"}, {top: "42"}]
+        [MainComponent3, 'mainComponent3.onDestroyed', {a: "1", b: "2"}, {a: "1", b: "2"}, {top: "42"}]
+      ]
   ]
 
 ClassyTestCase.addTest new BasicTestCase()

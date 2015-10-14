@@ -54,6 +54,36 @@
   {{/if}}
 </template>
 
+<template name="mainComponent3Test">
+  {{#with a='1' b='2'}}
+    <div class="mainComponent3">
+      {{> mainComponent3}}
+    </div>
+  {{/with}}
+</template>
+
+<template name="mainComponent3ComponentTest">
+  {{#with a='1' b='2'}}
+    <div class="mainComponent3">
+      {{> MainComponent3}}
+    </div>
+  {{/with}}
+</template>
+
+<template name="mainComponent3">
+  <button>Foo1</button>
+  <p>{{foobar}}</p>
+  {{#with a='3' b='4'}}
+    {{> mainComponent3Button}}
+    <p>{{foobar2}}</p>
+  {{/with}}
+  <p>{{foobar3}}</p>
+</template>
+
+<template name="mainComponent3Button">
+  <button>Foo2</button>
+</template>
+
 <template name="normalSubtemplate">
   {{! Helpers here should resolve to MainComponent methods. }}
   <p>Subtemplate</p>

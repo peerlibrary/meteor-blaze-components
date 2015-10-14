@@ -19,6 +19,9 @@
     * `addComponentChild` to `addChildComponent`
     * `removeComponentChild` to `removeChildComponent`
     * `componentParent` to `parentComponent`
+* Support extending existing Blaze templates. Now Blaze Components make all preexisting template helpers into
+  component instance methods, and preexisting events and life-cycle hooks are available through default
+  implementations of related Blaze Components methods.
 
 ## v0.13.0, 2015-Jun-24
 
