@@ -22,7 +22,7 @@ Package.onUse(function (api) {
 
   // Internal dependencies.
   api.use([
-    'peerlibrary:base-component@0.12.0'
+    'peerlibrary:base-component@0.13.0'
   ]);
 
   // 3rd party dependencies.
