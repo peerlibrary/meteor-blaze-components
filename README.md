@@ -1200,9 +1200,7 @@ Examples:
 ```javascript
 component.childrenComponentsWith('propertyName');
 component.childrenComponentsWith({propertyName: 42});
-component.childrenComponentsWith((child, parent) => {
-  child.propertyName === 42;
-});
+component.childrenComponentsWith((child, parent) => child.propertyName === 42);
 ```
 
 The children components are in the array only after they have been [created](#user-content-reference_instance_onCreated),

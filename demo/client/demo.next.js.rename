@@ -247,9 +247,7 @@ class ExtremeInputComponent extends BlazeComponent {
     return [
       AutoSelectInputMixin, RealTimeInputMixin,
       CancelableInputMixin, FormFieldMixin,
-      new StorageMixin(Values, 'value', () => {
-        this.data().id;
-      })
+      new StorageMixin(Values, 'value', () => this.data().id)
     ];
   }
 }
