@@ -18,6 +18,8 @@
   <a href="https://github.com/peerlibrary/meteor-blaze-components#javascript-and-coffeescript-support">ES2015, vanilla JavaScript, and
   CoffeeScript.</a></p>
 
+<p>This tutorial is available in ES2015, vanilla JavaScript, and CoffeeScript. Choose your language: {{> languageChooser}}</p>
+
 <a name="the-problem"></a>
 <h2>The Problem</h2>
 
@@ -35,15 +37,15 @@ database and is written to it when the user changes it.</p>
   <div class="code">
     <div class="header">spacebars</div>
 
-<pre><code class="language-handlebars">{{|&gt; input id='demo1'}}
+{{#withSpacebars}}{{|&gt; input id='demo1'}}
 
 &lt;template name=&quot;input&quot;&gt;
   &lt;input value="{{|value}}"/&gt;
-&lt;/template&gt;</code></pre>
+&lt;/template&gt;{{/withSpacebars}}
 
 {{> languageSwitch}}
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">Template.input.helpers
+{{#withCoffeeScript}}Template.input.helpers
   value: -&gt;
     # Read value from the collection.
     Values.findOne(@id)?.value
@@ -55,9 +57,9 @@ Template.input.events
 
   # Auto-select text when user clicks in the input.
   'click input': (event, template) -&gt;
-    $(event.target).select()</code></pre>{{/if}}
+    $(event.target).select(){{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">Template.input.helpers({
+{{#withJavaScript}}Template.input.helpers({
   value: function () {
     // Read value from the collection.
     var doc = Values.findOne(this.id);
@@ -77,7 +79,29 @@ Template.input.events({
   'click input': function (event, template) {
     $(event.target).select();
   }
-});</code></pre>{{/if}}
+});{{/withJavaScript}}
+
+{{#withES2015}}Template.input.helpers({
+  value: function () {
+    // Read value from the collection.
+    var doc = Values.findOne(this.id);
+    if (doc) return doc.value;
+  }
+});
+
+Template.input.events({
+  // Save value to the collection when it changes.
+  'change input': function (event, template) {
+    Values.upsert(this.id, {$set: {
+      value: event.target.value
+    }});
+  },
+
+  // Auto-select text when user clicks in the input.
+  'click input': function (event, template) {
+    $(event.target).select();
+  }
+});{{/withES2015}}
 
   </div>
 </div>
@@ -90,8 +114,8 @@ Template.input.events({
     <p>Duplicate the code to the other template.</p>
   </li>
   <li>
-    <p>Refactor the template to <code class="language-handlebars">{{|> include}}</code> another template, or create
-      a <code class="language-handlebars">{{|#block}}</code> helper that provides the functionality.</p>
+    <p>Refactor the template to {{#inlineSpacebars}}{{|> include}}{{/inlineSpacebars}} another template, or create
+      a {{#inlineSpacebars}}{{|#block}}{{/inlineSpacebars}} helper that provides the functionality.</p>
   </li>
   <li>
     <p>Refactor the code instead. We save the reusable helpers and event handlers into variables and apply them on
@@ -120,11 +144,11 @@ Template.input.events({
   <div class="code">
     <div class="header">spacebars</div>
 
-<pre><code class="language-handlebars">{{|&gt; AutoSelectInputComponent id='demo2'}}</code></pre>
+{{#withSpacebars}}{{|&gt; AutoSelectInputComponent id='demo2'}}{{/withSpacebars}}
 
 {{> languageSwitch}}
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">class AutoSelectInputComponent extends BlazeComponent
+{{#withCoffeeScript}}class AutoSelectInputComponent extends BlazeComponent
   @register 'AutoSelectInputComponent'
 
   template: -&gt;
@@ -142,9 +166,9 @@ Template.input.events({
     Values.upsert @data().id, $set: value: event.target.value
 
   onClick: (event) -&gt;
-    $(event.target).select()</code></pre>{{/if}}
+    $(event.target).select(){{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">var AutoSelectInputComponent = BlazeComponent.extendComponent({
+{{#withJavaScript}}var AutoSelectInputComponent = BlazeComponent.extendComponent({
   template: function () {
     return 'input';
   },
@@ -170,36 +194,76 @@ Template.input.events({
   onClick: function (event) {
     $(event.target).select();
   }
-}).register('AutoSelectInputComponent');</code></pre>{{/if}}
+}).register('AutoSelectInputComponent');{{/withJavaScript}}
+
+{{#withES2015}}class AutoSelectInputComponent extends BlazeComponent {
+  template() {
+    return 'input';
+  }
+
+  value() {
+    var doc = Values.findOne(this.data().id);
+    if (doc) return doc.value;
+  }
+
+  events() {
+    return [{
+      'change input': this.onChange,
+      'click input': this.onClick
+    }];
+  }
+
+  onChange(event) {
+    Values.upsert(this.data().id, {$set: {
+      value: event.target.value
+    }});
+  }
+
+  onClick(event) {
+    $(event.target).select();
+  }
+}
+
+AutoSelectInputComponent.register('AutoSelectInputComponent');{{/withES2015}}
 
   </div>
 </div>
 <p>Let's look at the code part by part.</p>
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">class AutoSelectInputComponent extends BlazeComponent
-  @register 'AutoSelectInputComponent'</code></pre>{{/if}}
+{{#withCoffeeScript}}class AutoSelectInputComponent extends BlazeComponent
+  @register 'AutoSelectInputComponent'{{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">var AutoSelectInputComponent = BlazeComponent.extendComponent({
+{{#withJavaScript}}var AutoSelectInputComponent = BlazeComponent.extendComponent({
 ...
-}).register('AutoSelectInputComponent');</code></pre>{{/if}}
+}).register('AutoSelectInputComponent');{{/withJavaScript}}
 
-<p>We have created an {{#if isCoffeeScript}}<code class="language-coffeescript">AutoSelectInputComponent</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">AutoSelectInputComponent</code>{{/if}}
+{{#withES2015}}class AutoSelectInputComponent extends BlazeComponent {
+...
+}
+
+AutoSelectInputComponent.register('AutoSelectInputComponent');{{/withES2015}}
+
+<p>We have created an {{#inlineCode}}AutoSelectInputComponent{{/inlineCode}}
   and registered it so we can include it just as any other template in our templates.</p>
 
 <aside>
-  <p>The convention would be to use {{#if isCoffeeScript}}<code class="language-coffeescript">AutoSelectInputComponent</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">AutoSelectInputComponent</code>{{/if}}
+  <p>The convention would be to use {{#inlineCode}}AutoSelectInputComponent{{/inlineCode}}
     for the template name, to match the component's class name (and its registration name). This is also the default.</p>
   <p>We are breaking the convention in this specific case to reuse an existing template.</p>
 </aside>
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">template: -&gt;
-  'input'</code></pre>{{/if}}
+{{#withCoffeeScript}}template: -&gt;
+  'input'{{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">template: function () {
+{{#withJavaScript}}template: function () {
   return 'input';
-},</code></pre>{{/if}}
+},{{/withJavaScript}}
 
-<p>The {{#if isCoffeeScript}}<code class="language-coffeescript">input</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">input</code>{{/if}}
+{{#withES2015}}template() {
+  return 'input';
+}{{/withES2015}}
+
+<p>The {{#inlineCode}}input{{/inlineCode}}
   template we provided earlier will serve as the markup to be re-used by the component. It is recommended that you use
   templates only to specify DOM content, but in our case we already attached helpers and event handlers to the template
   so Blaze Components will reuse them. This is useful when you want to extend or override the behavior of an existing
@@ -216,43 +280,48 @@ Template.input.events({
 <aside>
   <p>
     Notice that to get the data context, we need to call the
-    <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_data">{{#if isCoffeeScript}}<code class="language-coffeescript">@data()</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">this.data()</code>{{/if}}</a>
-    function, similar to how we call {{#if isCoffeeScript}}<code class="language-coffeescript">@data</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">this.data</code>{{/if}}
-    in template hooks and {{#if isCoffeeScript}}<code class="language-coffeescript">template.data</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">template.data</code>{{/if}} in event handlers.
+    <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_data">{{#inlineCoffeeScript}}@data(){{/inlineCoffeeScript}}{{#inlineJavaScript}}this.data(){{/inlineJavaScript}}{{#inlineES2015}}this.data(){{/inlineES2015}}</a>
+    function, similar to how we call {{#inlineCoffeeScript}}@data(){{/inlineCoffeeScript}}{{#inlineJavaScript}}this.data(){{/inlineJavaScript}}{{#inlineES2015}}this.data(){{/inlineES2015}}
+    in template hooks and {{#inlineCode}}template.data{{/inlineCode}} in event handlers.
   </p>
   <p>
-    In normal template helpers {{#if isCoffeeScript}}<code class="language-coffeescript">@</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">this</code>{{/if}}
+    In normal template helpers {{#inlineCoffeeScript}}@{{/inlineCoffeeScript}}{{#inlineJavaScript}}this{{/inlineJavaScript}}{{#inlineES2015}}this{{/inlineES2015}}
     refers to the data context, but is not
-    reactive. Neither is {{#if isCoffeeScript}}<code class="language-coffeescript">@data</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">this.data</code>{{/if}} or
-    {{#if isCoffeeScript}}<code class="language-coffeescript">template.data</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">template.data</code>{{/if}}, so we had to call
-    {{#if isCoffeeScript}}<code class="language-coffeescript">Template.currentData()</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">Template.currentData()</code>{{/if}}
+    reactive. Neither is {{#inlineCoffeeScript}}@data{{/inlineCoffeeScript}}{{#inlineJavaScript}}this.data{{/inlineJavaScript}}{{#inlineES2015}}this.data{{/inlineES2015}} or
+    {{#inlineCode}}template.data{{/inlineCode}}, so we had to call
+    {{#inlineCode}}Template.currentData(){{/inlineCode}}
     when we wanted to register a dependency.
   </p>
   <p>
-    In Blaze Components, things are consistent: {{#if isCoffeeScript}}<code class="language-coffeescript">@</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">this</code>{{/if}}
+    In Blaze Components, things are consistent: {{#inlineCoffeeScript}}@{{/inlineCoffeeScript}}{{#inlineJavaScript}}this{{/inlineJavaScript}}{{#inlineES2015}}this{{/inlineES2015}}
     always refers to the component instance and
-    <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_data">{{#if isCoffeeScript}}<code class="language-coffeescript">@data()</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">this.data()</code>{{/if}}</a>
+    <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_data">{{#inlineCoffeeScript}}@data(){{/inlineCoffeeScript}}{{#inlineJavaScript}}this.data(){{/inlineJavaScript}}{{#inlineES2015}}this.data(){{/inlineES2015}}</a>
     is always a reactive reference to the data context.
   </p>
 </aside>
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">value: -&gt;
-  Values.findOne(@data().id)?.value</code></pre>{{/if}}
+{{#withCoffeeScript}}value: -&gt;
+  Values.findOne(@data().id)?.value{{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">value: function () {
+{{#withJavaScript}}value: function () {
   var doc = Values.findOne(this.data().id);
   if (doc) return doc.value;
-},</code></pre>{{/if}}
+},{{/withJavaScript}}
+
+{{#withES2015}}value() {
+  var doc = Values.findOne(this.data().id);
+  if (doc) return doc.value;
+}{{/withES2015}}
 
 <p>
-  Events are returned with the <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_events">{{#if isCoffeeScript}}<code class="language-coffeescript">events</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">events</code>{{/if}}</a>
+  Events are returned with the <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_events">{{#inlineCode}}events{{/inlineCode}}</a>
   method like before, although instead of defining the handlers inline, we rather have them as instance methods, so we can override
   them from child classes later.
-  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_events">{{#if isCoffeeScript}}<code class="language-coffeescript">events</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">events</code>{{/if}}</a>
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_events">{{#inlineCode}}events{{/inlineCode}}</a>
   should return an array of event maps so that they can be combined in inherited classes without conflicts.
 </p>
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">events: -&gt; [
+{{#withCoffeeScript}}events: -&gt; [
   'change input': @onChange
   'click input': @onClick
 ]
@@ -261,9 +330,9 @@ onChange: (event) -&gt;
   Values.upsert @data().id, $set: value: event.target.value
 
 onClick: (event) -&gt;
-  $(event.target).select()</code></pre>{{/if}}
+  $(event.target).select(){{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">events: function () {
+{{#withJavaScript}}events: function () {
   return [{
     'change input': this.onChange,
     'click input': this.onClick
@@ -278,13 +347,30 @@ onChange: function (event) {
 
 onClick: function (event) {
   $(event.target).select();
-}</code></pre>{{/if}}
+}{{/withJavaScript}}
+
+{{#withES2015}}events() {
+  return [{
+    'change input': this.onChange,
+    'click input': this.onClick
+  }];
+}
+
+onChange(event) {
+  Values.upsert(this.data().id, {$set: {
+    value: event.target.value
+  }});
+}
+
+onClick(event) {
+  $(event.target).select();
+}{{/withES2015}}
 
 <a name="the-beauty"></a>
 <h2>The Beauty</h2>
 
 <p>Components allow us to create new components that share code simply through inheritance. Let's see
-  three examples all building upon the same {{#if isCoffeeScript}}<code class="language-coffeescript">AutoSelectInputComponent</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">AutoSelectInputComponent</code>{{/if}}.</p>
+  three examples all building upon the same {{#inlineCode}}AutoSelectInputComponent{{/inlineCode}}.</p>
 
 <a name="textarea-input"></a>
 <h3>Textarea Input</h3>
@@ -300,15 +386,15 @@ onClick: function (event) {
   <div class="code">
     <div class="header">spacebars</div>
 
-<pre><code class="language-handlebars">{{|&gt; AutoSelectTextareaComponent id='demo3'}}
+{{#withSpacebars}}{{|&gt; AutoSelectTextareaComponent id='demo3'}}
 
 &lt;template name="AutoSelectTextareaComponent"&gt;
   &lt;textarea&gt;{{|value}}&lt;/textarea&gt;
-&lt;/template&gt;</code></pre>
+&lt;/template&gt;{{/withSpacebars}}
 
 {{> languageSwitch}}
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">class AutoSelectTextareaComponent extends AutoSelectInputComponent
+{{#withCoffeeScript}}class AutoSelectTextareaComponent extends AutoSelectInputComponent
   @register 'AutoSelectTextareaComponent'
 
   template: -&gt;
@@ -317,9 +403,9 @@ onClick: function (event) {
   events: -&gt;
     super.concat
       'change textarea': @onChange
-      'click textarea': @onClick</code></pre>{{/if}}
+      'click textarea': @onClick{{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">var AutoSelectTextareaComponent = AutoSelectInputComponent.extendComponent({
+{{#withJavaScript}}var AutoSelectTextareaComponent = AutoSelectInputComponent.extendComponent({
   template: function () {
     return 'AutoSelectTextareaComponent';
   },
@@ -330,7 +416,22 @@ onClick: function (event) {
       'click textarea': this.onClick
     });
   }
-}).register('AutoSelectTextareaComponent');</code></pre>{{/if}}
+}).register('AutoSelectTextareaComponent');{{/withJavaScript}}
+
+{{#withES2015}}class AutoSelectTextareaComponent extends AutoSelectInputComponent {
+  template() {
+    return 'AutoSelectTextareaComponent';
+  }
+
+  events() {
+    return super.events().concat({
+      'change textarea': this.onChange,
+      'click textarea': this.onClick
+    });
+  }
+}
+
+AutoSelectTextareaComponent.register('AutoSelectTextareaComponent');{{/withES2015}}
 
   </div>
 </div>
@@ -339,17 +440,24 @@ onClick: function (event) {
 textarea as well.</p>
 <p>This could be made even simpler if our original component already hooked the events in a generic way, like</p>
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">events: -&gt; [
+{{#withCoffeeScript}}events: -&gt; [
   'change *': @onChange
   'click *': @onClick
-]</code></pre>{{/if}}
+]{{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">events: function () {
+{{#withJavaScript}}events: function () {
   return [{
     'change *': this.onChange,
     'click *': this.onClick
   }]
-},</code></pre>{{/if}}
+},{{/withJavaScript}}
+
+{{#withES2015}}events() {
+  return [{
+    'change *': this.onChange,
+    'click *': this.onClick
+  }];
+}{{/withES2015}}
 
 <a name="real-time-input"></a>
 <h3>Real-time Input</h3>
@@ -368,11 +476,11 @@ textarea as well.</p>
   <div class="code">
     <div class="header">spacebars</div>
 
-<pre><code class="language-handlebars">{{|&gt; RealTimeInputComponent id='demo4'}}</code></pre>
+{{#withSpacebars}}{{|&gt; RealTimeInputComponent id='demo4'}}{{/withSpacebars}}
 
 {{> languageSwitch}}
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">class RealTimeInputComponent extends AutoSelectInputComponent
+{{#withCoffeeScript}}class RealTimeInputComponent extends AutoSelectInputComponent
   @register 'RealTimeInputComponent'
 
   events: -&gt;
@@ -380,9 +488,9 @@ textarea as well.</p>
       'keyup input': @onKeyup
 
   onKeyup: (event) -&gt;
-    $(event.target).change()</code></pre>{{/if}}
+    $(event.target).change(){{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">var RealTimeInputComponent = AutoSelectInputComponent.extendComponent({
+{{#withJavaScript}}var RealTimeInputComponent = AutoSelectInputComponent.extendComponent({
   events: function () {
     return RealTimeInputComponent.__super__.events.call(this).concat({
       'keyup input': this.onKeyup
@@ -392,7 +500,21 @@ textarea as well.</p>
   onKeyup: function (event) {
     $(event.target).change();
   }
-}).register('RealTimeInputComponent');</code></pre>{{/if}}
+}).register('RealTimeInputComponent');{{/withJavaScript}}
+
+{{#withES2015}}class RealTimeInputComponent extends AutoSelectInputComponent {
+  events() {
+    return super.events().concat({
+      'keyup input': this.onKeyup
+    });
+  }
+
+  onKeyup(event) {
+    $(event.target).change();
+  }
+}
+
+RealTimeInputComponent.register('RealTimeInputComponent');{{/withES2015}}
 
   </div>
 </div>
@@ -420,11 +542,11 @@ editing it. To enable this, we'll store the current value (using
   <div class="code">
     <div class="header">spacebars</div>
 
-<pre><code class="language-handlebars">{{|&gt; PersistentInputComponent id='demo5'}}</code></pre>
+{{#withSpacebars}}{{|&gt; PersistentInputComponent id='demo5'}}{{/withSpacebars}}
 
 {{> languageSwitch}}
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">class PersistentInputComponent extends AutoSelectInputComponent
+{{#withCoffeeScript}}class PersistentInputComponent extends AutoSelectInputComponent
   @register 'PersistentInputComponent'
 
   onCreated: -&gt;
@@ -446,9 +568,9 @@ editing it. To enable this, we'll store the current value (using
 
   onBlur: (event) -&gt;
     # We are no longer editing, so return to normal.
-    @storedValue null</code></pre>{{/if}}
+    @storedValue null{{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">var PersistentInputComponent = AutoSelectInputComponent.extendComponent({
+{{#withJavaScript}}var PersistentInputComponent = AutoSelectInputComponent.extendComponent({
   onCreated: function () {
     // This will store the value at the start of editing.
     this.storedValue = new ReactiveField();
@@ -475,7 +597,38 @@ editing it. To enable this, we'll store the current value (using
     // We are no longer editing, so return to normal.
     this.storedValue(null);
   }
-}).register('PersistentInputComponent');</code></pre>{{/if}}
+}).register('PersistentInputComponent');{{/withJavaScript}}
+
+{{#withES2015}}class PersistentInputComponent extends AutoSelectInputComponent {
+  onCreated() {
+    // This will store the value at the start of editing.
+    this.storedValue = new ReactiveField();
+  }
+
+  value() {
+    // Return stored value during editing or normal otherwise.
+    return this.storedValue() || super.value();
+  }
+
+  events() {
+    return super.events().concat({
+      'focus input': this.onFocus,
+      'blur input': this.onBlur
+    });
+  }
+
+  onFocus(event) {
+    // Store the current value when starting to edit.
+    this.storedValue(this.value());
+  }
+
+  onBlur(event) {
+    // We are no longer editing, so return to normal.
+    this.storedValue(null);
+  }
+}
+
+PersistentInputComponent.register('PersistentInputComponent');{{/withES2015}}
 
   </div>
 </div>
@@ -497,7 +650,7 @@ editing it. To enable this, we'll store the current value (using
 
 <p>Mixins provide small chunks of self-contained functionality. In our case we can have a mixin that just handles
   auto-selection, another one for real-time input, third for persistent state. Our
-  {{#if isCoffeeScript}}<code class="language-coffeescript">SmartInputComponent</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">SmartInputComponent</code>{{/if}}
+  {{#inlineCode}}SmartInputComponent{{/inlineCode}}
   would then include all three mixins.</p>
 
 <figure>
@@ -505,7 +658,7 @@ editing it. To enable this, we'll store the current value (using
 </figure>
 
 <p>This provides for good separation of concerns. The
-  {{#if isCoffeeScript}}<code class="language-coffeescript">SmartInputComponent</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">SmartInputComponent</code>{{/if}}
+  {{#inlineCode}}SmartInputComponent{{/inlineCode}}
   will implement the specific logic of reading and writing the value to the database, while delegating to mixins to
   handle their own minimal implementation of the single things they're supposed to do.</p>
 
@@ -518,11 +671,11 @@ editing it. To enable this, we'll store the current value (using
   <div class="code">
     <div class="header">spacebars</div>
 
-<pre><code class="language-handlebars">{{|&gt; SmartInputComponent id='demo6'}}</code></pre>
+{{#withSpacebars}}{{|&gt; SmartInputComponent id='demo6'}}{{/withSpacebars}}
 
 {{> languageSwitch}}
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">class SmartInputComponent extends BlazeComponent
+{{#withCoffeeScript}}class SmartInputComponent extends BlazeComponent
   @register 'SmartInputComponent'
 
   template: -&gt;
@@ -539,9 +692,9 @@ editing it. To enable this, we'll store the current value (using
   ]
 
   onChange: (event) -&gt;
-    Values.upsert @data().id, $set: value: event.target.value</code></pre>{{/if}}
+    Values.upsert @data().id, $set: value: event.target.value{{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">var SmartInputComponent = BlazeComponent.extendComponent({
+{{#withJavaScript}}var SmartInputComponent = BlazeComponent.extendComponent({
   template: function () {
     return 'input';
   },
@@ -568,15 +721,46 @@ editing it. To enable this, we'll store the current value (using
       value: event.target.value
     }});
   }
-}).register('SmartInputComponent');</code></pre>{{/if}}
+}).register('SmartInputComponent');{{/withJavaScript}}
+
+{{#withES2015}}class SmartInputComponent extends BlazeComponent {
+  template() {
+    return 'input';
+  }
+
+  mixins() {
+    return [AutoSelectInputMixin, RealTimeInputMixin, PersistentInputMixin];
+  }
+
+  value() {
+    var value = this.callFirstWith(this, 'value');
+    if (value) return value;
+    var doc = Values.findOne(this.data().id);
+    if (doc) return doc.value;
+  }
+
+  events() {
+    return [{
+      'change input': this.onChange
+    }];
+  }
+
+  onChange(event) {
+    Values.upsert(this.data().id, {$set: {
+      value: event.target.value
+    }});
+  }
+}
+
+SmartInputComponent.register('SmartInputComponent');{{/withES2015}}
 
   </div>
 </div>
 
-<p>The code for the {{#if isCoffeeScript}}<code class="language-coffeescript">SmartInputComponent</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">SmartInputComponent</code>{{/if}}
+<p>The code for the {{#inlineCode}}SmartInputComponent{{/inlineCode}}
   above is very similar to what we did so far, with two differences.</p>
 <p>We use the
-  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_mixins">{{#if isCoffeeScript}}<code class="language-coffeescript">mixins</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">mixins</code>{{/if}}</a>
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_mixins">{{#inlineCode}}mixins{{/inlineCode}}</a>
   method to return the list of mixin classes that we want to include in our component.</p>
 
 <aside>
@@ -586,45 +770,56 @@ editing it. To enable this, we'll store the current value (using
     Components.</p>
 </aside>
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">mixins: -&gt;
-  [AutoSelectInputMixin, RealTimeInputMixin, PersistentInputMixin]</code></pre>{{/if}}
+{{#withCoffeeScript}}mixins: -&gt;
+  [AutoSelectInputMixin, RealTimeInputMixin, PersistentInputMixin]{{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">mixins: function () {
+{{#withJavaScript}}mixins: function () {
   return [AutoSelectInputMixin, RealTimeInputMixin, PersistentInputMixin];
-},</code></pre>{{/if}}
+},{{/withJavaScript}}
+
+{{#withES2015}}mixins() {
+  return [AutoSelectInputMixin, RealTimeInputMixin, PersistentInputMixin];
+}{{/withES2015}}
 
 <p>We also need to modify our value helper to call mixins to get a possible value from them.</p>
 
 <aside>
-  <p><a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith">{{#if isCoffeeScript}}<code class="language-coffeescript">callFirstWith</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">callFirstWith</code>{{/if}}</a>
+  <p><a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith">{{#inlineCode}}callFirstWith{{/inlineCode}}</a>
   will find the first of the mixins that have the specified function defined and call just that one. That mixin can call
-  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith">{{#if isCoffeeScript}}<code class="language-coffeescript">callFirstWith</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">callFirstWith</code>{{/if}}</a>
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith">{{#inlineCode}}callFirstWith{{/inlineCode}}</a>
   again to continue traversal of mixins.</p>
   <p>The first argument controls where the method searches for the function. We will look into that
   <a href="#callFirstWith">in more detail later</a>.</p>
 </aside>
 
 <a name="SmartInputComponent"></a>
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">value: -&gt;
-  @callFirstWith(@, 'value') or Values.findOne(@data().id)?.value</code></pre>{{/if}}
+{{#withCoffeeScript}}value: -&gt;
+  @callFirstWith(@, 'value') or Values.findOne(@data().id)?.value{{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">value: function () {
+{{#withJavaScript}}value: function () {
   var value = this.callFirstWith(this, 'value');
   if (value) return value;
   var doc = Values.findOne(this.data().id);
   if (doc) return doc.value;
-},</code></pre>{{/if}}
+},{{/withJavaScript}}
 
-<p>In inheritance we need to {{#if isCoffeeScript}}call <code class="language-coffeescript">super</code>{{/if}}{{#if isJavaScript}}use <code class="language-javascript">__super__</code>{{/if}}
+{{#withES2015}}value() {
+  var value = this.callFirstWith(this, 'value');
+  if (value) return value;
+  var doc = Values.findOne(this.data().id);
+  if (doc) return doc.value;
+}{{/withES2015}}
+
+<p>In inheritance we need to {{#if isCoffeeScript}}call <code class="language-coffeescript">super</code>{{/if}}{{#if isJavaScript}}use <code class="language-javascript">__super__</code>{{/if}}{{#if isES2015}}use <code class="language-javascript">super</code>{{/if}}
   to get the result of a method
   we are overriding &mdash; otherwise the child completely shadows that method. With mixins we have to perform the same
   thing to get the result from a mixin's implementation. That's what the
-  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith">{{#if isCoffeeScript}}<code class="language-coffeescript">callFirstWith</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">callFirstWith</code>{{/if}}</a>
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith">{{#inlineCode}}callFirstWith{{/inlineCode}}</a>
   method does.</p>
 
 <p>If the component defines a behavior, it is overriding behaviors from component's mixins. And mixins do the same in
   the order they are specified in the
-  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_mixins">{{#if isCoffeeScript}}<code class="language-coffeescript">mixins</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">mixins</code>{{/if}}</a>
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_mixins">{{#inlineCode}}mixins{{/inlineCode}}</a>
   method. Those earlier are overriding those later. Methods,
   <a href="https://github.com/peerlibrary/meteor-blaze-components#event-handlers">event handlers</a>, and
   <a href="https://github.com/peerlibrary/meteor-blaze-components#life-cycle-hooks-1">life-cylcle hooks</a> are all
@@ -633,17 +828,17 @@ editing it. To enable this, we'll store the current value (using
 
 <p>Let's quickly glance over all three mixins. The code is very self explanatory.</p>
 
-<p>{{#if isCoffeeScript}}<code class="language-coffeescript">AutoSelectInputMixin</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">AutoSelectInputMixin</code>{{/if}} selects the input on click.</p>
+<p>{{#inlineCode}}AutoSelectInputMixin{{/inlineCode}} selects the input on click.</p>
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">class AutoSelectInputMixin extends BlazeComponent
+{{#withCoffeeScript}}class AutoSelectInputMixin extends BlazeComponent
   events: -&gt; [
     'click input': @onClick
   ]
 
   onClick: (event) -&gt;
-    $(event.target).select()</code></pre>{{/if}}
+    $(event.target).select(){{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">var AutoSelectInputMixin = BlazeComponent.extendComponent({
+{{#withJavaScript}}var AutoSelectInputMixin = BlazeComponent.extendComponent({
   events: function () {
     return [{
       'click input': this.onClick
@@ -653,19 +848,31 @@ editing it. To enable this, we'll store the current value (using
   onClick: function (event) {
     $(event.target).select();
   }
-});</code></pre>{{/if}}
+});{{/withJavaScript}}
 
-<p>{{#if isCoffeeScript}}<code class="language-coffeescript">RealTimeInputMixin</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">RealTimeInputMixin</code>{{/if}} fires change events on every keystroke.</p>
+{{#withES2015}}class AutoSelectInputMixin extends BlazeComponent {
+  events() {
+    return [{
+      'click input': this.onClick
+    }];
+  }
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">class RealTimeInputMixin extends BlazeComponent
+  onClick(event) {
+    $(event.target).select();
+  }
+}{{/withES2015}}
+
+<p>{{#inlineCode}}RealTimeInputMixin{{/inlineCode}} fires change events on every keystroke.</p>
+
+{{#withCoffeeScript}}class RealTimeInputMixin extends BlazeComponent
   events: -&gt; [
     'keyup input': @onKeyUp
   ]
 
   onKeyUp: (event) -&gt;
-    $(event.target).change()</code></pre>{{/if}}
+    $(event.target).change(){{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">var RealTimeInputMixin = BlazeComponent.extendComponent({
+{{#withJavaScript}}var RealTimeInputMixin = BlazeComponent.extendComponent({
   events: function () {
     return [{
       'keyup input': this.onKeyUp
@@ -675,11 +882,23 @@ editing it. To enable this, we'll store the current value (using
   onKeyUp: function (event) {
     $(event.target).change();
   }
-});</code></pre>{{/if}}
+});{{/withJavaScript}}
 
-<p>And the {{#if isCoffeeScript}}<code class="language-coffeescript">PersistentInputMixin</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">PersistentInputMixin</code>{{/if}} stores the value while editing.</p>
+{{#withES2015}}class RealTimeInputMixin extends BlazeComponent {
+  events() {
+    return [{
+      'keyup input': this.onKeyUp
+    }];
+  }
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">class PersistentInputMixin extends BlazeComponent
+  onKeyUp(event) {
+    $(event.target).change();
+  }
+}{{/withES2015}}
+
+<p>And the {{#inlineCode}}PersistentInputMixin{{/inlineCode}} stores the value while editing.</p>
+
+{{#withCoffeeScript}}class PersistentInputMixin extends BlazeComponent
   onCreated: -&gt;
     @storedValue = new ReactiveField()
 
@@ -695,9 +914,9 @@ editing it. To enable this, we'll store the current value (using
     @storedValue @mixinParent().value()
 
   onBlur: (event) -&gt;
-    @storedValue null</code></pre>{{/if}}
+    @storedValue null{{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">var PersistentInputMixin = BlazeComponent.extendComponent({
+{{#withJavaScript}}var PersistentInputMixin = BlazeComponent.extendComponent({
   onCreated: function () {
     this.storedValue = new ReactiveField();
   },
@@ -720,18 +939,43 @@ editing it. To enable this, we'll store the current value (using
   onBlur: function (event) {
     this.storedValue(null);
   }
-});</code></pre>{{/if}}
+});{{/withJavaScript}}
 
-<p><a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_mixinParent">{{#if isCoffeeScript}}<code class="language-coffeescript">mixinParent</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">mixinParent</code>{{/if}}</a>
-  returns the {{#if isCoffeeScript}}<code class="language-coffeescript">SmartInputComponent</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">SmartInputComponent</code>{{/if}} component, so mixin can access its value.
+{{#withES2015}}class PersistentInputMixin extends BlazeComponent {
+  onCreated() {
+    this.storedValue = new ReactiveField();
+  }
+
+  value() {
+    return this.storedValue();
+  }
+
+  events() {
+    return [{
+      'focus input': this.onFocus,
+      'blur input': this.onBlur
+    }];
+  }
+
+  onFocus(event) {
+    this.storedValue(this.mixinParent().value());
+  }
+
+  onBlur(event) {
+    this.storedValue(null);
+  }
+}{{/withES2015}}
+
+<p><a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_mixinParent">{{#inlineCode}}mixinParent{{/inlineCode}}</a>
+  returns the {{#inlineCode}}SmartInputComponent{{/inlineCode}} component, so mixin can access its value.
 </p>
 
 <a name="extreme-decomposition"></a>
 <h2>Extreme Decomposition</h2>
 
 <p>There is an interesting case of a recursion going on in the last example which shows that
-  {{#if isCoffeeScript}}<code class="language-coffeescript">PersistentInputMixin</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">PersistentInputMixin</code>{{/if}} and
-  {{#if isCoffeeScript}}<code class="language-coffeescript">SmartInputComponent</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">SmartInputComponent</code>{{/if}}
+  {{#inlineCode}}PersistentInputMixin{{/inlineCode}} and
+  {{#inlineCode}}SmartInputComponent{{/inlineCode}}
   are not so independent from each other as they could be. If this is good or bad depends,
   but as an exercise let's refactor this example once more.</p>
 
@@ -747,11 +991,11 @@ editing it. To enable this, we'll store the current value (using
   <div class="code">
     <div class="header">spacebars</div>
 
-<pre><code class="language-handlebars">{{|&gt; ExtremeInputComponent id='demo7'}}</code></pre>
+{{#withSpacebars}}{{|&gt; ExtremeInputComponent id='demo7'}}{{/withSpacebars}}
 
 {{> languageSwitch}}
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">class ExtremeInputComponent extends BlazeComponent
+{{#withCoffeeScript}}class ExtremeInputComponent extends BlazeComponent
   @register 'ExtremeInputComponent'
 
   template: -&gt;
@@ -761,9 +1005,9 @@ editing it. To enable this, we'll store the current value (using
     AutoSelectInputMixin, RealTimeInputMixin,
     CancelableInputMixin, FormFieldMixin,
     new StorageMixin Values, 'value', =&gt; @data().id
-  ]</code></pre>{{/if}}
+  ]{{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">var ExtremeInputComponent = BlazeComponent.extendComponent({
+{{#withJavaScript}}var ExtremeInputComponent = BlazeComponent.extendComponent({
   template: function () {
     return 'input';
   },
@@ -777,21 +1021,37 @@ editing it. To enable this, we'll store the current value (using
       }.bind(this))
     ];
   }
-}).register('ExtremeInputComponent');</code></pre>{{/if}}
+}).register('ExtremeInputComponent');{{/withJavaScript}}
+
+{{#withES2015}}class ExtremeInputComponent extends BlazeComponent {
+  template() {
+    return 'input';
+  }
+
+  mixins() {
+    return [
+      AutoSelectInputMixin, RealTimeInputMixin,
+      CancelableInputMixin, FormFieldMixin,
+      new StorageMixin(Values, 'value', () =&gt; this.data().id)
+    ];
+  }
+}
+
+ExtremeInputComponent.register('ExtremeInputComponent');{{/withES2015}}
 
   </div>
 </div>
 
-<p>{{#if isCoffeeScript}}<code class="language-coffeescript">ExtremeInputComponent</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">ExtremeInputComponent</code>{{/if}}
+<p>{{#inlineCode}}ExtremeInputComponent{{/inlineCode}}
   is thin and all the logic is in mixins. It defines only the template and mixins.</p>
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">mixins: -&gt; [
+{{#withCoffeeScript}}mixins: -&gt; [
   AutoSelectInputMixin, RealTimeInputMixin,
   CancelableInputMixin, FormFieldMixin,
   new StorageMixin Values, 'value', =&gt; @data().id
-]</code></pre>{{/if}}
+]{{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">mixins: function () {
+{{#withJavaScript}}mixins: function () {
   return [
     AutoSelectInputMixin, RealTimeInputMixin,
     CancelableInputMixin, FormFieldMixin,
@@ -799,16 +1059,24 @@ editing it. To enable this, we'll store the current value (using
       return this.data().id;
     }.bind(this))
   ];
-}</code></pre>{{/if}}
+}{{/withJavaScript}}
+
+{{#withES2015}}mixins() {
+  return [
+    AutoSelectInputMixin, RealTimeInputMixin,
+    CancelableInputMixin, FormFieldMixin,
+    new StorageMixin(Values, 'value', () =&gt; this.data().id)
+  ];
+}{{/withES2015}}
 
 <p>You can pass as a mixin an already made mixin instance. In this case we are passing a collection, a
-  field name, and a selector to the {{#if isCoffeeScript}}<code class="language-coffeescript">StorageMixin</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">StorageMixin</code>{{/if}}
+  field name, and a selector to the {{#inlineCode}}StorageMixin{{/inlineCode}}
   to make it more reusable.</p>
 
-<p>But let's see mixins. First {{#if isCoffeeScript}}<code class="language-coffeescript">FormFieldMixin</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">FormFieldMixin</code>{{/if}}.
+<p>But let's see mixins. First {{#inlineCode}}FormFieldMixin{{/inlineCode}}.
   It just connects a form field with a getter/setter API which other mixins can provide.</p>
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">class FormFieldMixin extends BlazeComponent
+{{#withCoffeeScript}}class FormFieldMixin extends BlazeComponent
   value: -&gt;
     @mixinParent().callFirstWith(null, 'getValue')
 
@@ -817,9 +1085,9 @@ editing it. To enable this, we'll store the current value (using
   ]
 
   onChange: (event) -&gt;
-    @mixinParent().callFirstWith(null, 'setValue', event.target.value)</code></pre>{{/if}}
+    @mixinParent().callFirstWith(null, 'setValue', event.target.value){{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">var FormFieldMixin = BlazeComponent.extendComponent({
+{{#withJavaScript}}var FormFieldMixin = BlazeComponent.extendComponent({
   value: function () {
     return this.mixinParent().callFirstWith(null, 'getValue');
   },
@@ -833,19 +1101,35 @@ editing it. To enable this, we'll store the current value (using
   onChange: function (event) {
     this.mixinParent().callFirstWith(null, 'setValue', event.target.value);
   }
-});</code></pre>{{/if}}
+});{{/withJavaScript}}
 
-<p>We call {{#if isCoffeeScript}}<code class="language-coffeescript">getValue</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">getValue</code>{{/if}}
+{{#withES2015}}class FormFieldMixin extends BlazeComponent {
+  value() {
+    return this.mixinParent().callFirstWith(null, 'getValue');
+  }
+
+  events() {
+    return [{
+      'change input': this.onChange
+    }];
+  }
+
+  onChange(event) {
+    this.mixinParent().callFirstWith(null, 'setValue', event.target.value);
+  }
+}{{/withES2015}}
+
+<p>We call {{#inlineCode}}getValue{{/inlineCode}}
   on the component or component's mixin, whichever
-  has this method first. We do the same for {{#if isCoffeeScript}}<code class="language-coffeescript">setValue</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">setValue</code>{{/if}},
+  has this method first. We do the same for {{#inlineCode}}setValue{{/inlineCode}},
   just that we also pass the argument to the method.</p>
 
 <p>In our example, the getter/setter API is provided by the
-  {{#if isCoffeeScript}}<code class="language-coffeescript">StorageMixin</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">StorageMixin</code>{{/if}}.
+  {{#inlineCode}}StorageMixin{{/inlineCode}}.
   It uses Meteor collections and MongoDB queries to
   read and store a value into the database. We use constructor arguments to configure its behavior.</p>
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">class StorageMixin extends BlazeComponent
+{{#withCoffeeScript}}class StorageMixin extends BlazeComponent
   constructor: (@collection, @fieldName, @selector) -&gt;
 
   getValue: -&gt;
@@ -854,9 +1138,9 @@ editing it. To enable this, we'll store the current value (using
   setValue: (value) -&gt;
     modifier = $set: {}
     modifier.$set[@fieldName] = value
-    @collection.upsert @selector(), modifier</code></pre>{{/if}}
+    @collection.upsert @selector(), modifier{{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">var StorageMixin = BlazeComponent.extendComponent(function (collection, fieldName, selector) {
+{{#withJavaScript}}var StorageMixin = BlazeComponent.extendComponent(function (collection, fieldName, selector) {
     this.collection = collection;
     this.fieldName = fieldName;
     this.selector = selector;
@@ -873,12 +1157,33 @@ editing it. To enable this, we'll store the current value (using
       modifier.$set[this.fieldName] = value;
       this.collection.upsert(this.selector(), modifier);
     }
-});</code></pre>{{/if}}
+});{{/withJavaScript}}
 
-<p>{{#if isCoffeeScript}}<code class="language-coffeescript">CancelableInputMixin</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">CancelableInputMixin</code>{{/if}}
+{{#withES2015}}class StorageMixin extends BlazeComponent {
+  constructor(collection, fieldName, selector) {
+    this.collection = collection;
+    this.fieldName = fieldName;
+    this.selector = selector;
+  }
+
+  getValue() {
+    var doc = this.collection.findOne(this.selector());
+    if (doc) return doc[this.fieldName];
+  }
+
+  setValue(value) {
+    var modifier = {
+      $set: {}
+    };
+    modifier.$set[this.fieldName] = value;
+    this.collection.upsert(this.selector(), modifier);
+  }
+}{{/withES2015}}
+
+<p>{{#inlineCode}}CancelableInputMixin{{/inlineCode}}
   is the new mixin we are introducing. It is interesting because it is showing how a mixin can depend on another mixin.</p>
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">class CancelableInputMixin extends BlazeComponent
+{{#withCoffeeScript}}class CancelableInputMixin extends BlazeComponent
   mixinParent: (mixinParent) -&gt;
     mixinParent.requireMixin PersistentInputMixin if mixinParent
     super
@@ -891,9 +1196,9 @@ editing it. To enable this, we'll store the current value (using
     # Undo renaming on escape.
     if event.keyCode is 27
       storedValue = @mixinParent().getMixin(PersistentInputMixin).storedValue()
-      $(event.target).val(storedValue).change().blur()</code></pre>{{/if}}
+      $(event.target).val(storedValue).change().blur(){{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">var CancelableInputMixin = BlazeComponent.extendComponent({
+{{#withJavaScript}}var CancelableInputMixin = BlazeComponent.extendComponent({
   mixinParent: function (mixinParent) {
     if (mixinParent) {
       mixinParent.requireMixin(PersistentInputMixin);
@@ -914,24 +1219,47 @@ editing it. To enable this, we'll store the current value (using
       $(event.target).val(storedValue).change().blur();
     }
   }
-});</code></pre>{{/if}}
+});{{/withJavaScript}}
 
-<p><a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith">{{#if isCoffeeScript}}<code class="language-coffeescript">mixinParent</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">mixinParent</code>{{/if}}</a>
+{{#withES2015}}class CancelableInputMixin extends BlazeComponent {
+  mixinParent(mixinParent) {
+    if (mixinParent) {
+      mixinParent.requireMixin(PersistentInputMixin2);
+    }
+    return super.mixinParent(mixinParent);
+  }
+
+  events() {
+    return [{
+      'keydown input': this.onKeyDown
+    }];
+  }
+
+  onKeyDown(event) {
+    // Undo renaming on escape.
+    if (event.keyCode === 27) {
+      var storedValue = this.mixinParent().getMixin(PersistentInputMixin2).storedValue();
+      $(event.target).val(storedValue).change().blur();
+    }
+  }
+}{{/withES2015}}
+
+<p><a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith">{{#inlineCode}}mixinParent{{/inlineCode}}</a>
   is a method which can be used as a setter or getter. When a new mixin is created for a component it is automatically
   called as a setter to store the reference back to the component. This is a great moment to require any dependencies
-  the mixin might need. In our case, {{#if isCoffeeScript}}<code class="language-coffeescript">CancelableInputMixin</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">CancelableInputMixin</code>{{/if}} is relying on the
-  {{#if isCoffeeScript}}<code class="language-coffeescript">PersistentInputMixin</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">PersistentInputMixin</code>{{/if}} to obtain the stored value.</p>
+  the mixin might need. In our case, {{#inlineCode}}CancelableInputMixin{{/inlineCode}} is relying on the
+  {{#inlineCode}}PersistentInputMixin{{/inlineCode}} to obtain the stored value.</p>
 
-<p>In {{#if isCoffeeScript}}<code class="language-coffeescript">onKeyDown</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">onKeyDown</code>{{/if}}
+<p>In {{#inlineCode}}onKeyDown{{/inlineCode}}
   we retrieve the dependency mixin instance by querying
   with its class. This allows us then to call mixin's methods or access its properties. In our case we are
-  using the {{#if isCoffeeScript}}<code class="language-coffeescript">storedValue</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">storedValue</code>{{/if}}
+  using the {{#inlineCode}}storedValue{{/inlineCode}}
   as a public property others can access.</p>
 
-<p>New {{#if isCoffeeScript}}<code class="language-coffeescript">PersistentInputMixin</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">PersistentInputMixin</code>{{/if}}
+<p>New {{#inlineCode}}PersistentInputMixin{{/inlineCode}}
   is similar to the previous implementation, but now is not tied to the component implementation anymore.</p>
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">class PersistentInputMixin extends BlazeComponent
+{{#withCoffeeScript}}class PersistentInputMixin extends BlazeComponent
   onCreated: -&gt;
     @storedValue = new ReactiveField()
 
@@ -947,9 +1275,9 @@ editing it. To enable this, we'll store the current value (using
     @storedValue @mixinParent().callFirstWith(null, 'value')
 
   onBlur: (event) -&gt;
-    @storedValue null</code></pre>{{/if}}
+    @storedValue null{{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">var PersistentInputMixin = BlazeComponent.extendComponent({
+{{#withJavaScript}}var PersistentInputMixin = BlazeComponent.extendComponent({
   onCreated: function () {
     this.storedValue = new ReactiveField();
   },
@@ -972,54 +1300,87 @@ editing it. To enable this, we'll store the current value (using
   onBlur: function (event) {
     this.storedValue(null);
   }
-});</code></pre>{{/if}}
+});{{/withJavaScript}}
+
+{{#withES2015}}class PersistentInputMixin extends BlazeComponent {
+  onCreated() {
+    this.storedValue = new ReactiveField();
+  }
+
+  value() {
+    return this.storedValue() || this.mixinParent().callFirstWith(this, 'value');
+  }
+
+  events() {
+    return [{
+      'focus input': this.onFocus,
+      'blur input': this.onBlur
+    }];
+  }
+
+  onFocus(event) {
+    this.storedValue(this.mixinParent().callFirstWith(null, 'value'));
+  }
+
+  onBlur(event) {
+    this.storedValue(null);
+  }
+}{{/withES2015}}
 
 <a name="callFirstWith"></a>
 Let's look in more detail into two snippets.
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">value: -&gt;
-  @storedValue() or @mixinParent().callFirstWith(@, 'value')</code></pre>{{/if}}
+{{#withCoffeeScript}}value: -&gt;
+  @storedValue() or @mixinParent().callFirstWith(@, 'value'){{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">value: function () {
+{{#withJavaScript}}value: function () {
   return this.storedValue() || this.mixinParent().callFirstWith(this, 'value');
-},</code></pre>{{/if}}
+},{{/withJavaScript}}
 
-<p>We pass {{#if isCoffeeScript}}<code class="language-coffeescript">@</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">this</code>{{/if}} as the first argument to the
-  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith">{{#if isCoffeeScript}}<code class="language-coffeescript">callFirstWith</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">callFirstWith</code>{{/if}}</a>
-  call. This makes Blaze Components search for {{#if isCoffeeScript}}<code class="language-coffeescript">value</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">value</code>{{/if}} method only in mixins
-  after the current one. The idea here is that {{#if isCoffeeScript}}<code class="language-coffeescript">value</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">value</code>{{/if}} was potentially called
+{{#withES2015}}value() {
+  return this.storedValue() || this.mixinParent().callFirstWith(this, 'value');
+}{{/withES2015}}
+
+<p>We pass {{#inlineCoffeeScript}}@{{/inlineCoffeeScript}}{{#inlineJavaScript}}this{{/inlineJavaScript}}{{#inlineES2015}}this{{/inlineES2015}} as the first argument to the
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith">{{#inlineCode}}callFirstWith{{/inlineCode}}</a>
+  call. This makes Blaze Components search for {{#inlineCode}}value{{/inlineCode}} method only in mixins
+  after the current one. The idea here is that {{#inlineCode}}value{{/inlineCode}} was potentially called
   from the component or another mixin before the current one and now we continue and call the
-  {{#if isCoffeeScript}}<code class="language-coffeescript">value</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">value</code>{{/if}} method in the next mixin after the current one.</p>
+  {{#inlineCode}}value{{/inlineCode}} method in the next mixin after the current one.</p>
 
 <p>It is interesting to observe that reactivity propagates as expected. If there is a stored value we register
   a reactive dependency only on the stored value. But if a stored value is not set, we continue calling the method
   on other mixins and potentially register other reactive dependencies. In our case, a dependency from the
-  {{#if isCoffeeScript}}<code class="language-coffeescript">StorageMixin</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">StorageMixin</code>{{/if}}'s
-  {{#if isCoffeeScript}}<code class="language-coffeescript">getValue</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">getValue</code>{{/if}}
+  {{#inlineCode}}StorageMixin{{/inlineCode}}'s
+  {{#inlineCode}}getValue{{/inlineCode}}
   method.</p>
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript">onFocus: (event) -&gt;
-  @storedValue @mixinParent().callFirstWith(null, 'value')</code></pre>{{/if}}
+{{#withCoffeeScript}}onFocus: (event) -&gt;
+  @storedValue @mixinParent().callFirstWith(null, 'value'){{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript">onFocus: function (event) {
+{{#withJavaScript}}onFocus: function (event) {
   this.storedValue(this.mixinParent().callFirstWith(null, 'value'));
-},</code></pre>{{/if}}
+},{{/withJavaScript}}
 
-<p>Here we pass {{#if isCoffeeScript}}<code class="language-coffeescript">null</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">null</code>{{/if}}
+{{#withES2015}}onFocus(event) {
+  this.storedValue(this.mixinParent().callFirstWith(null, 'value'));
+}{{/withES2015}}
+
+<p>Here we pass {{#inlineCode}}null{{/inlineCode}}
   as the first argument to the
-  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith">{{#if isCoffeeScript}}<code class="language-coffeescript">callFirstWith</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">callFirstWith</code>{{/if}}</a>
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith">{{#inlineCode}}callFirstWith{{/inlineCode}}</a>
   because we want to traverse the whole structure of the component and mixins, not just from the current mixin on. We are
   calling a different method than the one in which we are so we can do that, but such call might lead to an infinite
   loop if the other method would call us back. So be careful.</p>
 
 <p>To summarize. With the first argument to
-  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith">{{#if isCoffeeScript}}<code class="language-coffeescript">callFirstWith</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">callFirstWith</code>{{/if}}</a>
-  you control where the method searches for the property. If you pass {{#if isCoffeeScript}}<code class="language-coffeescript">null</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">null</code>{{/if}},
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith">{{#inlineCode}}callFirstWith{{/inlineCode}}</a>
+  you control where the method searches for the property. If you pass {{#inlineCode}}null{{/inlineCode}},
   it searchers both the component and all mixins, in order. If you pass the component (as we did in the
-  <a href="#SmartInputComponent">{{#if isCoffeeScript}}<code class="language-coffeescript">SmartInputComponent</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">SmartInputComponent</code>{{/if}}</a> example), then it
+  <a href="#SmartInputComponent">{{#inlineCode}}SmartInputComponent{{/inlineCode}}</a> example), then it
   starts with only mixins. If you pass a mixin, then it starts with the mixin after it. The rule of thumb is that you
-  can simply pass {{#if isCoffeeScript}}<code class="language-coffeescript">@</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">this</code>{{/if}} to call the next available implementation of the
-  property.</p>
+  can simply pass {{#inlineCoffeeScript}}@{{/inlineCoffeeScript}}{{#inlineJavaScript}}this{{/inlineJavaScript}}{{#inlineES2015}}this{{/inlineES2015}}
+  to call the next available implementation of the property.</p>
 
 <a name="more"></a>
 <h2>More</h2>
@@ -1044,13 +1405,15 @@ Copy/paste when adding a new section.
   <div class="code">
     <div class="header">spacebars</div>
 
-<pre><code class="language-handlebars"></code></pre>
+{{#withSpacebars}}{{/withSpacebars}}
 
 {{> languageSwitch}}
 
-{{#if isCoffeeScript}}<pre><code class="language-coffeescript"></code></pre>{{/if}}
+{{#withCoffeeScript}}{{/withCoffeeScript}}
 
-{{#if isJavaScript}}<pre><code class="language-javascript"></code></pre>{{/if}}
+{{#withJavaScript}}{{/withJavaScript}}
+
+{{#withES2015}}{{/withES2015}}
 
   </div>
 </div>
@@ -1088,5 +1451,49 @@ Copy/paste when adding a new section.
 </template>
 
 <template name="languageSwitch">
-  <div class="header">{{#if isCoffeeScript}}coffeescript&nbsp;&nbsp;&nbsp;<a href="">javascript</a>{{/if}}{{#if isJavaScript}}<a href="">coffeescript</a>&nbsp;&nbsp;&nbsp;javascript{{/if}}</div>
+  <div class="header">{{#if isES2015}}es2015&nbsp;&nbsp;&nbsp;<a href="">javascript</a>&nbsp;&nbsp;&nbsp;<a href="">coffeescript</a>{{/if}}{{#if isCoffeeScript}}<a href="">es2015</a>&nbsp;&nbsp;&nbsp;<a href="">javascript</a>&nbsp;&nbsp;&nbsp;coffeescript{{/if}}{{#if isJavaScript}}<a href="">es2015</a>&nbsp;&nbsp;&nbsp;javascript&nbsp;&nbsp;&nbsp;<a href="">coffeescript</a>{{/if}}</div>
+</template>
+
+<template name="languageChooser">
+  <select id="languageChooser">
+    <option value="es2015" selected={{isES2015}}>ES2015</option>
+    <option value="javascript" selected={{isJavaScript}}>vanilla JavaScript</option>
+    <option value="coffeescript" selected={{isCoffeeScript}}>CoffeeScript</option>
+  </select>
+</template>
+
+<template name="withSpacebars">
+<pre><code class="language-handlebars">{{> Template.contentBlock}}</code></pre>
+</template>
+
+<template name="withCoffeeScript">
+{{#if isCoffeeScript}}<pre><code class="language-coffeescript">{{> Template.contentBlock}}</code></pre>{{/if}}
+</template>
+
+<template name="withJavaScript">
+{{#if isJavaScript}}<pre><code class="language-javascript">{{> Template.contentBlock}}</code></pre>{{/if}}
+</template>
+
+<template name="withES2015">
+{{#if isES2015}}<pre><code class="language-javascript">{{> Template.contentBlock}}</code></pre>{{/if}}
+</template>
+
+<template name="inlineSpacebars">
+<code class="language-handlebars">{{> Template.contentBlock}}</code>
+</template>
+
+<template name="inlineCoffeeScript">
+{{#if isCoffeeScript}}<code class="language-coffeescript">{{> Template.contentBlock}}</code>{{/if}}
+</template>
+
+<template name="inlineJavaScript">
+{{#if isJavaScript}}<code class="language-javascript">{{> Template.contentBlock}}</code>{{/if}}
+</template>
+
+<template name="inlineES2015">
+{{#if isES2015}}<code class="language-javascript">{{> Template.contentBlock}}</code>{{/if}}
+</template>
+
+<template name="inlineCode">
+{{#if isCoffeeScript}}<code class="language-coffeescript">{{> Template.contentBlock}}</code>{{/if}}{{#if isJavaScript}}<code class="language-javascript">{{> Template.contentBlock}}</code>{{/if}}{{#if isES2015}}<code class="language-javascript">{{> Template.contentBlock}}</code>{{/if}}
 </template>
