@@ -822,6 +822,15 @@ class MainComponent3 extends BlazeComponent
   template: ->
     'mainComponent3'
 
+  foobar: ->
+    # An ugly way to extend a base template helper.
+    helper = @_componentInternals.templateBase.__helpers.get 'foobar'
+
+    # Blaze template helpers expect current data context bound to "this".
+    result = helper.call @currentData()
+
+    'super:' + result
+
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
 
@@ -2774,7 +2783,7 @@ class BasicTestCase extends ClassyTestCase
     ->
       @assertEqual trim($('.mainComponent3').html()), trim """
         <button>Foo1</button>
-        <p>mainComponent3.foobar/{"a":"1","b":"2"}/{"a":"1","b":"2"}/{"a":"1","b":"2"}/{"top":"42"}</p>
+        <p>super:mainComponent3.foobar/{"a":"1","b":"2"}/{"a":"1","b":"2"}/{"a":"1","b":"2"}/{"top":"42"}</p>
         <button>Foo2</button>
         <p>mainComponent3.foobar2/{"a":"3","b":"4"}/{"a":"3","b":"4"}/{"a":"1","b":"2"}/{"a":"1","b":"2"}</p>
         <p>mainComponent3.foobar3/{"a":"1","b":"2"}/{"a":"1","b":"2"}/{"a":"1","b":"2"}/{"top":"42"}</p>

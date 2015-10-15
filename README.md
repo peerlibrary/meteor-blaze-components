@@ -1019,17 +1019,18 @@ template()
 Extend this method and return the name of a [Blaze template](http://docs.meteor.com/#/full/templates_api) or template
 object itself. By default it returns the [component name](#user-content-reference_class_componentName).
 
-Template content will be used to render component's DOM content. It is recommended that you use templates only
-to specify DOM content and that you do not define any template helpers, event handlers, and life-cycle hooks on the
-template itself but instead define it at the component level. But to support wrapping existing templates into Blaze
-Components so that you can extend or override their behavior, Blaze Components inherit template helpers, event handlers,
-and life-cycle hooks from the template in a backwards compatible way. All preexisting template helpers are copied
-over to the component as component's methods. Preexisting event handlers are returned from the default
-[`events`](#user-content-reference_instance_events) method. Default [life-cycle hooks](#life-cycle-hooks-1) methods
-call template's preexisting life-cycle hooks as well.
+Template content will be used to render component's DOM content.
 
-All component methods are available in the template as template helpers. Template helpers are bound to the component
-itself in `this`.
+All component methods (properties, more precisely) are available in the template as template helpers. Template helpers
+are bound to the component itself in `this`.
+
+It is recommended that you use templates only to specify DOM content and that you do not define any template helpers,
+event handlers, and life-cycle hooks on the template itself but instead define it at the component level. But to support
+wrapping existing templates into Blaze Components so that you can extend or override their behavior, Blaze Components
+reuse template helpers, event handlers, and life-cycle hooks from the template in a backwards compatible way. Preexisting
+template helpers are searched if the component does not have a property with the requested helper name. Preexisting
+event handlers are returned from the default [`events`](#user-content-reference_instance_events) method.
+Default [life-cycle hooks](#life-cycle-hooks-1) methods call template's preexisting life-cycle hooks as well.
 
 You can include other templates (to keep individual templates manageable) and components.
 

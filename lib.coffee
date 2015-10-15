@@ -55,6 +55,7 @@ Spacebars.include = (templateOrFunction, args...) ->
 # Now the order of the lookup will be, in order:
 #   a helper of the current template
 #   a property of the current component
+#   a helper of the current component's base template
 #   the name of a component
 #   the name of a template
 #   global helper
@@ -114,6 +115,11 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
   # TODO: We should provide a BaseComponent.getComponentsNamespace method instead of accessing components directly.
   if name and name of BlazeComponent.components
     return new ComponentsNamespaceReference name, templateInstance
+
+  # Maybe a preexisting template helper on the component's base template.
+  if component
+    if (helper = component._componentInternals?.templateBase?.__helpers.get name)?
+      return wrapHelper bindDataContext(helper), templateInstance
 
   null
 
@@ -497,14 +503,9 @@ class BlazeComponent extends BaseComponent
       # TODO: Should we cache these templates based on (componentName, templateBase) pair? We could use two levels of ES2015 Maps, componentName -> templateBase -> template. What about component arguments changing?
       template = new Blaze.Template "BlazeComponent.#{ component.componentName() or 'unnamed' }", templateBase.renderFunction
 
-      # We convert helpers to methods (so that they can be extended), if there are any.
-      # Events and hooks are taken care of in the related methods in the base class.
-      for own helperName, helper of templateBase.__helpers
-        do (helper) ->
-          component[helperName.substr(1)] = (args...) ->
-            # Template helpers have data context bound to "this".
-            data = Blaze.getData() ? {}
-            helper.apply data, args
+      # We lookup preexisting template helpers in Blaze._getTemplateHelper, if the component does not have
+      # a property with the same name. Preexisting event handlers and life-cycle hooks are taken care of
+      # in the related methods in the base class.
 
       component._componentInternals ?= {}
       component._componentInternals.templateBase = templateBase
