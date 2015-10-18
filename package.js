@@ -20,6 +20,10 @@ Package.onUse(function (api) {
     'spacebars'
   ]);
 
+  api.imply([
+    'templating'
+  ]);
+
   // Internal dependencies.
   api.use([
     'peerlibrary:base-component@0.13.0'
