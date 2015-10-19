@@ -49,7 +49,7 @@ observe-sequence@1.0.7
 ordered-dict@1.0.4
 peerlibrary:assert@0.2.5
 peerlibrary:base-component@0.13.0
-peerlibrary:blaze-components@0.13.0
+peerlibrary:blaze-components@0.14.0
 peerlibrary:computed-field@0.3.0
 peerlibrary:dimsum@0.1.8_6
 peerlibrary:reactive-field@0.1.0
