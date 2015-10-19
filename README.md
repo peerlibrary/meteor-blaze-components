@@ -12,6 +12,9 @@ global scope.
 
 Client side only.
 
+Table of contents
+-----------------
+
 * [Installation](#installation)
 * [Components](#components)
 * [JavaScript and CoffeeScript support](#javascript-and-coffeescript-support)
