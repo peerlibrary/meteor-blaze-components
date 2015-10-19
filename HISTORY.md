@@ -1,5 +1,7 @@
 ## vNEXT
 
+## v0.14.0, 2015-Oct-19
+
 * Now multiple methods (`data`, `subscriptionsReady`, `$`, `find`, `findAll`, `firstNode`, `lastNode`) which access
   data context and DOM are additionally reactive any you can use them even before the component is rendered or even
   created and they will trigger invalidation when DOM, for example, becomes ready.
