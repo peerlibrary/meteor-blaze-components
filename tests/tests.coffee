@@ -1168,17 +1168,17 @@ class BasicTestCase extends ClassyTestCase
     thirdComponentId = firstSteps a: "5", b: "6"
     forthComponentId = firstSteps {}
 
-    secondSteps = (componendId, dataContext) =>
+    secondSteps = (componentId, dataContext) =>
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertEqual change.data, dataContext
 
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertTrue change.subscriptionsReady
 
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertTrue change.isCreated
 
     secondSteps firstComponentId, a: "1", b: "2"
@@ -1233,46 +1233,46 @@ class BasicTestCase extends ClassyTestCase
 
     fifthComponentId = firstSteps a: "10", b: "11"
 
-    forthSteps = (componendId) =>
+    forthSteps = (componentId) =>
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertFalse change.isCreated
 
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertFalse change.isRendered
 
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertIsUndefined change.firstNode
 
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertIsUndefined change.lastNode
 
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertIsUndefined change.find
 
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertIsUndefined change.findAll
 
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertIsUndefined change.$
 
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertTrue change.isDestroyed
 
       # TODO: Not sure why this change happens?
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertIsUndefined change.data
 
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertIsUndefined change.subscriptionsReady
 
     forthSteps forthComponentId
@@ -1438,46 +1438,46 @@ class BasicTestCase extends ClassyTestCase
 
     fifthComponentId = firstSteps a: "10", b: "11"
 
-    forthSteps = (componendId) =>
+    forthSteps = (componentId) =>
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertFalse change.isCreated
 
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertFalse change.isRendered
 
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertIsUndefined change.firstNode
 
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertIsUndefined change.lastNode
 
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertIsUndefined change.find
 
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertIsUndefined change.findAll
 
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertIsUndefined change.$
 
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertTrue change.isDestroyed
 
       # TODO: Not sure why this change happens?
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertIsUndefined change.data
 
       change = stateChanges.shift()
-      @assertEqual change.componentId, componendId
+      @assertEqual change.componentId, componentId
       @assertIsUndefined change.subscriptionsReady
 
     forthSteps forthComponentId
