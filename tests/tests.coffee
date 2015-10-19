@@ -1323,7 +1323,7 @@ class BasicTestCase extends ClassyTestCase
 
       change = stateChanges.shift()
       @assertEqual change.componentId, componentId
-      @assertFalse change.isCreated
+      @assertTrue change.isCreated
 
       change = stateChanges.shift()
       @assertEqual change.componentId, componentId
@@ -1379,22 +1379,6 @@ class BasicTestCase extends ClassyTestCase
     secondComponentId = firstSteps a:"3a", b: "4a"
     thirdComponentId = firstSteps a: "5", b: "6"
     forthComponentId = firstSteps {}
-
-    change = stateChanges.shift()
-    @assertEqual change.componentId, firstComponentId
-    @assertTrue change.isCreated
-
-    change = stateChanges.shift()
-    @assertEqual change.componentId, secondComponentId
-    @assertTrue change.isCreated
-
-    change = stateChanges.shift()
-    @assertEqual change.componentId, thirdComponentId
-    @assertTrue change.isCreated
-
-    change = stateChanges.shift()
-    @assertEqual change.componentId, forthComponentId
-    @assertTrue change.isCreated
 
     thirdSteps = (componentId) =>
       change = stateChanges.shift()
@@ -1481,11 +1465,6 @@ class BasicTestCase extends ClassyTestCase
       @assertIsUndefined change.subscriptionsReady
 
     forthSteps forthComponentId
-
-    change = stateChanges.shift()
-    @assertEqual change.componentId, fifthComponentId
-    @assertTrue change.isCreated
-
     forthSteps firstComponentId
     forthSteps secondComponentId
     forthSteps thirdComponentId

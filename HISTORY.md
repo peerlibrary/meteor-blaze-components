@@ -23,6 +23,7 @@
   implementations of related Blaze Components methods. Preexisting template helpers are searched if a requested
   component instance method is not found.
   Fixes [#71](https://github.com/peerlibrary/meteor-blaze-components/issues/71).
+* Made sure that reactive life-cycle variables are set before corresponding callbacks are called.
 
 ## v0.13.0, 2015-Jun-24
 

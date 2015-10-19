@@ -541,6 +541,17 @@ class BlazeComponent extends BaseComponent
           @component._componentInternals.templateInstance ?= new ReactiveField @, (a, b) -> a is b
           @component._componentInternals.templateInstance @
 
+          @component._componentInternals.isCreated ?= new ReactiveField true
+          @component._componentInternals.isCreated true
+
+          # Maybe we are re-rendering the component. So let's initialize variables just to be sure.
+
+          @component._componentInternals.isRendered ?= new ReactiveField false
+          @component._componentInternals.isRendered false
+
+          @component._componentInternals.isDestroyed ?= new ReactiveField false
+          @component._componentInternals.isDestroyed false
+
           try
             # We have to know if we should call onCreated on the mixin inside the requireMixin or not. We want to call
             # it only once. If it requireMixin is called from onCreated of another mixin, then it will be added at the
@@ -553,19 +564,14 @@ class BlazeComponent extends BaseComponent
           finally
             delete @component._componentInternals.inOnCreated
 
-          @component._componentInternals.isCreated ?= new ReactiveField true
-          @component._componentInternals.isCreated true
-
-          # Maybe we are re-rendering the component. So let's initialize variables just to be sure.
-
-          @component._componentInternals.isRendered ?= new ReactiveField false
-          @component._componentInternals.isRendered false
-
-          @component._componentInternals.isDestroyed ?= new ReactiveField false
-          @component._componentInternals.isDestroyed false
-
         onRendered: ->
           # @ is a template instance.
+
+          @component._componentInternals.isRendered ?= new ReactiveField true
+          @component._componentInternals.isRendered true
+
+          Tracker.nonreactive =>
+            assert.equal @component._componentInternals.isCreated(), true
 
           try
             # Same as for onCreated above.
@@ -575,12 +581,6 @@ class BlazeComponent extends BaseComponent
               componentOrMixin.onRendered()
           finally
             delete @component._componentInternals.inOnRendered
-
-          @component._componentInternals.isRendered ?= new ReactiveField true
-          @component._componentInternals.isRendered true
-
-          Tracker.nonreactive =>
-            assert.equal @component._componentInternals.isCreated(), true
 
         onDestroyed: ->
           @autorun (computation) =>
