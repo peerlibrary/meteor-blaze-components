@@ -1802,17 +1802,17 @@ class BasicTestCase extends ClassyTestCase
 
       @component = new ParentComponent()
 
-      @childrenComponents = []
+      @childComponents = []
       @handle = Tracker.autorun (computation) =>
-        @childrenComponents.push @component.childrenComponents()
+        @childComponents.push @component.childComponents()
 
-      @childrenComponentsChild1 = []
+      @childComponentsChild1 = []
       @handleChild1 = Tracker.autorun (computation) =>
-        @childrenComponentsChild1.push @component.childrenComponentsWith childName: 'child1'
+        @childComponentsChild1.push @component.childComponentsWith childName: 'child1'
 
-      @childrenComponentsChild1DOM = []
+      @childComponentsChild1DOM = []
       @handleChild1DOM = Tracker.autorun (computation) =>
-        @childrenComponentsChild1DOM.push @component.childrenComponentsWith (child) ->
+        @childComponentsChild1DOM.push @component.childComponentsWith (child) ->
           # We can search also based on DOM. We use domChanged to be sure check is called
           # every time DOM changes. But it does not seem to be really necessary in this
           # particular test (it passes without it as well). On the other hand domChanged
@@ -1826,16 +1826,16 @@ class BasicTestCase extends ClassyTestCase
       Tracker.afterFlush @expect()
   ,
     ->
-      @assertEqual @component.childrenComponents(), []
+      @assertEqual @component.childComponents(), []
 
       reactiveChild1 true
 
       Tracker.afterFlush @expect()
   ,
     ->
-      @assertEqual @component.childrenComponents().length, 1
+      @assertEqual @component.childComponents().length, 1
 
-      @child1Component = @component.childrenComponents()[0]
+      @child1Component = @component.childComponents()[0]
 
       @assertEqual @child1Component.parentComponent(), @component
 
@@ -1844,9 +1844,9 @@ class BasicTestCase extends ClassyTestCase
       Tracker.afterFlush @expect()
   ,
     ->
-      @assertEqual @component.childrenComponents().length, 2
+      @assertEqual @component.childComponents().length, 2
 
-      @child2Component = @component.childrenComponents()[1]
+      @child2Component = @component.childComponents()[1]
 
       @assertEqual @child2Component.parentComponent(), @component
 
@@ -1855,7 +1855,7 @@ class BasicTestCase extends ClassyTestCase
       Tracker.afterFlush @expect()
   ,
     ->
-      @assertEqual @component.childrenComponents(), [@child2Component]
+      @assertEqual @component.childComponents(), [@child2Component]
       @assertEqual @child1Component.parentComponent(), null
 
       reactiveChild2 false
@@ -1863,7 +1863,7 @@ class BasicTestCase extends ClassyTestCase
       Tracker.afterFlush @expect()
   ,
     ->
-      @assertEqual @component.childrenComponents(), []
+      @assertEqual @component.childComponents(), []
       @assertEqual @child2Component.parentComponent(), null
 
       Blaze.remove @renderedComponent
@@ -1872,7 +1872,7 @@ class BasicTestCase extends ClassyTestCase
       @handleChild1.stop()
       @handleChild1DOM.stop()
 
-      @assertEqual @childrenComponents, [
+      @assertEqual @childComponents, [
         []
         [@child1Component]
         [@child1Component, @child2Component]
@@ -1880,13 +1880,13 @@ class BasicTestCase extends ClassyTestCase
         []
       ]
 
-      @assertEqual @childrenComponentsChild1, [
+      @assertEqual @childComponentsChild1, [
         []
         [@child1Component]
         []
       ]
 
-      @assertEqual @childrenComponentsChild1DOM, [
+      @assertEqual @childComponentsChild1DOM, [
         []
         [@child1Component]
         []
@@ -2131,7 +2131,7 @@ class BasicTestCase extends ClassyTestCase
         @states.push ['outer', @outerComponent.isCreated(), @outerComponent.isRendered(), @outerComponent.isDestroyed()]
 
       @autorun =>
-        @states.push ['inner', @outerComponent.childrenComponents()[0]?.isCreated(), @outerComponent.childrenComponents()[0]?.isRendered(), @outerComponent.childrenComponents()[0]?.isDestroyed()]
+        @states.push ['inner', @outerComponent.childComponents()[0]?.isCreated(), @outerComponent.childComponents()[0]?.isRendered(), @outerComponent.childComponents()[0]?.isDestroyed()]
 
       @renderedComponent = Blaze.render @outerComponent.renderComponent(), $('body').get(0)
 
@@ -2542,7 +2542,7 @@ class BasicTestCase extends ClassyTestCase
       Tracker.afterFlush @expect()
   ,
     ->
-      @innerComponent = @outerComponent.childrenComponents()[0]
+      @innerComponent = @outerComponent.childComponents()[0]
 
       @assertTrue @innerComponent
 

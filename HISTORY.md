@@ -1,5 +1,10 @@
 ## vNEXT
 
+* Renamed two methods once more. Fixes [#56](https://github.com/peerlibrary/meteor-blaze-components/issues/94).
+  Renamed methods:
+    * `childrenComponents` to `childComponents`
+    * `childrenComponentsWith` to `childComponentsWith`
+
 ## v0.14.0, 2015-Oct-19
 
 * Now multiple methods (`data`, `subscriptionsReady`, `$`, `find`, `findAll`, `firstNode`, `lastNode`) which access

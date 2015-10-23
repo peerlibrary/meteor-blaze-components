@@ -588,7 +588,7 @@ class BlazeComponent extends BaseComponent
 
             # We wait for all children components to be destroyed first.
             # See https://github.com/meteor/meteor/issues/4166
-            return if @component.childrenComponents().length
+            return if @component.childComponents().length
             computation.stop()
 
             Tracker.nonreactive =>

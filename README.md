@@ -1169,9 +1169,9 @@ Returns the component's parent component, if it exists, or `null`. A reactive da
 The parent component is available only after the component has been [created](#user-content-reference_instance_onCreated),
 and until is [destroyed](#user-content-reference_instance_onDestroyed).
 
-<a name="reference_instance_childrenComponents"></a>
+<a name="reference_instance_childComponents"></a>
 ```javascript
-childrenComponents([nameOrComponent])
+childComponents([nameOrComponent])
 ```
 
 Returns an array of component's children components. A reactive data source. The order of children components in the
@@ -1182,9 +1182,9 @@ You can specify a component name, class, or instance to limit the resulting chil
 The children components are in the array only after they have been [created](#user-content-reference_instance_onCreated),
 and until they are [destroyed](#user-content-reference_instance_onDestroyed).
 
-<a name="reference_instance_childrenComponentsWith"></a>
+<a name="reference_instance_childComponentsWith"></a>
 ```javascript
-childrenComponentsWith(propertyOrMatcherOrFunction)
+childComponentsWith(propertyOrMatcherOrFunction)
 ```
 
 Returns an array of component's children components which match a `propertyOrMatcherOrFunction` predicate. A reactive
@@ -1201,9 +1201,9 @@ for which the function returns a true value are matched
 Examples:
 
 ```javascript
-component.childrenComponentsWith('propertyName');
-component.childrenComponentsWith({propertyName: 42});
-component.childrenComponentsWith((child, parent) => child.propertyName === 42);
+component.childComponentsWith('propertyName');
+component.childComponentsWith({propertyName: 42});
+component.childComponentsWith((child, parent) => child.propertyName === 42);
 ```
 
 The children components are in the array only after they have been [created](#user-content-reference_instance_onCreated),
