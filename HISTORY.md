@@ -1,5 +1,7 @@
 ## vNEXT
 
+## v0.15.0, 2015-Oct-23
+
 * Renamed two methods once more. Fixes [#56](https://github.com/peerlibrary/meteor-blaze-components/issues/94).
   Renamed methods:
     * `childrenComponents` to `childComponents`
