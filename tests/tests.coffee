@@ -864,7 +864,7 @@ class BasicTestCase extends ClassyTestCase
       #{ FOO_COMPONENT_CONTENT() }
     """
 
-  testComponents: =>
+  testComponents: ->
     componentTemplate = BlazeComponent.getComponent('MainComponent').renderComponent()
 
     @assertTrue componentTemplate
@@ -927,22 +927,22 @@ class BasicTestCase extends ClassyTestCase
 
     @assertEqual trim(output), trim COMPONENT_CONTENT 'SubComponent'
 
-  testGetComponent: =>
+  testGetComponent: ->
     @assertEqual BlazeComponent.getComponent('MainComponent'), MainComponent
     @assertEqual BlazeComponent.getComponent('FooComponent'), FooComponent
     @assertEqual BlazeComponent.getComponent('SubComponent'), SubComponent
     @assertEqual BlazeComponent.getComponent('unknown'), null
 
-  testComponentName: =>
+  testComponentName: ->
     @assertEqual MainComponent.componentName(), 'MainComponent'
     @assertEqual FooComponent.componentName(), 'FooComponent'
     @assertEqual SubComponent.componentName(), 'SubComponent'
     @assertEqual BlazeComponent.componentName(), null
 
-  testSelfRegister: =>
+  testSelfRegister: ->
     @assertTrue BlazeComponent.getComponent 'SelfRegisterComponent'
 
-  testUnregisteredComponent: =>
+  testUnregisteredComponent: ->
     componentTemplate = UnregisteredComponent.renderComponent()
 
     @assertTrue componentTemplate
@@ -981,7 +981,7 @@ class BasicTestCase extends ClassyTestCase
     # We have not extended any helper on purpose, so they should still use "UnregisteredComponent".
     @assertEqual trim(output), trim COMPONENT_CONTENT 'SelfNameUnregisteredComponent', 'UnregisteredComponent'
 
-  testErrors: =>
+  testErrors: ->
     @assertThrows =>
       BlazeComponent.register()
     ,
@@ -1593,7 +1593,7 @@ class BasicTestCase extends ClassyTestCase
       @assertArgumentsOnCreatedStateChanges ArgumentsComponent.onCreatedStateChanges
   ]
 
-  testExistingClassHierarchy: =>
+  testExistingClassHierarchy: ->
     # We want to allow one to reuse existing class hierarchy they might already have and only
     # add the Meteor components "nature" to it. This is simply done by extending the base class
     # and base class prototype with those from a wanted base class and prototype.
@@ -1606,7 +1606,7 @@ class BasicTestCase extends ClassyTestCase
 
     @assertEqual trim(output), trim COMPONENT_CONTENT 'ExistingClassHierarchyComponent', 'ExistingClassHierarchyComponent', 'ExistingClassHierarchyBase'
 
-  testMixins: =>
+  testMixins: ->
     DependencyMixin.calls = []
 
     componentTemplate = BlazeComponent.getComponent('WithMixinsComponent').renderComponent()
@@ -1637,7 +1637,7 @@ class BasicTestCase extends ClassyTestCase
       #{ COMPONENT_CONTENT 'SubComponent' }
     """
 
-  testMixinEvents: =>
+  testMixinEvents: ->
     FirstMixin.calls = []
     SecondMixin.calls = []
     SubComponent.calls = []
@@ -1690,7 +1690,7 @@ class BasicTestCase extends ClassyTestCase
 
     Blaze.remove renderedComponent
 
-  testAfterCreateValue: =>
+  testAfterCreateValue: ->
     # We want to test that also properties added in onCreated hook are available in the template.
     componentTemplate = BlazeComponent.getComponent('AfterCreateValueComponent').renderComponent()
 
@@ -1728,7 +1728,7 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
   ]
 
-  testBlockComponent: =>
+  testBlockComponent: ->
     output = Blaze.toHTMLWithData Template.testBlockComponent,
       top: '42'
 
@@ -2470,7 +2470,7 @@ class BasicTestCase extends ClassyTestCase
   ]
 
   # Test for https://github.com/peerlibrary/meteor-blaze-components/issues/30.
-  testTemplateDynamic: =>
+  testTemplateDynamic: ->
     componentTemplate = BlazeComponent.getComponent('TemplateDynamicTestComponent').renderComponent()
 
     @assertTrue componentTemplate
