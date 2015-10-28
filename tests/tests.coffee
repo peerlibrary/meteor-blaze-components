@@ -2785,4 +2785,13 @@ class BasicTestCase extends ClassyTestCase
       ]
   ]
 
+  # Test for https://github.com/peerlibrary/meteor-blaze-components/issues/30.
+  testLexicalArguments: ->
+    return unless Blaze._lexicalBindingLookup
+
+    output = Blaze.toHTMLWithData Template.testLexicalArguments,
+      test: ['42']
+
+    @assertEqual trim(output), trim """42"""
+
 ClassyTestCase.addTest new BasicTestCase()

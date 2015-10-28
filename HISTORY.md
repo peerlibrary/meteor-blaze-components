@@ -1,5 +1,9 @@
 ## vNEXT
 
+* Made sure backported Blaze lookup.js is not applied under Meteor 1.2. It is needed only for older Meteor versions
+  and it interferes with Meteor 1.2.
+  Fixes [#100](https://github.com/peerlibrary/meteor-blaze-components/issues/100).
+
 ## v0.15.0, 2015-Oct-23
 
 * Renamed two methods once more. Fixes [#56](https://github.com/peerlibrary/meteor-blaze-components/issues/94).
