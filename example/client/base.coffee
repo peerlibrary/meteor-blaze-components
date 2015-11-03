@@ -1,12 +1,12 @@
 class MainComponent extends BlazeComponent
   foobar: ->
-    "#{ @componentName() }/MainComponent.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{@componentName()}/MainComponent.foobar/#{EJSON.stringify @data()}/#{EJSON.stringify @currentData()}/#{@currentComponent().componentName()}"
 
   foobar2: ->
-    "#{ @componentName() }/MainComponent.foobar2/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{@componentName()}/MainComponent.foobar2/#{EJSON.stringify @data()}/#{EJSON.stringify @currentData()}/#{@currentComponent().componentName()}"
 
   foobar3: ->
-    "#{ @componentName() }/MainComponent.foobar3/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{@componentName()}/MainComponent.foobar3/#{EJSON.stringify @data()}/#{EJSON.stringify @currentData()}/#{@currentComponent().componentName()}"
 
   isMainComponent: ->
     @constructor is MainComponent
@@ -29,10 +29,10 @@ class SubComponent extends MainComponent
     'MainComponent'
 
   foobar: ->
-    "#{ @componentName() }/SubComponent.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{@componentName()}/SubComponent.foobar/#{EJSON.stringify @data()}/#{EJSON.stringify @currentData()}/#{@currentComponent().componentName()}"
 
   foobar2: ->
-    "#{ @componentName() }/SubComponent.foobar2/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{@componentName()}/SubComponent.foobar2/#{EJSON.stringify @data()}/#{EJSON.stringify @currentData()}/#{@currentComponent().componentName()}"
 
   # We on purpose do not override foobar3.
 

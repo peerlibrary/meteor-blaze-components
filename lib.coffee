@@ -35,7 +35,7 @@ class ComponentsNamespaceReference
 originalDot = Spacebars.dot
 Spacebars.dot = (value, args...) ->
   if value instanceof ComponentsNamespaceReference
-    return Blaze._getTemplate "#{ value.namespace }.#{ args.join '.' }", value.templateInstance
+    return Blaze._getTemplate "#{value.namespace}.#{args.join '.'}", value.templateInstance
 
   originalDot value, args...
 
@@ -164,11 +164,11 @@ getTemplateBase = (component) ->
     componentTemplate = component.template()
     if _.isString componentTemplate
       templateBase = Template[componentTemplate]
-      throw new Error "Template '#{ componentTemplate }' cannot be found." unless templateBase
+      throw new Error "Template '#{componentTemplate}' cannot be found." unless templateBase
     else if componentTemplate
       templateBase = componentTemplate
     else
-      throw new Error "Template for the component '#{ component.componentName() or 'unnamed' }' not provided."
+      throw new Error "Template for the component '#{component.componentName() or 'unnamed'}' not provided."
 
     templateBase
 
@@ -196,7 +196,7 @@ callTemplateBaseHooks = (component, hookName) ->
 addEvents = (view, component) ->
   eventsList = component.events()
 
-  throw new Error "'events' method from the component '#{ component.componentName() or 'unnamed' }' did not return a list of event maps." unless _.isArray eventsList
+  throw new Error "'events' method from the component '#{component.componentName() or 'unnamed'}' did not return a list of event maps." unless _.isArray eventsList
 
   for events in eventsList
     eventMap = {}
@@ -301,7 +301,7 @@ class BlazeComponent extends BaseComponent
           mixinInstanceComponent = @constructor.getComponent nameOrMixin
         else
           mixinInstanceComponent = BlazeComponent.getComponent nameOrMixin
-        throw new Error "Unknown mixin '#{ nameOrMixin }'." unless mixinInstanceComponent
+        throw new Error "Unknown mixin '#{nameOrMixin}'." unless mixinInstanceComponent
         mixinInstance = new mixinInstanceComponent()
       else if _.isFunction nameOrMixin
         mixinInstance = new nameOrMixin()
@@ -501,7 +501,7 @@ class BlazeComponent extends BaseComponent
       # Create a new component template based on the Blaze template. We want our own template
       # because the same Blaze template could be reused between multiple components.
       # TODO: Should we cache these templates based on (componentName, templateBase) pair? We could use two levels of ES2015 Maps, componentName -> templateBase -> template. What about component arguments changing?
-      template = new Blaze.Template "BlazeComponent.#{ component.componentName() or 'unnamed' }", templateBase.renderFunction
+      template = new Blaze.Template "BlazeComponent.#{component.componentName() or 'unnamed'}", templateBase.renderFunction
 
       # We lookup preexisting template helpers in Blaze._getTemplateHelper, if the component does not have
       # a property with the same name. Preexisting event handlers and life-cycle hooks are taken care of

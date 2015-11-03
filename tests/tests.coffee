@@ -13,13 +13,13 @@ class MainComponent extends BlazeComponent
     'MainComponent2'
 
   foobar: ->
-    "#{ @componentName() }/MainComponent.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{@componentName()}/MainComponent.foobar/#{EJSON.stringify @data()}/#{EJSON.stringify @currentData()}/#{@currentComponent().componentName()}"
 
   foobar2: ->
-    "#{ @componentName() }/MainComponent.foobar2/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{@componentName()}/MainComponent.foobar2/#{EJSON.stringify @data()}/#{EJSON.stringify @currentData()}/#{@currentComponent().componentName()}"
 
   foobar3: ->
-    "#{ @componentName() }/MainComponent.foobar3/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{@componentName()}/MainComponent.foobar3/#{EJSON.stringify @data()}/#{EJSON.stringify @currentData()}/#{@currentComponent().componentName()}"
 
   isMainComponent: ->
     @constructor is MainComponent
@@ -51,10 +51,10 @@ class SubComponent extends MainComponent
   @calls: []
 
   foobar: ->
-    "#{ @componentName() }/SubComponent.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{@componentName()}/SubComponent.foobar/#{EJSON.stringify @data()}/#{EJSON.stringify @currentData()}/#{@currentComponent().componentName()}"
 
   foobar2: ->
-    "#{ @componentName() }/SubComponent.foobar2/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{@componentName()}/SubComponent.foobar2/#{EJSON.stringify @data()}/#{EJSON.stringify @currentData()}/#{@currentComponent().componentName()}"
 
   # We on purpose do not override foobar3.
 
@@ -65,10 +65,10 @@ BlazeComponent.register 'SubComponent', SubComponent
 
 class UnregisteredComponent extends SubComponent
   foobar: ->
-    "#{ @componentName() }/UnregisteredComponent.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{@componentName()}/UnregisteredComponent.foobar/#{EJSON.stringify @data()}/#{EJSON.stringify @currentData()}/#{@currentComponent().componentName()}"
 
   foobar2: ->
-    "#{ @componentName() }/UnregisteredComponent.foobar2/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{@componentName()}/UnregisteredComponent.foobar2/#{EJSON.stringify @data()}/#{EJSON.stringify @currentData()}/#{@currentComponent().componentName()}"
 
 # Name has to be set manually.
 UnregisteredComponent.componentName 'UnregisteredComponent'
@@ -289,13 +289,13 @@ Template.ourNamespaceComponentArgumentsTestTemplate.helpers
 
 class ExistingClassHierarchyBase
   foobar: ->
-    "#{ @componentName() }/ExistingClassHierarchyBase.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{@componentName()}/ExistingClassHierarchyBase.foobar/#{EJSON.stringify @data()}/#{EJSON.stringify @currentData()}/#{@currentComponent().componentName()}"
 
   foobar2: ->
-    "#{ @componentName() }/ExistingClassHierarchyBase.foobar2/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{@componentName()}/ExistingClassHierarchyBase.foobar2/#{EJSON.stringify @data()}/#{EJSON.stringify @currentData()}/#{@currentComponent().componentName()}"
 
   foobar3: ->
-    "#{ @componentName() }/ExistingClassHierarchyBase.foobar3/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{@componentName()}/ExistingClassHierarchyBase.foobar3/#{EJSON.stringify @data()}/#{EJSON.stringify @currentData()}/#{@currentComponent().componentName()}"
 
 class ExistingClassHierarchyChild extends ExistingClassHierarchyBase
 
@@ -313,10 +313,10 @@ class ExistingClassHierarchyComponent extends ExistingClassHierarchyBaseComponen
     'MainComponent2'
 
   foobar: ->
-    "#{ @componentName() }/ExistingClassHierarchyComponent.foobar/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{@componentName()}/ExistingClassHierarchyComponent.foobar/#{EJSON.stringify @data()}/#{EJSON.stringify @currentData()}/#{@currentComponent().componentName()}"
 
   foobar2: ->
-    "#{ @componentName() }/ExistingClassHierarchyComponent.foobar2/#{ EJSON.stringify @data() }/#{ EJSON.stringify @currentData() }/#{ @currentComponent().componentName() }"
+    "#{@componentName()}/ExistingClassHierarchyComponent.foobar2/#{EJSON.stringify @data()}/#{EJSON.stringify @currentData()}/#{@currentComponent().componentName()}"
 
   # We on purpose do not override foobar3.
 
@@ -326,13 +326,13 @@ class FirstMixin extends BlazeComponent
   @calls: []
 
   foobar: ->
-    "#{ @mixinParent().componentName() }/FirstMixin.foobar/#{ EJSON.stringify @mixinParent().data() }/#{ EJSON.stringify @mixinParent().currentData() }/#{ @mixinParent().currentComponent().componentName() }"
+    "#{@mixinParent().componentName()}/FirstMixin.foobar/#{EJSON.stringify @mixinParent().data()}/#{EJSON.stringify @mixinParent().currentData()}/#{@mixinParent().currentComponent().componentName()}"
 
   foobar2: ->
-    "#{ @mixinParent().componentName() }/FirstMixin.foobar2/#{ EJSON.stringify @mixinParent().data() }/#{ EJSON.stringify @mixinParent().currentData() }/#{ @mixinParent().currentComponent().componentName() }"
+    "#{@mixinParent().componentName()}/FirstMixin.foobar2/#{EJSON.stringify @mixinParent().data()}/#{EJSON.stringify @mixinParent().currentData()}/#{@mixinParent().currentComponent().componentName()}"
 
   foobar3: ->
-    "#{ @mixinParent().componentName() }/FirstMixin.foobar3/#{ EJSON.stringify @mixinParent().data() }/#{ EJSON.stringify @mixinParent().currentData() }/#{ @mixinParent().currentComponent().componentName() }"
+    "#{@mixinParent().componentName()}/FirstMixin.foobar3/#{EJSON.stringify @mixinParent().data()}/#{EJSON.stringify @mixinParent().currentData()}/#{@mixinParent().currentComponent().componentName()}"
 
   isMainComponent: ->
     @mixinParent().constructor is WithMixinsComponent
@@ -353,10 +353,10 @@ class SecondMixin extends BlazeComponent
     'MainComponent2'
 
   foobar: ->
-    "#{ @mixinParent().componentName() }/SecondMixin.foobar/#{ EJSON.stringify @mixinParent().data() }/#{ EJSON.stringify @mixinParent().currentData() }/#{ @mixinParent().currentComponent().componentName() }"
+    "#{@mixinParent().componentName()}/SecondMixin.foobar/#{EJSON.stringify @mixinParent().data()}/#{EJSON.stringify @mixinParent().currentData()}/#{@mixinParent().currentComponent().componentName()}"
 
   foobar2: ->
-    "#{ @mixinParent().componentName() }/SecondMixin.foobar2/#{ EJSON.stringify @mixinParent().data() }/#{ EJSON.stringify @mixinParent().currentData() }/#{ @mixinParent().currentComponent().componentName() }"
+    "#{@mixinParent().componentName()}/SecondMixin.foobar2/#{EJSON.stringify @mixinParent().data()}/#{EJSON.stringify @mixinParent().currentData()}/#{@mixinParent().currentComponent().componentName()}"
 
   # We on purpose do not provide foobar3.
 
@@ -768,7 +768,7 @@ Template.mainComponent3.helpers
     else
       assert.equal Template.instance().view.template, Template.mainComponent3
 
-    "mainComponent3.foobar/#{ EJSON.stringify @ }/#{ EJSON.stringify Template.currentData() }/#{ EJSON.stringify Blaze.getData(Template.instance().view) }/#{ EJSON.stringify Template.parentData() }"
+    "mainComponent3.foobar/#{EJSON.stringify @}/#{EJSON.stringify Template.currentData()}/#{EJSON.stringify Blaze.getData(Template.instance().view)}/#{EJSON.stringify Template.parentData()}"
 
   foobar2: ->
     if Template.instance().component
@@ -776,7 +776,7 @@ Template.mainComponent3.helpers
     else
       assert.equal Template.instance().view.template, Template.mainComponent3
 
-    "mainComponent3.foobar2/#{ EJSON.stringify @ }/#{ EJSON.stringify Template.currentData() }/#{ EJSON.stringify Blaze.getData(Template.instance().view) }/#{ EJSON.stringify Template.parentData() }"
+    "mainComponent3.foobar2/#{EJSON.stringify @}/#{EJSON.stringify Template.currentData()}/#{EJSON.stringify Blaze.getData(Template.instance().view)}/#{EJSON.stringify Template.parentData()}"
 
   foobar3: ->
     if Template.instance().component
@@ -784,7 +784,7 @@ Template.mainComponent3.helpers
     else
       assert.equal Template.instance().view.template, Template.mainComponent3
 
-    "mainComponent3.foobar3/#{ EJSON.stringify @ }/#{ EJSON.stringify Template.currentData() }/#{ EJSON.stringify Blaze.getData(Template.instance().view) }/#{ EJSON.stringify Template.parentData() }"
+    "mainComponent3.foobar3/#{EJSON.stringify @}/#{EJSON.stringify Template.currentData()}/#{EJSON.stringify Blaze.getData(Template.instance().view)}/#{EJSON.stringify Template.parentData()}"
 
 Template.mainComponent3.onCreated ->
   assert not Tracker.active
@@ -849,19 +849,19 @@ class BasicTestCase extends ClassyTestCase
     mainComponent ?= 'MainComponent'
 
     """
-      <p>Main component: #{ componentName }</p>
+      <p>Main component: #{componentName}</p>
       <button>Foo1</button>
-      <p>#{ componentName }/#{ helperComponentName }.foobar/{"top":"42"}/{"top":"42"}/#{ componentName }</p>
+      <p>#{componentName}/#{helperComponentName}.foobar/{"top":"42"}/{"top":"42"}/#{componentName}</p>
       <button>Foo2</button>
-      <p>#{ componentName }/#{ helperComponentName }.foobar2/{"top":"42"}/{"a":"1","b":"2"}/#{ componentName }</p>
-      <p>#{ componentName }/#{ mainComponent }.foobar3/{"top":"42"}/{"top":"42"}/#{ componentName }</p>
+      <p>#{componentName}/#{helperComponentName}.foobar2/{"top":"42"}/{"a":"1","b":"2"}/#{componentName}</p>
+      <p>#{componentName}/#{mainComponent}.foobar3/{"top":"42"}/{"top":"42"}/#{componentName}</p>
       <p>Subtemplate</p>
       <button>Foo1</button>
-      <p>#{ componentName }/#{ helperComponentName }.foobar/{"top":"42"}/{"top":"42"}/#{ componentName }</p>
+      <p>#{componentName}/#{helperComponentName}.foobar/{"top":"42"}/{"top":"42"}/#{componentName}</p>
       <button>Foo2</button>
-      <p>#{ componentName }/#{ helperComponentName }.foobar2/{"top":"42"}/{"a":"3","b":"4"}/#{ componentName }</p>
-      <p>#{ componentName }/#{ mainComponent }.foobar3/{"top":"42"}/{"top":"42"}/#{ componentName }</p>
-      #{ FOO_COMPONENT_CONTENT() }
+      <p>#{componentName}/#{helperComponentName}.foobar2/{"top":"42"}/{"a":"3","b":"4"}/#{componentName}</p>
+      <p>#{componentName}/#{mainComponent}.foobar3/{"top":"42"}/{"top":"42"}/#{componentName}</p>
+      #{FOO_COMPONENT_CONTENT()}
     """
 
   testComponents: ->
@@ -873,9 +873,9 @@ class BasicTestCase extends ClassyTestCase
       top: '42'
 
     @assertEqual trim(output), trim """
-      #{ COMPONENT_CONTENT 'MainComponent' }
+      #{COMPONENT_CONTENT 'MainComponent'}
       <hr>
-      #{ COMPONENT_CONTENT 'SubComponent' }
+      #{COMPONENT_CONTENT 'SubComponent'}
     """
 
     componentTemplate = new (BlazeComponent.getComponent('MainComponent'))().renderComponent()
@@ -886,9 +886,9 @@ class BasicTestCase extends ClassyTestCase
       top: '42'
 
     @assertEqual trim(output), trim """
-      #{ COMPONENT_CONTENT 'MainComponent' }
+      #{COMPONENT_CONTENT 'MainComponent'}
       <hr>
-      #{ COMPONENT_CONTENT 'SubComponent' }
+      #{COMPONENT_CONTENT 'SubComponent'}
     """
 
     componentTemplate = BlazeComponent.getComponent('FooComponent').renderComponent()
@@ -1617,9 +1617,9 @@ class BasicTestCase extends ClassyTestCase
       top: '42'
 
     @assertEqual trim(output), trim """
-      #{ COMPONENT_CONTENT 'WithMixinsComponent', 'SecondMixin', 'FirstMixin' }
+      #{COMPONENT_CONTENT 'WithMixinsComponent', 'SecondMixin', 'FirstMixin'}
       <hr>
-      #{ COMPONENT_CONTENT 'SubComponent' }
+      #{COMPONENT_CONTENT 'SubComponent'}
     """
 
     @assertEqual DependencyMixin.calls, [true]
@@ -1632,9 +1632,9 @@ class BasicTestCase extends ClassyTestCase
       top: '42'
 
     @assertEqual trim(output), trim """
-      #{ COMPONENT_CONTENT 'WithMixinsComponent', 'SecondMixin', 'FirstMixin' }
+      #{COMPONENT_CONTENT 'WithMixinsComponent', 'SecondMixin', 'FirstMixin'}
       <hr>
-      #{ COMPONENT_CONTENT 'SubComponent' }
+      #{COMPONENT_CONTENT 'SubComponent'}
     """
 
   testMixinEvents: ->
@@ -2479,9 +2479,9 @@ class BasicTestCase extends ClassyTestCase
       top: '42'
 
     @assertEqual trim(output), trim """
-      #{ COMPONENT_CONTENT 'TemplateDynamicTestComponent', 'MainComponent' }
+      #{COMPONENT_CONTENT 'TemplateDynamicTestComponent', 'MainComponent'}
       <hr>
-      #{ COMPONENT_CONTENT 'SubComponent' }
+      #{COMPONENT_CONTENT 'SubComponent'}
     """
 
     componentTemplate = new (BlazeComponent.getComponent('TemplateDynamicTestComponent'))().renderComponent()
@@ -2492,9 +2492,9 @@ class BasicTestCase extends ClassyTestCase
       top: '42'
 
     @assertEqual trim(output), trim """
-      #{ COMPONENT_CONTENT 'TemplateDynamicTestComponent', 'MainComponent' }
+      #{COMPONENT_CONTENT 'TemplateDynamicTestComponent', 'MainComponent'}
       <hr>
-      #{ COMPONENT_CONTENT 'SubComponent' }
+      #{COMPONENT_CONTENT 'SubComponent'}
     """
 
     componentTemplate = BlazeComponent.getComponent('FooComponent').renderComponent()
