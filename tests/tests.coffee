@@ -36,6 +36,12 @@ class MainComponent extends BlazeComponent
       'click': @onClick
     ]
 
+  onCreated: ->
+    self = @
+    # To test that a computation is bound to the component.
+    @autorun (computation) ->
+      assert.equal @, self
+
 BlazeComponent.register 'MainComponent', MainComponent
 
 # Template should match registered name.

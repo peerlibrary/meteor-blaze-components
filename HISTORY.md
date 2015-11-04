@@ -1,5 +1,7 @@
 ## vNEXT
 
+* `this` inside a `component.autorun` computation is bound automatically to the component.
+
 ## v0.15.1, 2015-Oct-27
 
 * Made sure backported Blaze lookup.js is not applied under Meteor 1.2. It is needed only for older Meteor versions

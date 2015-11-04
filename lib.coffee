@@ -745,6 +745,15 @@ class BlazeComponent extends BaseComponent
 
     undefined
 
+  # The same as it would be generated automatically, only that the runFunc gets bound to the component.
+  autorun: (runFunc) ->
+    templateInstance = Tracker.nonreactive =>
+      @_componentInternals?.templateInstance?()
+
+    throw new Error "The component has to be created before calling 'autorun'." unless templateInstance
+
+    templateInstance.autorun _.bind runFunc, @
+
 SUPPORTS_REACTIVE_INSTANCE = [
   'subscriptionsReady'
 ]
@@ -755,8 +764,9 @@ REQUIRE_RENDERED_INSTANCE = [
   'findAll'
 ]
 
-# We copy utility methods ($, findAll, autorun, subscribe, etc.) from the template instance prototype.
-for methodName, method of Blaze.TemplateInstance::
+# We copy utility methods ($, findAll, subscribe, etc.) from the template instance prototype,
+# if a method with the same name does not exist already.
+for methodName, method of (Blaze.TemplateInstance::) when methodName not of (BlazeComponent::)
   do (methodName, method) ->
     if methodName in SUPPORTS_REACTIVE_INSTANCE
       BlazeComponent::[methodName] = (args...) ->
