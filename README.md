@@ -16,6 +16,7 @@ Table of contents
 -----------------
 
 * [Installation](#installation)
+* [Additional packages](#additional-packages)
 * [Components](#components)
 * [JavaScript and CoffeeScript support](#javascript-and-coffeescript-support)
 * [Accessing data context](#accessing-data-context)
@@ -46,6 +47,13 @@ Installation
 ```
 meteor add peerlibrary:blaze-components
 ```
+
+Additional packages
+-------------------
+
+* [peerlibrary:blaze-layout-component](https://github.com/peerlibrary/blaze-layout-component) – A
+  simple [Blaze Component](https://github.com/peerlibrary/meteor-blaze-components) for use with
+  [Flow Router](https://github.com/kadirahq/flow-router)'s [layout manager](https://github.com/kadirahq/blaze-layout)
 
 Components
 ----------
