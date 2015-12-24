@@ -2800,4 +2800,13 @@ class BasicTestCase extends ClassyTestCase
 
     @assertEqual trim(output), trim """42"""
 
+  # Test for https://github.com/peerlibrary/meteor-blaze-components/issues/109.
+  testIndex: ->
+    return unless Blaze._lexicalBindingLookup
+
+    output = Blaze.toHTMLWithData Template.testIndex,
+      test: ['42']
+
+    @assertEqual trim(output), trim """0"""
+
 ClassyTestCase.addTest new BasicTestCase()
