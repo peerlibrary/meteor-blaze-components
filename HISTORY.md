@@ -1,6 +1,11 @@
 ## vNEXT
 
 * `this` inside a `component.autorun` computation is bound automatically to the component.
+* `currentComponent` inside template content wrapped with a block helper component returns
+  the closest block helper component.
+* Block helpers components are correctly positioned inside the component tree.
+  Fixes [#50](https://github.com/peerlibrary/meteor-blaze-components/issues/50) and
+  [#51](https://github.com/peerlibrary/meteor-blaze-components/issues/51).
 
 ## v0.15.1, 2015-Oct-27
 

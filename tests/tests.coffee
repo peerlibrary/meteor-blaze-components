@@ -722,7 +722,7 @@ class RenderRowComponent extends BlazeComponent
   @register 'RenderRowComponent'
 
   parentComponentRenderRow: ->
-    @parentComponent().renderRow()
+    @parentComponent().parentComponent().renderRow()
 
 class TestingComponentDebug extends BlazeComponentDebug
   @structure: {}
@@ -2566,78 +2566,78 @@ class BasicTestCase extends ClassyTestCase
   ,
     ->
       @assertEqual trim($('.extraTestBlockComponent').html()), trim """
-        <h2>Names and emails and components (CaptionComponent/CaptionComponent)</h2>
-        <h3 class="insideBlockHelperTemplate">(ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent)</h3>
+        <h2>Names and emails and components (CaptionComponent/CaptionComponent/CaptionComponent)</h2>
+        <h3 class="insideBlockHelperTemplate">(ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent)</h3>
         <table>
           <thead>
             <tr>
               <th>Name</th>
               <th class="insideBlockHelper">Email</th>
-              <th>Component (ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent)</th>
+              <th>Component (ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent)</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>Foo</td>
               <td class="insideContent">foo@example.com</td>
-              <td>TestBlockComponent/TestBlockComponent</td>
+              <td>TestBlockComponent/TestBlockComponent/ExtraTableWrapperBlockComponent</td>
             </tr>
             <tr>
               <td>Bar</td>
               <td class="insideContentComponent">bar@example.com</td>
-              <td>RowComponent/RowComponent</td>
+              <td>RowComponent/RowComponent/RowComponent</td>
             </tr>
             <tr>
               <td>Baz</td>
               <td class="insideContentComponent">baz@example.com</td>
-              <td>RowComponent/RowComponent</td>
+              <td>RowComponent/RowComponent/RowComponent</td>
             </tr>
             <tr>
               <td>Works</td>
               <td class="insideContentComponent">nameFromComponent1@example.com</td>
-              <td>RowComponent/RowComponent</td>
+              <td>RowComponent/RowComponent/RowComponent</td>
             </tr>
             <tr>
               <td>Bac</td>
               <td class="insideContentComponent">bac@example.com</td>
-              <td>RowComponent/RowComponent</td>
+              <td>RowComponent/RowComponent/RowComponent</td>
             </tr>
             <tr>
               <td>Works</td>
               <td class="insideContentComponent">nameFromComponent2@example.com</td>
-              <td>RowComponent/RowComponent</td>
+              <td>RowComponent/RowComponent/RowComponent</td>
             </tr>
             <tr>
               <td>Works</td>
               <td class="insideContentComponent">nameFromComponent3@example.com</td>
-              <td>RowComponent/RowComponent</td>
+              <td>RowComponent/RowComponent/RowComponent</td>
             </tr>
             <tr>
               <td>Bam</td>
               <td class="insideContentComponent">bam@example.com</td>
-              <td>RowComponent/RowComponent</td>
+              <td>RowComponent/RowComponent/RowComponent</td>
             </tr>
             <tr>
               <td>Bav</td>
               <td class="insideContentComponent">bav@example.com</td>
-              <td>RowComponent/RowComponent</td>
+              <td>RowComponent/RowComponent/RowComponent</td>
             </tr>
             <tr>
               <td>Bak</td>
               <td class="insideContentComponent">bak@example.com</td>
-              <td>RowComponent/RowComponent</td>
+              <td>RowComponent/RowComponent/RowComponent</td>
             </tr>
             <tr>
               <td>Bal</td>
               <td class="insideContentComponent">bal@example.com</td>
-              <td>RowComponent/RowComponent</td>
+              <td>RowComponent/RowComponent/RowComponent</td>
             </tr>
           </tbody>
           <tfoot>
             <tr>
               <th>Name</th>
               <th class="insideBlockHelperComponent">Email</th>
-              <th>Component (FootComponent/FootComponent)</th>
+              <th>Component (FootComponent/FootComponent/FootComponent)</th>
             </tr>
           </tfoot>
         </table>
@@ -2657,55 +2657,54 @@ class BasicTestCase extends ClassyTestCase
             data: {block: '43'}
             children: [{}]
           ,
-            component: 'FootComponent'
-            data: {block: '43'}
+            component: 'RowComponent'
+            data: {name: 'Bar', email: 'bar@example.com'}
             children: [{}]
           ,
-            {}
-          ]
-        ,
-          component: 'RowComponent'
-          data: {name: 'Bar', email: 'bar@example.com'}
-          children: [{}]
-        ,
-          component: 'RowComponent'
-          data: {name: 'Baz', email: 'baz@example.com'}
-          children: [{}]
-        ,
-          component: 'RowComponent'
-          data: {name: 'Works', email: 'nameFromComponent1@example.com'}
-          children: [{}]
-        ,
-          component: 'RowComponent'
-          data: {name: 'Bac', email: 'bac@example.com'}
-          children: [{}]
-        ,
-          component: 'RowComponent'
-          data: {name: 'Works', email: 'nameFromComponent2@example.com'}
-          children: [{}]
-        ,
-          component: 'RowComponent'
-          data: {name: 'Works', email: 'nameFromComponent3@example.com'}
-          children: [{}]
-        ,
-          component: 'RowComponent'
-          data: {name: 'Bam', email: 'bam@example.com'}
-          children: [{}]
-        ,
-          component: 'RowComponent'
-          data: {name: 'Bav', email: 'bav@example.com'}
-          children: [{}]
-        ,
-          component: 'RenderRowComponent'
-          data: {top: '42'}
-          children: [
-# TODO: Currently does not register component parent correctly because of: https://github.com/meteor/meteor/issues/4386
-#            component: 'RowComponent'
-#            data: {name: 'Bak', email: 'bak@example.com'}
-#            children: [{}]
-#          ,
             component: 'RowComponent'
-            data: {name: 'Bal', email: 'bal@example.com'}
+            data: {name: 'Baz', email: 'baz@example.com'}
+            children: [{}]
+          ,
+            component: 'RowComponent'
+            data: {name: 'Works', email: 'nameFromComponent1@example.com'}
+            children: [{}]
+          ,
+            component: 'RowComponent'
+            data: {name: 'Bac', email: 'bac@example.com'}
+            children: [{}]
+          ,
+            component: 'RowComponent'
+            data: {name: 'Works', email: 'nameFromComponent2@example.com'}
+            children: [{}]
+          ,
+            component: 'RowComponent'
+            data: {name: 'Works', email: 'nameFromComponent3@example.com'}
+            children: [{}]
+          ,
+            component: 'RowComponent'
+            data: {name: 'Bam', email: 'bam@example.com'}
+            children: [{}]
+          ,
+            component: 'RowComponent'
+            data: {name: 'Bav', email: 'bav@example.com'}
+            children: [{}]
+          ,
+            component: 'RenderRowComponent'
+            data: {top: '42'}
+            children: [
+              component: 'RowComponent'
+              data: {name: 'Bak', email: 'bak@example.com'}
+              children: [{}]
+            ,
+              component: 'RowComponent'
+              data: {name: 'Bal', email: 'bal@example.com'}
+              children: [{}]
+            ,
+              {}
+            ]
+          ,
+            component: 'FootComponent'
+            data: {block: '43'}
             children: [{}]
           ,
             {}

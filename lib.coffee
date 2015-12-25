@@ -1,6 +1,9 @@
-getTemplateInstance = (view) ->
+getTemplateInstance = (view, skipBlockHelpers) ->
   while view and not view._templateInstance
-    view = view.parentView
+    if skipBlockHelpers
+      view = view.parentView
+    else
+      view = view.originalParentView or view.parentView
 
   view?._templateInstance
 
@@ -8,22 +11,25 @@ getTemplateInstance = (view) ->
 # It allows us to not have a dependency on template-extension package and that we can work with Iron
 # Router which has its own DynamicTemplate class which is not patched by template-extension and thus
 # does not have .get() method.
-templateInstanceToComponent = (templateInstanceFunc) ->
+templateInstanceToComponent = (templateInstanceFunc, skipBlockHelpers) ->
   templateInstance = templateInstanceFunc?()
 
   # Iron Router uses its own DynamicTemplate which is not a proper template instance, but it is
   # passed in as such, so we want to find the real one before we start searching for the component.
-  templateInstance = getTemplateInstance templateInstance?.view
+  templateInstance = getTemplateInstance templateInstance?.view, skipBlockHelpers
 
   while templateInstance
     return templateInstance.component if 'component' of templateInstance
 
-    templateInstance = getTemplateInstance templateInstance.view.parentView
+    if skipBlockHelpers
+      templateInstance = getTemplateInstance templateInstance.view.parentView, skipBlockHelpers
+    else
+      templateInstance = getTemplateInstance (templateInstance.view.originalParentView or templateInstance.view.parentView), skipBlockHelpers
 
   null
 
-getTemplateInstanceFunction = (view) ->
-  templateInstance = getTemplateInstance view
+getTemplateInstanceFunction = (view, skipBlockHelpers) ->
+  templateInstance = getTemplateInstance view, skipBlockHelpers
   ->
     templateInstance
 
@@ -54,8 +60,8 @@ Spacebars.include = (templateOrFunction, args...) ->
 #
 # Now the order of the lookup will be, in order:
 #   a helper of the current template
-#   a property of the current component
-#   a helper of the current component's base template
+#   a property of the current component (not the BlazeComponent.currentComponent() though, but @component())
+#   a helper of the current component's base template (not the BlazeComponent.currentComponent() though, but @component())
 #   the name of a component
 #   the name of a template
 #   global helper
@@ -102,7 +108,9 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
   # Blaze.View::lookup should not introduce any reactive dependencies, but we can simply ignore reactivity here because
   # template instance probably cannot change without reconstructing the component as well.
   component = Tracker.nonreactive ->
-    templateInstanceToComponent templateInstance
+    # We want to skip any block helper. {{method}} should resolve to
+    # {{component.method}} and not to {{currentComponent.method}}.
+    templateInstanceToComponent templateInstance, true
 
   # Component.
   if component
@@ -193,6 +201,26 @@ callTemplateBaseHooks = (component, hookName) ->
 
   return
 
+wrapViewAndTemplate = (currentView, f) ->
+  # For template content wrapped inside the block helper, we want to skip the block
+  # helper when searching for corresponding template. This means that Template.instance()
+  # will return the component's template, while BlazeComponent.currentComponent() will
+  # return the component inside.
+  templateInstance = getTemplateInstanceFunction currentView, true
+
+  # We set template instance to match the current view (mostly, only not when inside
+  # the block helper). The latter we use for BlazeComponent.currentComponent(), but
+  # it is good that both template instance and current view correspond to each other
+  # as much as possible.
+  withTemplateInstanceFunc templateInstance, ->
+    # We set view based on the current view so that inside event handlers
+    # BlazeComponent.currentData() (and Blaze.getData() and Template.currentData())
+    # returns data context of event target and not component/template. Moreover,
+    # inside event handlers BlazeComponent.currentComponent() returns the component
+    # of event target.
+    Blaze._withCurrentView currentView, ->
+      f()
+
 addEvents = (view, component) ->
   eventsList = component.events()
 
@@ -207,19 +235,11 @@ addEvents = (view, component) ->
           event = args[0]
 
           currentView = Blaze.getView event.currentTarget
-          templateInstance = getTemplateInstanceFunction currentView
+          wrapViewAndTemplate currentView, =>
+            handler.apply component, args
 
-          # We set template instance based on the current target so that inside event handlers
-          # BlazeComponent.currentComponent() returns the component of event target.
-          withTemplateInstanceFunc templateInstance, ->
-            # We set view based on the current target so that inside event handlers
-            # BlazeComponent.currentData() (and Blaze.getData() and Template.currentData())
-            # returns data context of event target and not component/template.
-            Blaze._withCurrentView currentView, ->
-              handler.apply component, args
-
-          # Make sure CoffeeScript does not return anything. Returning from event
-          # handlers is deprecated.
+          # Make sure CoffeeScript does not return anything.
+          # Returning from event handlers is deprecated.
           return
 
     Blaze._addEventMap view, eventMap, view
@@ -230,7 +250,13 @@ originalGetTemplate = Blaze._getTemplate
 Blaze._getTemplate = (name, templateInstance) ->
   # Blaze.View::lookup should not introduce any reactive dependencies, so we are making sure it is so.
   template = Tracker.nonreactive ->
-    parentComponent = templateInstanceToComponent templateInstance
+    if Blaze.currentView
+      parentComponent = BlazeComponent.currentComponent()
+    else
+      # We do not skip block helpers to assure that when block helpers are used,
+      # component tree integrates them nicely into a tree.
+      parentComponent = templateInstanceToComponent templateInstance, false
+
     BlazeComponent.getComponent(name)?.renderComponent parentComponent
   return template if template and (template instanceof Blaze.Template or _.isFunction template)
 
@@ -265,8 +291,12 @@ class BlazeComponent extends BaseComponent
     # This uses the same check if the argument is a DOM element that Blaze._DOMRange.forElement does.
     throw new Error "Expected DOM element." unless domElement.nodeType is Node.ELEMENT_NODE
 
-    templateInstanceToComponent =>
-      getTemplateInstance Blaze.getView domElement
+    # For DOM elements we want to return the component which matches the template
+    # with that DOM element and not the component closest in the component tree.
+    # So we skip the block helpers. (If DOM element is rendered by the block helper
+    # this will find that block helper template/component.)
+    templateInstance = getTemplateInstanceFunction Blaze.getView(domElement), true
+    templateInstanceToComponent templateInstance, true
 
   mixins: ->
     []
@@ -428,10 +458,9 @@ class BlazeComponent extends BaseComponent
         data = null
 
       if data?.constructor isnt share.argumentsConstructor
-        templateInstance = getTemplateInstanceFunction Blaze.currentView
-
-        # So that currentComponent in the constructor can return the component inside which this component has been constructed.
-        return withTemplateInstanceFunc templateInstance, ->
+        # So that currentComponent in the constructor can return the component
+        # inside which this component has been constructed.
+        return wrapViewAndTemplate Blaze.currentView, =>
           component = new componentClass()
 
           return component.renderComponent parentComponent
@@ -467,10 +496,9 @@ class BlazeComponent extends BaseComponent
           # Arguments were passed in as a data context. We want currentData in the constructor to return the
           # original (parent) data context. Like we were not passing in arguments as a data context.
           template = Blaze._withCurrentView Blaze.currentView.parentView.parentView, =>
-            templateInstance = getTemplateInstanceFunction Blaze.currentView
-
-            # So that currentComponent in the constructor can return the component inside which this component has been constructed.
-            return withTemplateInstanceFunc templateInstance, ->
+            # So that currentComponent in the constructor can return the component
+            # inside which this component has been constructed.
+            return wrapViewAndTemplate Blaze.currentView, =>
               # Use arguments for the constructor.
               component = new componentClass nonreactiveArguments...
 
@@ -678,7 +706,8 @@ class BlazeComponent extends BaseComponent
 
     view = Tracker.nonreactive =>
       @_componentInternals.templateInstance().view
-    templateInstance = getTemplateInstanceFunction view
+    # We skip block helpers to match Blaze behavior.
+    templateInstance = getTemplateInstanceFunction view, true
 
     for events in @_componentInternals.templateBase.__eventMaps
       eventMap = {}
@@ -725,11 +754,13 @@ class BlazeComponent extends BaseComponent
 
   # Caller-level component. In most cases the same as @, but in event handlers
   # it returns the component at the place where event originated (target component).
+  # Inside template content wrapped with a block helper component, it is the closest
+  # block helper component.
   @currentComponent: ->
-    # Template.instance() registers a dependency on the template instance data context,
-    # but we do not need that. We just need a template instance to resolve a component.
-    Tracker.nonreactive =>
-      templateInstanceToComponent Template.instance
+    # We are not skipping block helpers because one of main reasons for @currentComponent()
+    # is that we can get hold of the block helper component instance.
+    templateInstance = getTemplateInstanceFunction Blaze.currentView, false
+    templateInstanceToComponent templateInstance, false
 
   # Method should never be overridden. The implementation should always be exactly the same as class method implementation.
   currentComponent: ->

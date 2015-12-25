@@ -275,10 +275,15 @@ Example:
 <template name="Colors">
   {{color}}
   {{#with color='blue'}}
+    {{! If "color" is the component's method, this would resolve to the method, and not to the data context. }}
     {{color}}
-    {{! To access component's data context from an inner data context, use "data". }}
+    {{! If you want to make sure you are calling the component's method. }}
+    {{component.color}}
+    {{! To access the component's data context from an inner data context, use "data". }}
     {{data.color}}
-    {{! To access the data context over the component method. }}
+    {{! Or first access the component. }}
+    {{component.data.color}}
+    {{! To access the current data context through the component method. }}
     {{currentData.color}}
     {{! Alternatively, you can also use keyword "this". }}
     {{this.color}}
@@ -425,7 +430,15 @@ You can modify just block helpers data context by passing it in the tag:
 ```
 
 Notice that block helper's data context is available only inside a block helper's template, but data context where
-it is used (one with `customers`) stays the same.
+it is used (one with `customers`) stays the same. On the other hand, wrapping template content with a block
+helper component does change what [`currentComponent`](#user-content-reference_instance_currentComponent) returns:
+it returns the block helper component instance. In a way you can still access the block helper's data context
+through its component's instance (and [`data`](#user-content-reference_instance_data)).
+
+When working with block helper components it is important to remember: block helper's data context is hidden
+when traversing the tree of data contexts, but the block helper's component is available in the component tree
+as the parent of any components included inside the block helper's content, both the content of the
+block helper's component itself, and the content wrapped with the block helper.
 
 You can also [pass arguments](#passing-arguments) to a component:
 
@@ -1156,8 +1169,9 @@ currentComponent()
 Similar to [`currentData`](#user-content-reference_instance_currentData), `currentComponent` returns current
 caller-level component.
 
-In most cases the same as `this`, but in event handlers it returns the component at the place where
-event originated (target component).
+In most cases the same as `this` in the code, but in event handlers it returns the component at the place
+where event originated (target component), and inside template content wrapped with a block helper component,
+it is the closest block helper component.
 
 <a name="reference_instance_componentName"></a>
 ```javascript
