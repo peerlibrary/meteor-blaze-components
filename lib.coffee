@@ -725,13 +725,21 @@ class BlazeComponent extends BaseComponent
       eventMap
 
   # Component-level data context. Reactive. Use this to always get the
-  # top-level data context used to render the component.
-  data: ->
+  # top-level data context used to render the component. If path is
+  # provided, it returns only the value under that path, with reactivity
+  # limited to changes of that value only.
+  data: (path, equalsFunc) ->
     @_componentInternals ?= {}
     @_componentInternals.templateInstance ?= new ReactiveField null, (a, b) -> a is b
 
     if view = @_componentInternals.templateInstance()?.view
-      return Blaze.getData view
+      if path?
+        return DataLookup.get =>
+          Blaze.getData view
+        ,
+          path, equalsFunc
+      else
+        return Blaze.getData view
 
     undefined
 
@@ -739,14 +747,34 @@ class BlazeComponent extends BaseComponent
   # context at the place where event originated (target context). In template helpers
   # the data context where template helpers were called. In onCreated, onRendered,
   # and onDestroyed, the same as @data(). Inside a template this is the same as this.
-  @currentData: ->
-    return Blaze.getData() if Blaze.currentView
+  # If path is provided, it returns only the value under that path, with reactivity
+  # limited to changes of that value only. Moreover, if path is provided is also
+  # looks into the current lexical scope data.
+  @currentData: (path, equalsFunc) ->
+    return undefined unless Blaze.currentView
 
-    undefined
+    currentView = Blaze.currentView
+
+    if _.isString path
+      path = path.split '.'
+    else if not _.isArray path
+      return Blaze.getData currentView
+
+    DataLookup.get =>
+      if Blaze._lexicalBindingLookup and lexicalData = Blaze._lexicalBindingLookup currentView, path[0]
+        # We return custom data object so that we can reuse the same
+        # lookup logic for both lexical and the normal data context case.
+        result = {}
+        result[path[0]] = lexicalData
+        return result
+
+      Blaze.getData currentView
+    ,
+      path, equalsFunc
 
   # Method should never be overridden. The implementation should always be exactly the same as class method implementation.
-  currentData: ->
-    @constructor.currentData()
+  currentData: (path, equalsFunc) ->
+    @constructor.currentData path, equalsFunc
 
   # Useful in templates to get a reference to the component.
   component: ->

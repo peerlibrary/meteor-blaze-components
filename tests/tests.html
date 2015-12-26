@@ -448,3 +448,10 @@
     {{@index}}
   {{/each}}
 </template>
+
+<template name="LexicalArgumentsComponent">
+  {{#each foo in test}}
+    <div>{{rowOfCurrentData}}</div>
+    <div>{{rowOfFooAndIndex}}</div>
+  {{/each}}
+</template>

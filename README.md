@@ -911,7 +911,7 @@ Otherwise `null`.
 
 <a name="reference_class_currentData"></a>
 ```javascript
-static currentData()
+static currentData([path], [equalsFunc])
 ```
 
 This is a complementary class method to the [`currentData`](#user-content-reference_instance_currentData)
@@ -1134,16 +1134,20 @@ Returns the last top-level DOM node in the rendered content of the component.
 
 <a name="reference_instance_data"></a>
 ```javascript
-data()
+data([path], [equalsFunc])
 ```
 
 Returns current component-level data context. A reactive data source.
+
+If `path` is provided, it returns only the value under the path. It uses
+[data-lookup](https://github.com/peerlibrary/meteor-data-lookup) package to resolve the path. Moreover, this limits
+reactivity only to changes of that value and not the whole data context.
 
 Use this to always get the top-level data context used to render the component.
 
 <a name="reference_instance_currentData"></a>
 ```javascript
-currentData()
+currentData([path], [equalsFunc])
 ```
 
 Returns current caller-level data context. A reactive data source.
@@ -1153,6 +1157,36 @@ In template helpers `currentData` returns the data context where a template help
 hooks [`onCreated`](#user-content-reference_instance_onCreated), [`onRendered`](#user-content-reference_instance_onRendered),
 and [`onDestroyed`](#user-content-reference_instance_onDestroyed), it is the same as [`data`](#user-content-reference_instance_data).
 Inside a template accessing the method as a template helper `currentData` is the same as `this`.
+
+If `path` is provided, it returns only the value under the path. It uses
+[data-lookup](https://github.com/peerlibrary/meteor-data-lookup) package to resolve the path. Moreover, this limits
+reactivity only to changes of that value and not the whole data context.
+
+When `path` is provided, current lexical scope is consulted first, before path is looked up
+in the data context. This allows one to access lexical scope values from the component.
+`currentData('foo.bar')` thus becomes the same as `{{foo.bar}}`, even when `foo` is defined
+through the lexical scope. For example, to access current iteration index, you can do:
+
+```handlebars
+<template name="ListComponent">
+  <ul>
+    {{#each list}}
+      <li class="{{oddOrEven}}">{{item}}</li>
+    {{/each}}
+  </ul>
+</template>
+```
+
+```javascript
+class ListComponent extends BlazeComponent {
+  oddOrEven() {
+    // @index is zero-based, so "odd" and "even" are swapped.
+    return this.currentData('@index') % 2 === 0 ? 'odd' : 'even';
+  }
+}
+
+ListComponent.register('ListComponent');
+```
 
 <a name="reference_instance_component"></a>
 ```javascript

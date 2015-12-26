@@ -6,6 +6,12 @@
 * Block helpers components are correctly positioned inside the component tree.
   Fixes [#50](https://github.com/peerlibrary/meteor-blaze-components/issues/50) and
   [#51](https://github.com/peerlibrary/meteor-blaze-components/issues/51).
+* Both `data` and `currentData` can now limit the returned value to a path by passing the
+  path as an argument. Moreover, this limits reactivity only to changes of that value.
+  Fixes [#101](https://github.com/peerlibrary/meteor-blaze-components/issues/101).
+* Access to the lexical scope is now possible through `currentData` by passing lexical
+  scope path as an argument.
+  Fixes [#76](https://github.com/peerlibrary/meteor-blaze-components/issues/76).
 
 ## v0.15.1, 2015-Oct-27
 

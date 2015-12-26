@@ -754,6 +754,15 @@ class TestingComponentDebug extends BlazeComponentDebug
   @endMarkedComponent: (component) ->
     @endComponent component
 
+class LexicalArgumentsComponent extends BlazeComponent
+  @register 'LexicalArgumentsComponent'
+
+  rowOfCurrentData: ->
+    EJSON.stringify @currentData()
+
+  rowOfFooAndIndex: ->
+    "#{EJSON.stringify @currentData 'foo'}/#{@currentData '@index'}"
+
 mainComponent3Calls = []
 
 Template.mainComponent3.events
@@ -2807,5 +2816,22 @@ class BasicTestCase extends ClassyTestCase
       test: ['42']
 
     @assertEqual trim(output), trim """0"""
+
+  testLexicalArgumentsComponent: ->
+    componentTemplate = BlazeComponent.getComponent('LexicalArgumentsComponent').renderComponent()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      test: [1, 2, 3]
+
+    @assertEqual trim(output), trim """
+      <div>{"test":[1,2,3]}</div>
+      <div>1/0</div>
+      <div>{"test":[1,2,3]}</div>
+      <div>2/1</div>
+      <div>{"test":[1,2,3]}</div>
+      <div>3/2</div>
+    """
 
 ClassyTestCase.addTest new BasicTestCase()
