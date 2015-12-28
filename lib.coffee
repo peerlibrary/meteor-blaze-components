@@ -201,7 +201,7 @@ callTemplateBaseHooks = (component, hookName) ->
 
   return
 
-wrapViewAndTemplate = (currentView, f) ->
+share.wrapViewAndTemplate = (currentView, f) ->
   # For template content wrapped inside the block helper, we want to skip the block
   # helper when searching for corresponding template. This means that Template.instance()
   # will return the component's template, while BlazeComponent.currentComponent() will
@@ -235,7 +235,7 @@ addEvents = (view, component) ->
           event = args[0]
 
           currentView = Blaze.getView event.currentTarget
-          wrapViewAndTemplate currentView, =>
+          share.wrapViewAndTemplate currentView, ->
             handler.apply component, args
 
           # Make sure CoffeeScript does not return anything.
@@ -460,7 +460,7 @@ class BlazeComponent extends BaseComponent
       if data?.constructor isnt share.argumentsConstructor
         # So that currentComponent in the constructor can return the component
         # inside which this component has been constructed.
-        return wrapViewAndTemplate Blaze.currentView, =>
+        return share.wrapViewAndTemplate Blaze.currentView, =>
           component = new componentClass()
 
           return component.renderComponent parentComponent
@@ -498,7 +498,7 @@ class BlazeComponent extends BaseComponent
           template = Blaze._withCurrentView Blaze.currentView.parentView.parentView, =>
             # So that currentComponent in the constructor can return the component
             # inside which this component has been constructed.
-            return wrapViewAndTemplate Blaze.currentView, =>
+            return share.wrapViewAndTemplate Blaze.currentView, =>
               # Use arguments for the constructor.
               component = new componentClass nonreactiveArguments...
 

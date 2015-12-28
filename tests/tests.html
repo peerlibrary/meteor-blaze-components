@@ -455,3 +455,42 @@
     <div>{{rowOfFooAndIndex}}</div>
   {{/each}}
 </template>
+
+<template name="InlineEventsComponent">
+  <form>
+    <div>
+      {{#with a='1' b='2'}}
+        <button class="button1" type="button" onClick="{{onButton1Click}} {{onClick1Extra}}">Button 1</button>
+      {{/with}}
+      {{#with a='3' b='4'}}
+        <button class="button2" type="button" onClick={{onButton2Click}}>Button 2</button>
+      {{/with}}
+      {{#with a='5' b='6'}}
+        <button class="button3 dynamic" type="button" onClick={{onButton3Click 'foobar' dynamicArgument}}>Button 3</button>
+      {{/with}}
+      {{#with a='7' b='8'}}
+        <button class="button4 dynamic" type="button" onClick={{onButton4Click foo=dynamicArgument}}>Button 4</button>
+      {{/with}}
+      {{#with a='9' b='10'}}
+        <button class="button5" type="button" {{extraArgs}}>Button 5</button>
+      {{/with}}
+      <textarea onChange></textarea>
+    </div>
+  </form>
+</template>
+
+<template name="inlineEventsTestTemplate">
+  <div class="inlineEventsTestTemplate">
+    {{> InlineEventsComponent top='42'}}
+  </div>
+</template>
+
+<template name="InvalidInlineEventsComponent">
+  <button class="button1" type="button" onClick="{{onButton1Click}} invalid {{onClick1Extra}}">Button 1</button>
+</template>
+
+<template name="invalidInlineEventsTestTemplate">
+  <div class="invalidInlineEventsTestTemplate">
+    {{> InvalidInlineEventsComponent}}
+  </div>
+</template>

@@ -46,3 +46,98 @@ Template.registerHelper 'args', ->
 Template.__dynamicWithDataContext.__helpers.set 'chooseTemplate', (name) ->
   Blaze._getTemplate name, =>
     Template.instance()
+
+EVENT_HANDLER_REGEX = /^on[A-Z]/
+WHITESPACE_REGEX = /^\s+$/
+
+isEventHandler = (fun) ->
+  _.isFunction(fun) and fun.eventHandler
+
+EventHandler = Blaze._AttributeHandler.extend
+  update: (element, oldValue, value) ->
+    oldValue = [] unless oldValue
+    oldValue = [oldValue] unless _.isArray oldValue
+
+    value = [] unless value
+    value = [value] unless _.isArray value
+
+    assert _.every(oldValue, isEventHandler), oldValue
+    assert _.every(value, isEventHandler), value
+
+    $element = $(element)
+    eventName = @name.substr(2).toLowerCase()
+
+    $element.off eventName, fun for fun in oldValue
+    $element.on eventName, fun for fun in value
+
+if Blaze._makeAttributeHandler
+  originalMakeAttributeHandler = Blaze._makeAttributeHandler
+  Blaze._makeAttributeHandler = (elem, name, value) ->
+    if EVENT_HANDLER_REGEX.test name
+      new EventHandler name, value
+    else
+      originalMakeAttributeHandler elem, name, value
+
+originalToText = Blaze._toText
+Blaze._toText = (htmljs, parentView, textMode) ->
+  # If it is an event handler function, we pass it as it is and do not try to convert it to text.
+  # Our EventHandler knows how to handle such attribute values - functions.
+  if isEventHandler htmljs
+    htmljs
+  else if _.isArray(htmljs) and _.some htmljs, isEventHandler
+    # Remove whitespace in onEvent="{{onEvent1}} {{onEvent2}}".
+    _.filter htmljs, (fun) ->
+      return true if isEventHandler fun
+      return false if WHITESPACE_REGEX.test fun
+
+      # We do not support anything fancy besides whitespace.
+      throw new Error "Invalid event handler: #{fun}"
+  else
+    originalToText htmljs, parentView, textMode
+
+# When event handlers are provided directly as args they are not passed through
+# Spacebars.event by the template compiler, so we have to do it ourselves.
+originalFlattenAttributes = HTML.flattenAttributes
+HTML.flattenAttributes = (attrs) ->
+  if attrs = originalFlattenAttributes attrs
+    for name, value of attrs when EVENT_HANDLER_REGEX.test name
+      # Already processed by Spacebars.event.
+      continue if isEventHandler value
+      continue if _.isArray(value) and _.some value, isEventHandler
+
+      # When event handlers are provided directly as args,
+      # we require them to be just event handlers.
+      if _.isArray value
+        attrs[name] = _.map value, Spacebars.event
+      else
+        attrs[name] = Spacebars.event value
+
+  attrs
+
+Spacebars.event = (eventHandler, args...) ->
+  throw new Error "Event handler not a function: #{eventHandler}" unless _.isFunction eventHandler
+
+  # Execute all arguments.
+  args = Spacebars.mustacheImpl ((xs...) -> xs), args...
+
+  fun = (event, eventArgs...) ->
+    currentView = Blaze.getView event.currentTarget
+    share.wrapViewAndTemplate currentView, ->
+      # We do not have to bind "this" because event handlers are resolved
+      # as template helpers and are already bound.
+      eventHandler.apply null, [event].concat args, eventArgs
+
+  fun.eventHandler = true
+
+  fun
+
+# When converting the component to the static HTML, remove all event handlers.
+originalVisitTag = HTML.ToHTMLVisitor::visitTag
+HTML.ToHTMLVisitor::visitTag = (tag) ->
+  if attrs = tag.attrs
+    attrs = HTML.flattenAttributes attrs
+    for name of attrs when EVENT_HANDLER_REGEX.test name
+      delete attrs[name]
+    tag.attrs = attrs
+
+  originalVisitTag.call @, tag

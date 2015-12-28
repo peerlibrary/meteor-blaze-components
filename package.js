@@ -5,24 +5,42 @@ Package.describe({
   git: 'https://github.com/peerlibrary/meteor-blaze-components.git'
 });
 
+// Based on meteor/packages/templating/package.js.
+Package.registerBuildPlugin({
+  name: "compileBlazeComponentsTemplatesBatch",
+  use: [
+    'caching-html-compiler',
+    'ecmascript',
+    'templating-tools',
+    'spacebars-compiler',
+    'html-tools'
+  ],
+  sources: [
+    'patch-compiling.js',
+    'compile-templates.js'
+  ]
+});
+
 Package.onUse(function (api) {
   api.versionsFrom('METEOR@1.0.3.1');
 
   // Core dependencies.
   api.use([
     'blaze',
-    'templating',
     'coffeescript',
     'underscore',
     'tracker',
     'reactive-var',
     'ejson',
-    'spacebars'
+    'spacebars',
+    'jquery'
   ]);
 
-  api.imply([
-    'templating'
-  ]);
+  // Based on meteor/packages/templating/package.js.
+  api.addFiles('templating.js', 'client');
+  api.export('Template', 'client');
+  api.use('isobuild:compiler-plugin@1.0.0');
+  api.imply(['meteor', 'blaze', 'spacebars'], 'client');
 
   // Internal dependencies.
   api.use([
@@ -56,7 +74,6 @@ Package.onTest(function (api) {
   // Core dependencies.
   api.use([
     'coffeescript',
-    'templating',
     'jquery',
     'reactive-var',
     'underscore',
@@ -72,7 +89,7 @@ Package.onTest(function (api) {
 
   // 3rd party dependencies.
   api.use([
-    'peerlibrary:classy-test@0.2.19',
+    'peerlibrary:classy-test@0.2.25',
     'mquandalle:harmony@1.3.79',
     'peerlibrary:reactive-field@0.1.0',
     'peerlibrary:assert@0.2.5'
