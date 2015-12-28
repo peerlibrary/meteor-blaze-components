@@ -61,6 +61,8 @@ Package.onUse(function (api) {
 
   api.addFiles([
     'lookup.js',
+    'attrs.js',
+    'materializer.js',
     'lib.coffee',
     'debug.coffee'
   ]);

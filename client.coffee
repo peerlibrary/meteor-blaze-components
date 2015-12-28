@@ -70,13 +70,12 @@ EventHandler = Blaze._AttributeHandler.extend
     $element.off eventName, fun for fun in oldValue
     $element.on eventName, fun for fun in value
 
-if Blaze._makeAttributeHandler
-  originalMakeAttributeHandler = Blaze._makeAttributeHandler
-  Blaze._makeAttributeHandler = (elem, name, value) ->
-    if EVENT_HANDLER_REGEX.test name
-      new EventHandler name, value
-    else
-      originalMakeAttributeHandler elem, name, value
+originalMakeAttributeHandler = Blaze._makeAttributeHandler
+Blaze._makeAttributeHandler = (elem, name, value) ->
+  if EVENT_HANDLER_REGEX.test name
+    new EventHandler name, value
+  else
+    originalMakeAttributeHandler elem, name, value
 
 originalToText = Blaze._toText
 Blaze._toText = (htmljs, parentView, textMode) ->

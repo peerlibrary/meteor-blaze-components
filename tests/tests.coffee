@@ -2875,114 +2875,111 @@ class BasicTestCase extends ClassyTestCase
       <div>3/2</div>
     """
 
-# Inline events are available only when Blaze._makeAttributeHandler is available.
-if Blaze._makeAttributeHandler
-  _.extend BasicTestCase::,
-    testInlineEventsToHTML: ->
-      output = Blaze.toHTML Template.inlineEventsTestTemplate
+  testInlineEventsToHTML: ->
+    output = Blaze.toHTML Template.inlineEventsTestTemplate
 
-      @assertEqual trim(output), trim """
-        <div class="inlineEventsTestTemplate">
-          <form>
-            <div>
-              <button class="button1" type="button">Button 1</button>
-              <button class="button2" type="button">Button 2</button>
-              <button class="button3 dynamic" type="button">Button 3</button>
-              <button class="button4 dynamic" type="button">Button 4</button>
-              <button class="button5" type="button" title="Foobar">Button 5</button>
-              <textarea></textarea>
-            </div>
-          </form>
-        </div>
+    @assertEqual trim(output), trim """
+      <div class="inlineEventsTestTemplate">
+        <form>
+          <div>
+            <button class="button1" type="button">Button 1</button>
+            <button class="button2" type="button">Button 2</button>
+            <button class="button3 dynamic" type="button">Button 3</button>
+            <button class="button4 dynamic" type="button">Button 4</button>
+            <button class="button5" type="button" title="Foobar">Button 5</button>
+            <textarea></textarea>
+          </div>
+        </form>
+      </div>
+    """
+
+  testInlineEvents: [
+    ->
+      reactiveArguments {z: 1}
+
+      InlineEventsComponent.calls = []
+
+      @renderedComponent = Blaze.render Template.inlineEventsTestTemplate, $('body').get(0)
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      @assertEqual trim($('.inlineEventsTestTemplate').html()), trim """
+        <form>
+          <div>
+            <button class="button1" type="button">Button 1</button>
+            <button class="button2" type="button">Button 2</button>
+            <button class="button3 dynamic" type="button">Button 3</button>
+            <button class="button4 dynamic" type="button">Button 4</button>
+            <button class="button5" type="button" title="Foobar">Button 5</button>
+            <textarea></textarea>
+          </div>
+        </form>
       """
 
-    testInlineEvents: [
-      ->
-        reactiveArguments {z: 1}
+      # Event handlers should not be called like template heleprs.
+      @assertEqual InlineEventsComponent.calls, []
+      InlineEventsComponent.calls = []
 
-        InlineEventsComponent.calls = []
+      $('.inlineEventsTestTemplate button').each (i, button) =>
+        $(button).click()
 
-        @renderedComponent = Blaze.render Template.inlineEventsTestTemplate, $('body').get(0)
+      $('.inlineEventsTestTemplate textarea').each (i, textare) =>
+        $(textare).change()
 
-        Tracker.afterFlush @expect()
+      @assertEqual InlineEventsComponent.calls, [
+        ['InlineEventsComponent', 'InlineEventsComponent.onButton1Click', {top: '42'}, {a: '1', b: '2'}, 'InlineEventsComponent']
+        ['InlineEventsComponent', 'InlineEventsComponent.onClick1Extra', {top: '42'}, {a: '1', b: '2'}, 'InlineEventsComponent']
+        ['InlineEventsComponent', 'InlineEventsComponent.onButton2Click', {top: '42'}, {a: '3', b: '4'}, 'InlineEventsComponent']
+        ['InlineEventsComponent', 'InlineEventsComponent.onButton3Click', {top: '42'}, {a: '5', b: '6'}, 'InlineEventsComponent', 'foobar', {z: 1}, new Spacebars.kw()]
+        ['InlineEventsComponent', 'InlineEventsComponent.onButton4Click', {top: '42'}, {a: '7', b: '8'}, 'InlineEventsComponent', new Spacebars.kw({foo: {z: 1}})]
+        ['InlineEventsComponent', 'InlineEventsComponent.extraArgs1', {top: '42'}, {a: '9', b: '10'}, 'InlineEventsComponent']
+        ['InlineEventsComponent', 'InlineEventsComponent.extraArgs2', {top: '42'}, {a: '9', b: '10'}, 'InlineEventsComponent']
+        ['InlineEventsComponent', 'InlineEventsComponent.onChange', {top: '42'}, {top: '42'}, 'InlineEventsComponent']
+      ]
+
+      InlineEventsComponent.calls = []
+
+      reactiveArguments {z: 2}
+
+      Tracker.afterFlush @expect()
+  ,
+    ->
+      $('.inlineEventsTestTemplate button').each (i, button) =>
+        $(button).click()
+
+      $('.inlineEventsTestTemplate textarea').each (i, textare) =>
+        $(textare).change()
+
+
+      @assertEqual InlineEventsComponent.calls, [
+        ['InlineEventsComponent', 'InlineEventsComponent.onButton1Click', {top: '42'}, {a: '1', b: '2'}, 'InlineEventsComponent']
+        ['InlineEventsComponent', 'InlineEventsComponent.onClick1Extra', {top: '42'}, {a: '1', b: '2'}, 'InlineEventsComponent']
+        ['InlineEventsComponent', 'InlineEventsComponent.onButton2Click', {top: '42'}, {a: '3', b: '4'}, 'InlineEventsComponent']
+        ['InlineEventsComponent', 'InlineEventsComponent.onButton3Click', {top: '42'}, {a: '5', b: '6'}, 'InlineEventsComponent', 'foobar', {z: 2}, new Spacebars.kw()]
+        ['InlineEventsComponent', 'InlineEventsComponent.onButton4Click', {top: '42'}, {a: '7', b: '8'}, 'InlineEventsComponent', new Spacebars.kw({foo: {z: 2}})]
+        ['InlineEventsComponent', 'InlineEventsComponent.extraArgs1', {top: '42'}, {a: '9', b: '10'}, 'InlineEventsComponent']
+        ['InlineEventsComponent', 'InlineEventsComponent.extraArgs2', {top: '42'}, {a: '9', b: '10'}, 'InlineEventsComponent']
+        ['InlineEventsComponent', 'InlineEventsComponent.onChange', {top: '42'}, {top: '42'}, 'InlineEventsComponent']
+      ]
+
+      InlineEventsComponent.calls = []
+
+      $('.inlineEventsTestTemplate button.dynamic').each (i, button) =>
+        $(button).trigger('click', 'extraArgument')
+
+      @assertEqual InlineEventsComponent.calls, [
+        ['InlineEventsComponent', 'InlineEventsComponent.onButton3Click', {top: '42'}, {a: '5', b: '6'}, 'InlineEventsComponent', 'foobar', {z: 2}, new Spacebars.kw(), 'extraArgument']
+        ['InlineEventsComponent', 'InlineEventsComponent.onButton4Click', {top: '42'}, {a: '7', b: '8'}, 'InlineEventsComponent', new Spacebars.kw({foo: {z: 2}}), 'extraArgument']
+      ]
+
+      Blaze.remove @renderedComponent
+  ]
+
+  testInvalidInlineEvents: ->
+    @assertThrows =>
+      Blaze.render Template.invalidInlineEventsTestTemplate, $('body').get(0)
     ,
-      ->
-        @assertEqual trim($('.inlineEventsTestTemplate').html()), trim """
-          <form>
-            <div>
-              <button class="button1" type="button">Button 1</button>
-              <button class="button2" type="button">Button 2</button>
-              <button class="button3 dynamic" type="button">Button 3</button>
-              <button class="button4 dynamic" type="button">Button 4</button>
-              <button class="button5" type="button" title="Foobar">Button 5</button>
-              <textarea></textarea>
-            </div>
-          </form>
-        """
-
-        # Event handlers should not be called like template heleprs.
-        @assertEqual InlineEventsComponent.calls, []
-        InlineEventsComponent.calls = []
-
-        $('.inlineEventsTestTemplate button').each (i, button) =>
-          $(button).click()
-
-        $('.inlineEventsTestTemplate textarea').each (i, textare) =>
-          $(textare).change()
-
-        @assertEqual InlineEventsComponent.calls, [
-          ['InlineEventsComponent', 'InlineEventsComponent.onButton1Click', {top: '42'}, {a: '1', b: '2'}, 'InlineEventsComponent']
-          ['InlineEventsComponent', 'InlineEventsComponent.onClick1Extra', {top: '42'}, {a: '1', b: '2'}, 'InlineEventsComponent']
-          ['InlineEventsComponent', 'InlineEventsComponent.onButton2Click', {top: '42'}, {a: '3', b: '4'}, 'InlineEventsComponent']
-          ['InlineEventsComponent', 'InlineEventsComponent.onButton3Click', {top: '42'}, {a: '5', b: '6'}, 'InlineEventsComponent', 'foobar', {z: 1}, new Spacebars.kw()]
-          ['InlineEventsComponent', 'InlineEventsComponent.onButton4Click', {top: '42'}, {a: '7', b: '8'}, 'InlineEventsComponent', new Spacebars.kw({foo: {z: 1}})]
-          ['InlineEventsComponent', 'InlineEventsComponent.extraArgs1', {top: '42'}, {a: '9', b: '10'}, 'InlineEventsComponent']
-          ['InlineEventsComponent', 'InlineEventsComponent.extraArgs2', {top: '42'}, {a: '9', b: '10'}, 'InlineEventsComponent']
-          ['InlineEventsComponent', 'InlineEventsComponent.onChange', {top: '42'}, {top: '42'}, 'InlineEventsComponent']
-        ]
-
-        InlineEventsComponent.calls = []
-
-        reactiveArguments {z: 2}
-
-        Tracker.afterFlush @expect()
-    ,
-      ->
-        $('.inlineEventsTestTemplate button').each (i, button) =>
-          $(button).click()
-
-        $('.inlineEventsTestTemplate textarea').each (i, textare) =>
-          $(textare).change()
-
-
-        @assertEqual InlineEventsComponent.calls, [
-          ['InlineEventsComponent', 'InlineEventsComponent.onButton1Click', {top: '42'}, {a: '1', b: '2'}, 'InlineEventsComponent']
-          ['InlineEventsComponent', 'InlineEventsComponent.onClick1Extra', {top: '42'}, {a: '1', b: '2'}, 'InlineEventsComponent']
-          ['InlineEventsComponent', 'InlineEventsComponent.onButton2Click', {top: '42'}, {a: '3', b: '4'}, 'InlineEventsComponent']
-          ['InlineEventsComponent', 'InlineEventsComponent.onButton3Click', {top: '42'}, {a: '5', b: '6'}, 'InlineEventsComponent', 'foobar', {z: 2}, new Spacebars.kw()]
-          ['InlineEventsComponent', 'InlineEventsComponent.onButton4Click', {top: '42'}, {a: '7', b: '8'}, 'InlineEventsComponent', new Spacebars.kw({foo: {z: 2}})]
-          ['InlineEventsComponent', 'InlineEventsComponent.extraArgs1', {top: '42'}, {a: '9', b: '10'}, 'InlineEventsComponent']
-          ['InlineEventsComponent', 'InlineEventsComponent.extraArgs2', {top: '42'}, {a: '9', b: '10'}, 'InlineEventsComponent']
-          ['InlineEventsComponent', 'InlineEventsComponent.onChange', {top: '42'}, {top: '42'}, 'InlineEventsComponent']
-        ]
-
-        InlineEventsComponent.calls = []
-
-        $('.inlineEventsTestTemplate button.dynamic').each (i, button) =>
-          $(button).trigger('click', 'extraArgument')
-
-        @assertEqual InlineEventsComponent.calls, [
-          ['InlineEventsComponent', 'InlineEventsComponent.onButton3Click', {top: '42'}, {a: '5', b: '6'}, 'InlineEventsComponent', 'foobar', {z: 2}, new Spacebars.kw(), 'extraArgument']
-          ['InlineEventsComponent', 'InlineEventsComponent.onButton4Click', {top: '42'}, {a: '7', b: '8'}, 'InlineEventsComponent', new Spacebars.kw({foo: {z: 2}}), 'extraArgument']
-        ]
-
-        Blaze.remove @renderedComponent
-    ]
-
-    testInvalidInlineEvents: ->
-      @assertThrows =>
-        Blaze.render Template.invalidInlineEventsTestTemplate, $('body').get(0)
-      ,
-        /Invalid event handler/
+      /Invalid event handler/
 
 ClassyTestCase.addTest new BasicTestCase()
