@@ -40,7 +40,7 @@ database and is written to it when the user changes it.</p>
 {{#withSpacebars}}{{|&gt; input id='demo1'}}
 
 &lt;template name=&quot;input&quot;&gt;
-  &lt;input value="{{|value}}"/&gt;
+  &lt;input value=&quot;{{|value}}&quot; /&gt;
 &lt;/template&gt;{{/withSpacebars}}
 
 {{> languageSwitch}}
@@ -388,7 +388,7 @@ onClick(event) {
 
 {{#withSpacebars}}{{|&gt; AutoSelectTextareaComponent id='demo3'}}
 
-&lt;template name="AutoSelectTextareaComponent"&gt;
+&lt;template name=&quot;AutoSelectTextareaComponent&quot;&gt;
   &lt;textarea&gt;{{|value}}&lt;/textarea&gt;
 &lt;/template&gt;{{/withSpacebars}}
 
@@ -1381,6 +1381,54 @@ Let's look in more detail into two snippets.
   starts with only mixins. If you pass a mixin, then it starts with the mixin after it. The rule of thumb is that you
   can simply pass {{#inlineCoffeeScript}}@{{/inlineCoffeeScript}}{{#inlineJavaScript}}this{{/inlineJavaScript}}{{#inlineES2015}}this{{/inlineES2015}}
   to call the next available implementation of the property.</p>
+
+<a name="handling-events"></a>
+<h2>Handling events</h2>
+
+<p>Blaze Components provide a familiar interface to define event handlers through
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_events">event maps</a>
+  and this approach was used in this tutorial, to not be too confusing for developers familiar with Blaze. But there
+  is an alternative way as well: bind event handlers directly in the template.</p>
+
+<p>You can read more about
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#handling-events">handling events</a> in the
+  documentation, but to give you a bit of taste, here is an example:</p>
+
+{{#withSpacebars}}&lt;template name="input"&gt;
+  &lt;input value=&quot;{{|value}}&quot; onFocus onBlur onKeyDown onKeyUp onChange onClick /&gt;
+&lt;/template&gt;{{/withSpacebars}}
+
+<p>This automatically binds event handlers (component's methods) to the
+  {{#inlineSpacebars}}&lt;input /&gt;{{/inlineSpacebars}} DOM element with matching names ({{#inlineCode}}focus{{/inlineCode}}
+  event would trigger the {{#inlineCode}}onFocus{{/inlineCode}} method).
+  The downside is that only the first resolved method with a given name (from the component or a mixin) is called.
+  You have to call other possible event handlers with the same name yourself, for example, using
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith">{{#inlineCode}}callFirstWith{{/inlineCode}}</a>
+  (if you want to do so, maybe you want to check {{#inlineCode}}isImmediatePropagationStopped{{/inlineCode}} first).
+  Alternatively, you can simply name your event handlers differently, with more semantic names:</p>
+
+{{#withSpacebars}}&lt;template name="input"&gt;
+  &lt;input value=&quot;{{|value}}&quot; onFocus={{|persistCurrentValue}}
+    onBlur={{|unpersistCurrentValue}}} onKeyDown={{|maybeCancel}}
+    onKeyUp={{|triggerChange}} onChange={{|storeValue}} onClick={{|selectAll}} /&gt;
+&lt;/template&gt;{{/withSpacebars}}
+
+<p>Of course, now we have to rename these methods everywhere in our code.</p>
+
+<p>This approach maybe moves too much information about the logic to the template. How exactly you want to handle
+  events is left to you, but the recommended approach is to name event handlers based on which element they are handling
+  and not what they are doing. And then use
+  <a href="https://github.com/peerlibrary/meteor-blaze-components#user-content-reference_instance_callFirstWith">{{#inlineCode}}callFirstWith{{/inlineCode}}</a>
+  to support multiple mixins which would like to handle the same event on a given element. In this way
+  it is easy to read from the component's code which events are coming from where and it is easy to add additional
+  logic to your component without having to change the template. On the other hand it is easy to read in the template
+  which events we care about and make sure they are bound to the right element.</p>
+
+{{#withSpacebars}}&lt;template name="input"&gt;
+  &lt;input value=&quot;{{|value}}&quot; onFocus={{|onInputFocus}}
+    onBlur={{|onInputBlur}}} onKeyDown={{|onInputKeyDown}}
+    onKeyUp={{|onInputKeyUp}} onChange={{|onInputChange}} onClick={{|onInputClick}} /&gt;
+&lt;/template&gt;{{/withSpacebars}}
 
 <a name="more"></a>
 <h2>More</h2>
