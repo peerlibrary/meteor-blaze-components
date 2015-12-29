@@ -141,6 +141,9 @@ class AnimatedListComponent extends BlazeComponent
 
 BlazeComponent.register 'AnimatedListComponent', AnimatedListComponent
 
+class DummyComponent extends BlazeComponent
+  @register 'DummyComponent'
+
 class ArgumentsComponent extends BlazeComponent
   @calls: []
   @constructorStateChanges: []
