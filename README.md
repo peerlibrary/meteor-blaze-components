@@ -50,6 +50,10 @@ meteor remove templating
 meteor add peerlibrary:blaze-components
 ```
 
+If you get an error that two packages are trying to handle `*.html` files, you have to make sure that your app
+or a package does not depend on the `templating` packages (often through the `blaze-html-templates` package).
+Blaze Components supersedes the `templating` package and provides its functionality as well.
+
 Additional packages
 -------------------
 
@@ -373,6 +377,126 @@ by Blaze Components.
 a component which you can keep a reference to and reuse it multiple times, thus keeping its state between multiple
 renderings. You can do this using the [`renderComponent`](#user-content-reference_instance_renderComponent) method
 which is not yet public.*
+
+Handling events
+---------------
+
+There are two ways to handle DOM events in Blaze Components. The first is by using
+[event maps](#user-content-reference_instance_events) in a similar way how you would bind event handlers in Blaze
+or jQuery.
+
+The issue is that using event maps is error prone. Your selector can match too much, or too
+little, especially when component's template is changed in the future. Furthermore, event maps invert the relationship
+between templates and components. Observe how components provide template helpers to templates and how you define
+in the template itself how those template helpers are mapped to the template. Logic stays in the component, but
+where exactly the template helper is used is defined in the template. If you are modifying the template, you can
+easily see how you have to move template helpers around to keep the template working. With event maps this is
+inverted. You often have to define custom CSS classes to allow event handlers to be bound to the DOM element
+and later on is unclear how those CSS classes are connected to the event handlers. If you are modifying the template
+you have to be careful to maintain correct mapping of event handlers.
+
+Blaze Components provide an alternative approach. You can define event handlers as component's methods and they
+are available to you to bind them to DOM elements in the template directly. The recommended approach is to name event
+handlers based on which element they are handling and not what they are doing:
+
+```handlebars
+<template name="ExampleComponent">
+  <button onClick={{onButtonClick}}>Click me</button>
+</template>
+```
+
+```javascript
+class ExampleComponent extends BlazeComponent {
+  onCreated() {
+    super.onCreated();
+    this.counter = new ReactiveField(0);
+  }
+
+  onButtonClick(event) {
+    this.counter(this.counter() + 1);
+    this.callFirstWith(this, 'onButtonClick', event);
+  }
+
+  customHelper() {
+    if (this.counter() > 10) {
+      return "Too many times";
+    }
+    else if (this.counter() === 10) {
+      return "Just enough";
+    }
+    else {
+      return "Click more";
+    }
+  }
+}
+```
+
+It is important to use `onClick` and not `onclick` because only the former will be handled by Blaze Components
+(and the latter will be passed on as it is).
+
+Moreover, observe the [`callFirstWith`](#user-content-reference_instance_callFirstWith) call. This allows
+[mixins](#mixins-1) to hook into the same event. Only the first resolved event handler with a given name is
+called and any other event handlers with the same name are not called automatically for events bound in templates.
+
+While it is recommended that you define only one event handler per event per element and then do multiple actions
+inside the component's code, you can still use the following syntax to bind multiple event handlers:
+
+```handlebars
+<template name="ExampleComponent">
+  <button onClick="{{onClick1}} {{onClick2}}">Click me</button>
+</template>
+```
+
+If you do not provide the name of the event handler, the name of the event is used instead. This will call `onClick`
+method on the component for every `click` event on the button:
+
+```handlebars
+<template name="ExampleComponent">
+  <button onClick>Click me</button>
+</template>
+```
+
+Furthermore, when using a template helper to return a
+[dynamic set of attributes](https://github.com/meteor/meteor/blob/devel/packages/spacebars/README.md#dynamic-attributes),
+if any of those attributes are named like an event, the value will be bound as a event handler (or multiple of those
+if the value is an array):
+
+```handlebars
+<template name="ExampleComponent">
+  <button {{attrs}}>Click me</button>
+</template>
+```
+
+```javascript
+class ExampleComponent extends BlazeComponent {
+  /* ... */
+  
+  attrs() {
+    return {
+      onClick: this.onButtonClick,
+      title: "Button title"
+    }
+  }
+}
+```
+
+You can also pass custom arguments to the event handlers:
+
+```handlebars
+<template name="ExampleComponent">
+  <button onClick={{onButtonClick 'first'}}>Click me</button>
+  <button onClick={{onButtonClick 'second'}}>Click me</button>
+</template>
+```
+
+```javascript
+onButtonClick(event, argument) {
+  this.counter(this.counter() + 1);
+  this.callFirstWith(this, 'onButtonClick', event, argument);
+}
+```
+
+Those arguments can even be reactive.
 
 Component-based block helpers
 -----------------------------

@@ -12,6 +12,8 @@
 * Access to the lexical scope is now possible through `currentData` by passing lexical
   scope path as an argument.
   Fixes [#76](https://github.com/peerlibrary/meteor-blaze-components/issues/76).
+* Allow binding of event handlers in templates instead of through event maps.
+  Fixes [#99](https://github.com/peerlibrary/meteor-blaze-components/issues/99).
 
 ## v0.15.1, 2015-Oct-27
 
