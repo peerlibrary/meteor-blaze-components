@@ -10,13 +10,13 @@ class BlazeComponentDebug extends BaseComponentDebug
     console.log component.data()
 
   @dumpComponentSubtree: (rootComponentOrElement) ->
-    if rootComponentOrElement.nodeType is Node.ELEMENT_NODE
+    if 'nodeType' of rootComponentOrElement and rootComponentOrElement.nodeType is Node.ELEMENT_NODE
       rootComponentOrElement = BlazeComponent.getComponentForElement rootComponentOrElement
 
     super
 
   @dumpComponentTree: (rootComponentOrElement) ->
-    if rootComponentOrElement.nodeType is Node.ELEMENT_NODE
+    if 'nodeType' of rootComponentOrElement and rootComponentOrElement.nodeType is Node.ELEMENT_NODE
       rootComponentOrElement = BlazeComponent.getComponentForElement rootComponentOrElement
 
     super
