@@ -47,7 +47,8 @@ Spacebars.event = (eventHandler, args...) ->
     currentView = Blaze.getView event.currentTarget
     share.wrapViewAndTemplate currentView, ->
       # We do not have to bind "this" because event handlers are resolved
-      # as template helpers and are already bound.
+      # as template helpers and are already bound. We bind event handlers
+      # in dynamic attributes already as well.
       eventHandler.apply null, [event].concat args, eventArgs
 
   fun.eventHandler = true

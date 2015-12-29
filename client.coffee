@@ -77,3 +77,14 @@ Blaze._toText = (htmljs, parentView, textMode) ->
       throw new Error "Invalid event handler: #{fun}"
   else
     originalToText htmljs, parentView, textMode
+
+share.inExpandAttributes = false
+
+originalExpandAttributes = Blaze._expandAttributes
+Blaze._expandAttributes = (attrs, parentView) ->
+  previousInExpandAttributes = share.inExpandAttributes
+  share.inExpandAttributes = true
+  try
+    originalExpandAttributes attrs, parentView
+  finally
+    share.inExpandAttributes = previousInExpandAttributes

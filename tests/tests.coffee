@@ -874,14 +874,18 @@ class InlineEventsComponent extends BlazeComponent
   onChange: (event) ->
     @constructor.calls.push [@componentName(), 'InlineEventsComponent.onChange', @data(), @currentData(), @currentComponent().componentName()]
 
+  extraArgs1: (event) ->
+    @constructor.calls.push [@componentName(), 'InlineEventsComponent.extraArgs1', @data(), @currentData(), @currentComponent().componentName()]
+
+  extraArgs2: (event) ->
+    @constructor.calls.push [@componentName(), 'InlineEventsComponent.extraArgs2', @data(), @currentData(), @currentComponent().componentName()]
+
   extraArgs: ->
     title: "Foobar"
     onClick: [
-      (event) =>
-        @constructor.calls.push [@componentName(), 'InlineEventsComponent.extraArgs1', @data(), @currentData(), @currentComponent().componentName()]
+      @extraArgs1
     ,
-      (event) =>
-        @constructor.calls.push [@componentName(), 'InlineEventsComponent.extraArgs2', @data(), @currentData(), @currentComponent().componentName()]
+      @extraArgs2
     ]
 
 class InvalidInlineEventsComponent extends BlazeComponent

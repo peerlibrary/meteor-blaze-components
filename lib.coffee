@@ -133,7 +133,23 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
 
 bindComponent = (component, helper) ->
   if _.isFunction helper
-    _.bind helper, component
+    (args...) ->
+      result = helper.apply component, args
+
+      # If we are expanding attributes and this is an object with dynamic attributes,
+      # then we want to bind all possible event handlers to the component as well.
+      if share.inExpandAttributes and _.isObject result
+        for name, value of result when share.EVENT_HANDLER_REGEX.test name
+          if _.isFunction value
+            result[name] = _.bind value, component
+          else if _.isArray value
+            result[name] = _.map value, (fun) ->
+              if _.isFunction fun
+                _.bind fun, component
+              else
+                fun
+
+      result
   else
     helper
 
