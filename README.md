@@ -22,6 +22,7 @@ Table of contents
 * [Accessing data context](#accessing-data-context)
 * [Passing arguments](#passing-arguments)
 * [Life-cycle hooks](#life-cycle-hooks)
+* [Handling events](#handling-events)
 * [Component-based block helpers](#component-based-block-helpers)
 * [Animations](#animations)
 * [Mixins](#mixins)
