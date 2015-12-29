@@ -81,6 +81,15 @@ Package.onUse(function (api) {
   api.addFiles([
     'client.coffee'
   ], 'client');
+
+  /* To add server side templating support.
+     See: https://github.com/meteor/meteor/pull/5903
+  api.addFiles([
+    'meteor/packages/templating/templating.js',
+    'meteor/packages/templating/dynamic.html',
+    'meteor/packages/templating/dynamic.js'
+  ], 'server');
+  */
 });
 
 Package.onTest(function (api) {
@@ -114,5 +123,6 @@ Package.onTest(function (api) {
     'tests/tests.js',
     'tests/tests.next.js',
     'tests/tests.css'
+   // TODO: Remove target only for client once server side support is in.
    ], 'client');
 });
