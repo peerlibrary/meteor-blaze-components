@@ -45,6 +45,8 @@ Installation
 ------------
 
 ```
+meteor remove blaze-html-templates
+meteor remove templating
 meteor add peerlibrary:blaze-components
 ```
 

@@ -36,11 +36,20 @@ Package.onUse(function (api) {
     'jquery'
   ]);
 
-  // Based on meteor/packages/templating/package.js.
-  api.addFiles('templating.js', 'client');
-  api.export('Template', 'client');
+  // We want for templating package to augment Template before us,
+  // but we cannot make a real dependency because of plugin conflict
+  // (both us and templating are registering a *.html plugin).
+  api.use([
+    'templating'
+  ], {weak: true});
+
+  api.imply([
+    'meteor',
+    'blaze',
+    'spacebars'
+  ]);
+
   api.use('isobuild:compiler-plugin@1.0.0');
-  api.imply(['meteor', 'blaze', 'spacebars'], 'client');
 
   // Internal dependencies.
   api.use([
@@ -55,6 +64,7 @@ Package.onUse(function (api) {
     'peerlibrary:data-lookup@0.1.0'
   ]);
 
+  api.export('Template');
   api.export('BlazeComponent');
   // TODO: Move to a separate package. Possibly one with debugOnly set to true.
   api.export('BlazeComponentDebug');
@@ -64,6 +74,7 @@ Package.onUse(function (api) {
     'attrs.js',
     'materializer.js',
     'lib.coffee',
+    'template.coffee',
     'debug.coffee'
   ]);
 
