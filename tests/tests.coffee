@@ -920,6 +920,152 @@ class BasicTestCase extends ClassyTestCase
       #{FOO_COMPONENT_CONTENT()}
     """
 
+  TEST_BLOCK_COMPONENT_CONTENT = ->
+    """
+      <h2>Names and emails and components (CaptionComponent/CaptionComponent/CaptionComponent)</h2>
+      <h3 class="insideBlockHelperTemplate">(ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent)</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th class="insideBlockHelper">Email</th>
+            <th>Component (ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Foo</td>
+            <td class="insideContent">foo@example.com</td>
+            <td>TestBlockComponent/TestBlockComponent/ExtraTableWrapperBlockComponent</td>
+          </tr>
+          <tr>
+            <td>Bar</td>
+            <td class="insideContentComponent">bar@example.com</td>
+            <td>RowComponent/RowComponent/RowComponent</td>
+          </tr>
+          <tr>
+            <td>Baz</td>
+            <td class="insideContentComponent">baz@example.com</td>
+            <td>RowComponent/RowComponent/RowComponent</td>
+          </tr>
+          <tr>
+            <td>Works</td>
+            <td class="insideContentComponent">nameFromComponent1@example.com</td>
+            <td>RowComponent/RowComponent/RowComponent</td>
+          </tr>
+          <tr>
+            <td>Bac</td>
+            <td class="insideContentComponent">bac@example.com</td>
+            <td>RowComponent/RowComponent/RowComponent</td>
+          </tr>
+          <tr>
+            <td>Works</td>
+            <td class="insideContentComponent">nameFromComponent2@example.com</td>
+            <td>RowComponent/RowComponent/RowComponent</td>
+          </tr>
+          <tr>
+            <td>Works</td>
+            <td class="insideContentComponent">nameFromComponent3@example.com</td>
+            <td>RowComponent/RowComponent/RowComponent</td>
+          </tr>
+          <tr>
+            <td>Bam</td>
+            <td class="insideContentComponent">bam@example.com</td>
+            <td>RowComponent/RowComponent/RowComponent</td>
+          </tr>
+          <tr>
+            <td>Bav</td>
+            <td class="insideContentComponent">bav@example.com</td>
+            <td>RowComponent/RowComponent/RowComponent</td>
+          </tr>
+          <tr>
+            <td>Bak</td>
+            <td class="insideContentComponent">bak@example.com</td>
+            <td>RowComponent/RowComponent/RowComponent</td>
+          </tr>
+          <tr>
+            <td>Bal</td>
+            <td class="insideContentComponent">bal@example.com</td>
+            <td>RowComponent/RowComponent/RowComponent</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <th>Name</th>
+            <th class="insideBlockHelperComponent">Email</th>
+            <th>Component (FootComponent/FootComponent/FootComponent)</th>
+          </tr>
+        </tfoot>
+      </table>
+    """
+
+  TEST_BLOCK_COMPONENT_STRUCTURE = ->
+    component: 'TestBlockComponent'
+    data: {top: '42'}
+    children: [
+      component: 'ExtraTableWrapperBlockComponent'
+      data: {block: '43'}
+      children: [
+        component: 'CaptionComponent'
+        data: {block: '43'}
+        children: [{}]
+      ,
+        component: 'RowComponent'
+        data: {name: 'Bar', email: 'bar@example.com'}
+        children: [{}]
+      ,
+        component: 'RowComponent'
+        data: {name: 'Baz', email: 'baz@example.com'}
+        children: [{}]
+      ,
+        component: 'RowComponent'
+        data: {name: 'Works', email: 'nameFromComponent1@example.com'}
+        children: [{}]
+      ,
+        component: 'RowComponent'
+        data: {name: 'Bac', email: 'bac@example.com'}
+        children: [{}]
+      ,
+        component: 'RowComponent'
+        data: {name: 'Works', email: 'nameFromComponent2@example.com'}
+        children: [{}]
+      ,
+        component: 'RowComponent'
+        data: {name: 'Works', email: 'nameFromComponent3@example.com'}
+        children: [{}]
+      ,
+        component: 'RowComponent'
+        data: {name: 'Bam', email: 'bam@example.com'}
+        children: [{}]
+      ,
+        component: 'RowComponent'
+        data: {name: 'Bav', email: 'bav@example.com'}
+        children: [{}]
+      ,
+        component: 'RenderRowComponent'
+        data: {top: '42'}
+        children: [
+          component: 'RowComponent'
+          data: {name: 'Bak', email: 'bak@example.com'}
+          children: [{}]
+        ,
+          component: 'RowComponent'
+          data: {name: 'Bal', email: 'bal@example.com'}
+          children: [{}]
+        ,
+          {}
+        ]
+      ,
+        component: 'FootComponent'
+        data: {block: '43'}
+        children: [{}]
+      ,
+        {}
+      ]
+    ,
+      {}
+    ]
+
   testComponents: ->
     componentTemplate = BlazeComponent.getComponent('MainComponent').renderComponent()
 
@@ -1081,7 +1227,7 @@ class BasicTestCase extends ClassyTestCase
     ,
       /Template 'TemplateWhichDoesNotExist' cannot be found/
 
-  testEvents: [
+  testClientEvents: [
     ->
       MainComponent.calls = []
       SubComponent.calls = []
@@ -1121,7 +1267,7 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
   ]
 
-  testAnimation: [
+  testClientAnimation: [
     ->
       AnimatedListComponent.calls = []
 
@@ -1155,7 +1301,7 @@ class BasicTestCase extends ClassyTestCase
       @assertEqual AnimatedListComponent.calls, []
   ]
 
-  assertArgumentsConstructorStateChanges: (stateChanges, wrappedInComponent=true) ->
+  assertArgumentsConstructorStateChanges: (stateChanges, wrappedInComponent=true, staticRender=false) ->
     firstSteps = (dataContext) =>
       change = stateChanges.shift()
       componentId = change.componentId
@@ -1223,6 +1369,10 @@ class BasicTestCase extends ClassyTestCase
     secondComponentId = firstSteps a:"3a", b: "4a"
     thirdComponentId = firstSteps a: "5", b: "6"
     forthComponentId = firstSteps {}
+
+    if staticRender
+      @assertEqual stateChanges, []
+      return
 
     secondSteps = (componentId, dataContext) =>
       change = stateChanges.shift()
@@ -1370,7 +1520,7 @@ class BasicTestCase extends ClassyTestCase
 
     @assertEqual stateChanges, []
 
-  assertArgumentsOnCreatedStateChanges: (stateChanges) ->
+  assertArgumentsOnCreatedStateChanges: (stateChanges, staticRender=false) ->
     firstSteps = (dataContext) =>
       change = stateChanges.shift()
       componentId = change.componentId
@@ -1435,6 +1585,10 @@ class BasicTestCase extends ClassyTestCase
     secondComponentId = firstSteps a:"3a", b: "4a"
     thirdComponentId = firstSteps a: "5", b: "6"
     forthComponentId = firstSteps {}
+
+    if staticRender
+      @assertEqual stateChanges, []
+      return
 
     thirdSteps = (componentId) =>
       change = stateChanges.shift()
@@ -1546,7 +1700,51 @@ class BasicTestCase extends ClassyTestCase
 
     @assertEqual stateChanges, []
 
-  testArguments: [
+  testArguments: ->
+    ArgumentsComponent.calls = []
+    ArgumentsComponent.constructorStateChanges = []
+    ArgumentsComponent.onCreatedStateChanges = []
+
+    reactiveContext {}
+    reactiveArguments {}
+
+    output = Blaze.toHTMLWithData Template.argumentsTestTemplate,
+      top: '42'
+
+    @assertEqual trim(output), trim """
+      <div class="argumentsTestTemplate">
+        <p>Component data context: {"a":"1","b":"2"}</p>
+        <p>Current data context: {"a":"1","b":"2"}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"3a","b":"4a"}</p>
+        <p>Current data context: {"a":"3a","b":"4a"}</p>
+        <p>Parent data context: {"a":"3","b":"4"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"5","b":"6"}</p>
+        <p>Current data context: {"a":"5","b":"6"}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: ["7",{"hash":{"a":"8","b":"9"}}]</p>
+        <p>Component data context: {}</p>
+        <p>Current data context: {}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: [{},{"hash":{}}]</p>
+      </div>
+    """
+
+    @assertEqual ArgumentsComponent.calls.length, 4
+
+    @assertEqual ArgumentsComponent.calls, [
+      undefined
+      undefined
+      '7'
+      {}
+    ]
+
+    @assertArgumentsConstructorStateChanges ArgumentsComponent.constructorStateChanges, true, true
+    @assertArgumentsOnCreatedStateChanges ArgumentsComponent.onCreatedStateChanges, true
+
+  testClientArguments: [
     ->
       ArgumentsComponent.calls = []
       ArgumentsComponent.constructorStateChanges = []
@@ -1693,7 +1891,7 @@ class BasicTestCase extends ClassyTestCase
       #{COMPONENT_CONTENT 'SubComponent'}
     """
 
-  testMixinEvents: ->
+  testClientMixinEvents: ->
     FirstMixin.calls = []
     SecondMixin.calls = []
     SubComponent.calls = []
@@ -1759,7 +1957,7 @@ class BasicTestCase extends ClassyTestCase
       <p>43</p>
     """
 
-  testPostMessageExample: [
+  testClientPostMessageExample: [
     ->
       @renderedComponent = Blaze.render PostMessageButtonComponent.renderComponent(), $('body').get(0)
 
@@ -1851,7 +2049,7 @@ class BasicTestCase extends ClassyTestCase
       </table>
     """
 
-  testComponentParent: [
+  testClientComponentParent: [
     ->
       reactiveChild1 false
       reactiveChild2 false
@@ -1949,7 +2147,7 @@ class BasicTestCase extends ClassyTestCase
       ]
   ]
 
-  testCases: [
+  testClientCases: [
     ->
       @dataContext = new ReactiveField {case: 'left'}
 
@@ -1986,7 +2184,7 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
   ]
 
-  testMixinsExample: [
+  testClientMixinsExample: [
     ->
       @renderedComponent = Blaze.renderWithData BlazeComponent.getComponent('MyComponent').renderComponent(), {top: '42'}, $('body').get(0)
 
@@ -2010,7 +2208,7 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
   ]
 
-  testReadmeExample: [
+  testClientReadmeExample: [
     ->
       @renderedComponent = Blaze.render BlazeComponent.getComponent('ExampleComponent').renderComponent(), $('body').get(0)
 
@@ -2049,7 +2247,7 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
   ]
 
-  testReadmeExampleJS: [
+  testClientReadmeExampleJS: [
     ->
       @renderedComponent = Blaze.render BlazeComponent.getComponent('ExampleComponentJS').renderComponent(), $('body').get(0)
 
@@ -2088,7 +2286,7 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
   ]
 
-  testMixinsExampleWithJavaScript: [
+  testClientMixinsExampleWithJavaScript: [
     ->
       @renderedComponent = Blaze.renderWithData BlazeComponent.getComponent('OurComponentJS').renderComponent(), {top: '42'}, $('body').get(0)
 
@@ -2112,7 +2310,7 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
   ]
 
-  testReadmeExampleES2015: [
+  testClientReadmeExampleES2015: [
     ->
       @renderedComponent = Blaze.render BlazeComponent.getComponent('ExampleComponentES2015').renderComponent(), $('body').get(0)
 
@@ -2151,7 +2349,7 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
   ]
 
-  testMixinsExampleWithES2015: [
+  testClientMixinsExampleWithES2015: [
     ->
       @renderedComponent = Blaze.renderWithData BlazeComponent.getComponent('OurComponentES2015').renderComponent(), {top: '42'}, $('body').get(0)
 
@@ -2175,7 +2373,7 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
   ]
 
-  testOnDestroyedOrder: [
+  testClientOnDestroyedOrder: [
     ->
       OuterComponent.calls = []
 
@@ -2220,7 +2418,137 @@ class BasicTestCase extends ClassyTestCase
       ]
   ]
 
-  testNamespacedArguments: [
+  testNamespacedArguments: ->
+    MyNamespace.Foo.ArgumentsComponent.calls = []
+    MyNamespace.Foo.ArgumentsComponent.constructorStateChanges = []
+    MyNamespace.Foo.ArgumentsComponent.onCreatedStateChanges = []
+
+    reactiveContext {}
+    reactiveArguments {}
+
+    output = Blaze.toHTMLWithData Template.namespacedArgumentsTestTemplate,
+      top: '42'
+
+    @assertEqual trim(output), trim """
+      <div class="namespacedArgumentsTestTemplate">
+        <p>Component data context: {"a":"1","b":"2"}</p>
+        <p>Current data context: {"a":"1","b":"2"}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"3a","b":"4a"}</p>
+        <p>Current data context: {"a":"3a","b":"4a"}</p>
+        <p>Parent data context: {"a":"3","b":"4"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"5","b":"6"}</p>
+        <p>Current data context: {"a":"5","b":"6"}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: ["7",{"hash":{"a":"8","b":"9"}}]</p>
+        <p>Component data context: {}</p>
+        <p>Current data context: {}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: [{},{"hash":{}}]</p>
+      </div>
+    """
+
+    @assertEqual MyNamespace.Foo.ArgumentsComponent.calls.length, 4
+
+    @assertEqual MyNamespace.Foo.ArgumentsComponent.calls, [
+      undefined
+      undefined
+      '7'
+      {}
+    ]
+
+    @assertArgumentsConstructorStateChanges MyNamespace.Foo.ArgumentsComponent.constructorStateChanges, false, true
+    @assertArgumentsOnCreatedStateChanges MyNamespace.Foo.ArgumentsComponent.onCreatedStateChanges, true
+
+    OurNamespace.ArgumentsComponent.calls = []
+    OurNamespace.ArgumentsComponent.constructorStateChanges = []
+    OurNamespace.ArgumentsComponent.onCreatedStateChanges = []
+
+    reactiveContext {}
+    reactiveArguments {}
+
+    output = Blaze.toHTMLWithData Template.ourNamespacedArgumentsTestTemplate,
+      top: '42'
+
+    @assertEqual trim(output), trim """
+      <div class="ourNamespacedArgumentsTestTemplate">
+        <p>Component data context: {"a":"1","b":"2"}</p>
+        <p>Current data context: {"a":"1","b":"2"}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"3a","b":"4a"}</p>
+        <p>Current data context: {"a":"3a","b":"4a"}</p>
+        <p>Parent data context: {"a":"3","b":"4"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"5","b":"6"}</p>
+        <p>Current data context: {"a":"5","b":"6"}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: ["7",{"hash":{"a":"8","b":"9"}}]</p>
+        <p>Component data context: {}</p>
+        <p>Current data context: {}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: [{},{"hash":{}}]</p>
+      </div>
+    """
+
+    @assertEqual OurNamespace.ArgumentsComponent.calls.length, 4
+
+    @assertEqual OurNamespace.ArgumentsComponent.calls, [
+      undefined
+      undefined
+      '7'
+      {}
+    ]
+
+    @assertArgumentsConstructorStateChanges OurNamespace.ArgumentsComponent.constructorStateChanges, false, true
+    @assertArgumentsOnCreatedStateChanges OurNamespace.ArgumentsComponent.onCreatedStateChanges, true
+
+    OurNamespace.calls = []
+    OurNamespace.constructorStateChanges = []
+    OurNamespace.onCreatedStateChanges = []
+
+    reactiveContext {}
+    reactiveArguments {}
+
+    output = Blaze.toHTMLWithData Template.ourNamespaceComponentArgumentsTestTemplate,
+      top: '42'
+
+    @assertEqual trim(output), trim """
+      <div class="ourNamespaceComponentArgumentsTestTemplate">
+        <p>Component data context: {"a":"1","b":"2"}</p>
+        <p>Current data context: {"a":"1","b":"2"}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"3a","b":"4a"}</p>
+        <p>Current data context: {"a":"3a","b":"4a"}</p>
+        <p>Parent data context: {"a":"3","b":"4"}</p>
+        <p>Arguments: []</p>
+        <p>Component data context: {"a":"5","b":"6"}</p>
+        <p>Current data context: {"a":"5","b":"6"}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: ["7",{"hash":{"a":"8","b":"9"}}]</p>
+        <p>Component data context: {}</p>
+        <p>Current data context: {}</p>
+        <p>Parent data context: {"top":"42"}</p>
+        <p>Arguments: [{},{"hash":{}}]</p>
+      </div>
+    """
+
+    @assertEqual OurNamespace.calls.length, 4
+
+    @assertEqual OurNamespace.calls, [
+      undefined
+      undefined
+      '7'
+      {}
+    ]
+
+    @assertArgumentsConstructorStateChanges OurNamespace.constructorStateChanges, false, true
+    @assertArgumentsOnCreatedStateChanges OurNamespace.onCreatedStateChanges, true
+
+  testClientNamespacedArguments: [
     ->
       MyNamespace.Foo.ArgumentsComponent.calls = []
       MyNamespace.Foo.ArgumentsComponent.constructorStateChanges = []
@@ -2589,7 +2917,7 @@ class BasicTestCase extends ClassyTestCase
 
     @assertEqual trim(output), trim COMPONENT_CONTENT 'SubComponent'
 
-  testGetComponentForElement: [
+  testClientGetComponentForElement: [
     ->
       @outerComponent = new (BlazeComponent.getComponent('OuterComponent'))()
 
@@ -2608,160 +2936,33 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
   ]
 
-  testBlockHelpersStructure: [
+  testBlockHelpersStructure: ->
+    component = new (BlazeComponent.getComponent('TestBlockComponent'))()
+
+    @assertTrue component
+
+    componentTemplate = component.renderComponent()
+
+    @assertTrue componentTemplate
+
+    output = Blaze.toHTMLWithData componentTemplate,
+      top: '42'
+
+    @assertEqual trim(output), trim(TEST_BLOCK_COMPONENT_CONTENT())
+
+  testClientBlockHelpersStructure: [
     ->
       @renderedComponent = Blaze.render Template.extraTestBlockComponent, $('body').get(0)
 
       Tracker.afterFlush @expect()
   ,
     ->
-      @assertEqual trim($('.extraTestBlockComponent').html()), trim """
-        <h2>Names and emails and components (CaptionComponent/CaptionComponent/CaptionComponent)</h2>
-        <h3 class="insideBlockHelperTemplate">(ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent)</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th class="insideBlockHelper">Email</th>
-              <th>Component (ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent/ExtraTableWrapperBlockComponent)</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Foo</td>
-              <td class="insideContent">foo@example.com</td>
-              <td>TestBlockComponent/TestBlockComponent/ExtraTableWrapperBlockComponent</td>
-            </tr>
-            <tr>
-              <td>Bar</td>
-              <td class="insideContentComponent">bar@example.com</td>
-              <td>RowComponent/RowComponent/RowComponent</td>
-            </tr>
-            <tr>
-              <td>Baz</td>
-              <td class="insideContentComponent">baz@example.com</td>
-              <td>RowComponent/RowComponent/RowComponent</td>
-            </tr>
-            <tr>
-              <td>Works</td>
-              <td class="insideContentComponent">nameFromComponent1@example.com</td>
-              <td>RowComponent/RowComponent/RowComponent</td>
-            </tr>
-            <tr>
-              <td>Bac</td>
-              <td class="insideContentComponent">bac@example.com</td>
-              <td>RowComponent/RowComponent/RowComponent</td>
-            </tr>
-            <tr>
-              <td>Works</td>
-              <td class="insideContentComponent">nameFromComponent2@example.com</td>
-              <td>RowComponent/RowComponent/RowComponent</td>
-            </tr>
-            <tr>
-              <td>Works</td>
-              <td class="insideContentComponent">nameFromComponent3@example.com</td>
-              <td>RowComponent/RowComponent/RowComponent</td>
-            </tr>
-            <tr>
-              <td>Bam</td>
-              <td class="insideContentComponent">bam@example.com</td>
-              <td>RowComponent/RowComponent/RowComponent</td>
-            </tr>
-            <tr>
-              <td>Bav</td>
-              <td class="insideContentComponent">bav@example.com</td>
-              <td>RowComponent/RowComponent/RowComponent</td>
-            </tr>
-            <tr>
-              <td>Bak</td>
-              <td class="insideContentComponent">bak@example.com</td>
-              <td>RowComponent/RowComponent/RowComponent</td>
-            </tr>
-            <tr>
-              <td>Bal</td>
-              <td class="insideContentComponent">bal@example.com</td>
-              <td>RowComponent/RowComponent/RowComponent</td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <th>Name</th>
-              <th class="insideBlockHelperComponent">Email</th>
-              <th>Component (FootComponent/FootComponent/FootComponent)</th>
-            </tr>
-          </tfoot>
-        </table>
-      """
+      @assertEqual trim($('.extraTestBlockComponent').html()), trim(TEST_BLOCK_COMPONENT_CONTENT())
 
       TestingComponentDebug.structure = {}
       TestingComponentDebug.dumpComponentTree $('.extraTestBlockComponent table').get(0)
 
-      @assertEqual TestingComponentDebug.structure,
-        component: 'TestBlockComponent'
-        data: {top: '42'}
-        children: [
-          component: 'ExtraTableWrapperBlockComponent'
-          data: {block: '43'}
-          children: [
-            component: 'CaptionComponent'
-            data: {block: '43'}
-            children: [{}]
-          ,
-            component: 'RowComponent'
-            data: {name: 'Bar', email: 'bar@example.com'}
-            children: [{}]
-          ,
-            component: 'RowComponent'
-            data: {name: 'Baz', email: 'baz@example.com'}
-            children: [{}]
-          ,
-            component: 'RowComponent'
-            data: {name: 'Works', email: 'nameFromComponent1@example.com'}
-            children: [{}]
-          ,
-            component: 'RowComponent'
-            data: {name: 'Bac', email: 'bac@example.com'}
-            children: [{}]
-          ,
-            component: 'RowComponent'
-            data: {name: 'Works', email: 'nameFromComponent2@example.com'}
-            children: [{}]
-          ,
-            component: 'RowComponent'
-            data: {name: 'Works', email: 'nameFromComponent3@example.com'}
-            children: [{}]
-          ,
-            component: 'RowComponent'
-            data: {name: 'Bam', email: 'bam@example.com'}
-            children: [{}]
-          ,
-            component: 'RowComponent'
-            data: {name: 'Bav', email: 'bav@example.com'}
-            children: [{}]
-          ,
-            component: 'RenderRowComponent'
-            data: {top: '42'}
-            children: [
-              component: 'RowComponent'
-              data: {name: 'Bak', email: 'bak@example.com'}
-              children: [{}]
-            ,
-              component: 'RowComponent'
-              data: {name: 'Bal', email: 'bal@example.com'}
-              children: [{}]
-            ,
-              {}
-            ]
-          ,
-            component: 'FootComponent'
-            data: {block: '43'}
-            children: [{}]
-          ,
-            {}
-          ]
-        ,
-          {}
-        ]
+      @assertEqual TestingComponentDebug.structure, TEST_BLOCK_COMPONENT_STRUCTURE()
 
       @assertEqual BlazeComponent.getComponentForElement($('.insideContent').get(0)).componentName(), 'TestBlockComponent'
       @assertEqual BlazeComponent.getComponentForElement($('.insideContentComponent').get(0)).componentName(), 'RowComponent'
@@ -2772,7 +2973,7 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
   ]
 
-  testExtendingTemplate: [
+  testClientExtendingTemplate: [
     ->
       mainComponent3Calls = []
 
@@ -2893,7 +3094,7 @@ class BasicTestCase extends ClassyTestCase
       </div>
     """
 
-  testInlineEvents: [
+  testClientInlineEvents: [
     ->
       reactiveArguments {z: 1}
 
@@ -2976,7 +3177,7 @@ class BasicTestCase extends ClassyTestCase
       Blaze.remove @renderedComponent
   ]
 
-  testInvalidInlineEvents: ->
+  testClientInvalidInlineEvents: ->
     @assertThrows =>
       Blaze.render Template.invalidInlineEventsTestTemplate, $('body').get(0)
     ,
