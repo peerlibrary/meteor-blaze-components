@@ -6,7 +6,9 @@
 
 if (!Blaze.Template.__dynamicWithDataContext) {
   Blaze.Template.__dynamicWithDataContext = Blaze.Template.__dynamicWithDataContextBackport;
+  Blaze.Template.__dynamicWithDataContext.viewName = 'Template.__dynamicWithDataContext';
   Blaze.Template.__dynamic = Blaze.Template.__dynamicBackport;
+  Blaze.Template.__dynamic.viewName = 'Template.__dynamic';
 
   var Template = Blaze.Template;
 
