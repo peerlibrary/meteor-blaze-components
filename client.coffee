@@ -38,18 +38,6 @@ Blaze._DOMRange::attach = (parentElement, nextNode, _isMove, _isReplace) ->
 
   originalDOMRangeAttach.apply @, arguments
 
-# We make Template.dynamic resolve to the component if component name is specified as a template name, and not
-# to the non-component template which is probably used only for the content. We simply reuse Blaze._getTemplate.
-# TODO: How to pass args?
-#       Maybe simply by using Spacebars nested expressions (https://github.com/meteor/meteor/pull/4101)?
-#       Template.dynamic template="..." data=(args ...)? But this exposes the fact that args are passed as data context.
-#       Maybe we should simply override Template.dynamic and add "args" argument?
-# TODO: This can be removed once https://github.com/meteor/meteor/pull/4036 is merged in.
-# TODO: Move this to the server side as well.
-Template.__dynamicWithDataContext.__helpers.set 'chooseTemplate', (name) ->
-  Blaze._getTemplate name, =>
-    Template.instance()
-
 WHITESPACE_REGEX = /^\s+$/
 
 EventHandler = Blaze._AttributeHandler.extend
@@ -92,8 +80,6 @@ Blaze._toText = (htmljs, parentView, textMode) ->
       throw new Error "Invalid event handler: #{fun}"
   else
     originalToText htmljs, parentView, textMode
-
-share.inExpandAttributes = false
 
 originalExpandAttributes = Blaze._expandAttributes
 Blaze._expandAttributes = (attrs, parentView) ->

@@ -1,4 +1,5 @@
 /* This file is needed to backport this pull request: https://github.com/meteor/meteor/pull/5893
+   It is a copy of the materializer.js file and is needed because it references symbols from attrs.js.
 
    TODO: Remove this file eventually.
  */

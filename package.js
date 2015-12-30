@@ -36,9 +36,9 @@ Package.onUse(function (api) {
     'jquery'
   ]);
 
-  // We want for templating package to augment Template before us,
-  // but we cannot make a real dependency because of plugin conflict
-  // (both us and templating are registering a *.html plugin).
+  // If templating package is among dependencies, we want it to be loaded before
+  // us to not override our augmented functions. But we cannot make a real dependency
+  // because of a plugin conflict (both us and templating are registering a *.html plugin).
   api.use([
     'templating'
   ], {weak: true});
@@ -70,26 +70,20 @@ Package.onUse(function (api) {
   api.export('BlazeComponentDebug');
 
   api.addFiles([
+    'template.coffee',
+    'compatibility/templating.js',
+    'compatibility/dynamic.html',
+    'compatibility/dynamic.js',
     'compatibility/lookup.js',
     'compatibility/attrs.js',
     'compatibility/materializer.js',
     'lib.coffee',
-    'template.coffee',
     'debug.coffee'
   ]);
 
   api.addFiles([
     'client.coffee'
   ], 'client');
-
-  /* To add server side templating support.
-     See: https://github.com/meteor/meteor/pull/5903
-  api.addFiles([
-    'meteor/packages/templating/templating.js',
-    'meteor/packages/templating/dynamic.html',
-    'meteor/packages/templating/dynamic.js'
-  ], 'server');
-  */
 });
 
 Package.onTest(function (api) {
@@ -123,6 +117,5 @@ Package.onTest(function (api) {
     'tests/tests.js',
     'tests/tests.next.js',
     'tests/tests.css'
-   // TODO: Remove target only for client once server side support is in.
-   ], 'client');
+   ]);
 });

@@ -1,6 +1,6 @@
-/* This file backports Blaze lookup.js from Meteor 1.2 so that required
-   Blaze features to support Blaze Components are available also in
-   older Meteor versions.
+/* This file backports Blaze lookup.js from Meteor 1.2 so that required Blaze features to support Blaze
+   Components are available also in older Meteor versions.
+   It is a copy of lookup.js file from Meteor 1.2 with lexical scope lookup commented out.
 
    TODO: Remove this file eventually.
  */

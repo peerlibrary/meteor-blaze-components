@@ -131,6 +131,8 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
 
   null
 
+share.inExpandAttributes = false
+
 bindComponent = (component, helper) ->
   if _.isFunction helper
     (args...) ->
@@ -217,7 +219,7 @@ callTemplateBaseHooks = (component, hookName) ->
 
   return
 
-share.wrapViewAndTemplate = (currentView, f) ->
+wrapViewAndTemplate = (currentView, f) ->
   # For template content wrapped inside the block helper, we want to skip the block
   # helper when searching for corresponding template. This means that Template.instance()
   # will return the component's template, while BlazeComponent.currentComponent() will
@@ -251,7 +253,7 @@ addEvents = (view, component) ->
           event = args[0]
 
           currentView = Blaze.getView event.currentTarget
-          share.wrapViewAndTemplate currentView, ->
+          wrapViewAndTemplate currentView, ->
             handler.apply component, args
 
           # Make sure CoffeeScript does not return anything.
@@ -298,6 +300,83 @@ registerFirstCreatedHook = (template, onCreated) ->
     template.created = ->
       onCreated.call @
       oldCreated?.call @
+
+# We make Template.dynamic resolve to the component if component name is specified as a template name, and not
+# to the non-component template which is probably used only for the content. We simply reuse Blaze._getTemplate.
+# TODO: How to pass args?
+#       Maybe simply by using Spacebars nested expressions (https://github.com/meteor/meteor/pull/4101)?
+#       Template.dynamic template="..." data=(args ...)? But this exposes the fact that args are passed as data context.
+#       Maybe we should simply override Template.dynamic and add "args" argument?
+# TODO: This can be removed once https://github.com/meteor/meteor/pull/4036 is merged in.
+Template.__dynamicWithDataContext.__helpers.set 'chooseTemplate', (name) ->
+  Blaze._getTemplate name, =>
+    Template.instance()
+
+argumentsConstructor = ->
+  # This class should never really be created.
+  assert false
+
+# TODO: Find a way to pass arguments to the component without having to introduce one intermediary data context into the data context hierarchy.
+#       (In fact two data contexts, because we add one more when restoring the original one.)
+Template.registerHelper 'args', ->
+  obj = {}
+  # We use custom constructor to know that it is not a real data context.
+  obj.constructor = argumentsConstructor
+  obj._arguments = arguments
+  obj
+
+share.EVENT_HANDLER_REGEX = /^on[A-Z]/
+
+share.isEventHandler = (fun) ->
+  _.isFunction(fun) and fun.eventHandler
+
+# When event handlers are provided directly as args they are not passed through
+# Spacebars.event by the template compiler, so we have to do it ourselves.
+originalFlattenAttributes = HTML.flattenAttributes
+HTML.flattenAttributes = (attrs) ->
+  if attrs = originalFlattenAttributes attrs
+    for name, value of attrs when share.EVENT_HANDLER_REGEX.test name
+      # Already processed by Spacebars.event.
+      continue if share.isEventHandler value
+      continue if _.isArray(value) and _.some value, share.isEventHandler
+
+      # When event handlers are provided directly as args,
+      # we require them to be just event handlers.
+      if _.isArray value
+        attrs[name] = _.map value, Spacebars.event
+      else
+        attrs[name] = Spacebars.event value
+
+  attrs
+
+Spacebars.event = (eventHandler, args...) ->
+  throw new Error "Event handler not a function: #{eventHandler}" unless _.isFunction eventHandler
+
+  # Execute all arguments.
+  args = Spacebars.mustacheImpl ((xs...) -> xs), args...
+
+  fun = (event, eventArgs...) ->
+    currentView = Blaze.getView event.currentTarget
+    wrapViewAndTemplate currentView, ->
+      # We do not have to bind "this" because event handlers are resolved
+      # as template helpers and are already bound. We bind event handlers
+      # in dynamic attributes already as well.
+      eventHandler.apply null, [event].concat args, eventArgs
+
+  fun.eventHandler = true
+
+  fun
+
+# When converting the component to the static HTML, remove all event handlers.
+originalVisitTag = HTML.ToHTMLVisitor::visitTag
+HTML.ToHTMLVisitor::visitTag = (tag) ->
+  if attrs = tag.attrs
+    attrs = HTML.flattenAttributes attrs
+    for name of attrs when share.EVENT_HANDLER_REGEX.test name
+      delete attrs[name]
+    tag.attrs = attrs
+
+  originalVisitTag.call @, tag
 
 class BlazeComponent extends BaseComponent
   # TODO: Figure out how to do at the BaseComponent level?
@@ -473,10 +552,10 @@ class BlazeComponent extends BaseComponent
         # were provided through "args" template helper, so we just continue normally.
         data = null
 
-      if data?.constructor isnt share.argumentsConstructor
+      if data?.constructor isnt argumentsConstructor
         # So that currentComponent in the constructor can return the component
         # inside which this component has been constructed.
-        return share.wrapViewAndTemplate Blaze.currentView, =>
+        return wrapViewAndTemplate Blaze.currentView, =>
           component = new componentClass()
 
           return component.renderComponent parentComponent
@@ -500,7 +579,7 @@ class BlazeComponent extends BaseComponent
         # See https://github.com/meteor/meteor/issues/4073
         reactiveArguments = new ComputedField ->
           data = currentWith.dataVar.get()
-          assert.equal data?.constructor, share.argumentsConstructor
+          assert.equal data?.constructor, argumentsConstructor
           data._arguments
         ,
           EJSON.equals
@@ -514,7 +593,7 @@ class BlazeComponent extends BaseComponent
           template = Blaze._withCurrentView Blaze.currentView.parentView.parentView, =>
             # So that currentComponent in the constructor can return the component
             # inside which this component has been constructed.
-            return share.wrapViewAndTemplate Blaze.currentView, =>
+            return wrapViewAndTemplate Blaze.currentView, =>
               # Use arguments for the constructor.
               component = new componentClass nonreactiveArguments...
 

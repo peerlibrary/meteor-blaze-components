@@ -1,4 +1,5 @@
 /* This file is needed to backport this pull request: https://github.com/meteor/meteor/pull/5893
+   It is a copy of attrs.js file with the changes from the above pull request merged in.
 
    TODO: Remove this file eventually.
  */
