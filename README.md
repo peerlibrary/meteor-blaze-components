@@ -10,7 +10,7 @@ See [live tutorial](http://components.meteor.com/) for an introduction.
 Adding this package to your Meteor application adds `BlazeComponent` and `BlazeComponentDebug` classes into the
 global scope.
 
-Client side only.
+Both client and server side.
 
 Table of contents
 -----------------
@@ -27,6 +27,7 @@ Table of contents
 * [Animations](#animations)
 * [Mixins](#mixins)
 * [Namespaces](#namespaces)
+* [Server side rendering](#server-side-rendering)
 * [Use with existing classes](#use-with-existing-classes)
 * [Reference](#reference)
   * [Class methods](#class-methods)
@@ -55,9 +56,9 @@ If you get an error that two packages are trying to handle `*.html` files, you h
 or a package does not depend on the `templating` packages (often through the `blaze-html-templates` package).
 Blaze Components supersedes the `templating` package and provides its functionality as well.
 
-Blaze Components compile `*.html` files both on the client and server side. If you have previously been adding
+Blaze Components compile HTML template files both on the client and server side. If you have previously been adding
 HTML files on the server side as well, you might want to limit those to the client side only. Moreover, server
-side `*.html` templates do not support `<head>` or `<body>` tags.
+side HTML template files do not support `<head>` or `<body>` tags.
 
 Additional packages
 -------------------
@@ -989,6 +990,31 @@ ways to keep your components structured, tidy, and reusable.
 
 *Example above is using [`renderComponent`](#user-content-reference_instance_renderComponent) method which is not yet public.*
 
+Server side rendering
+---------------------
+
+Blaze Components support rendering on the server side as well. You can use
+[`renderComponentToHTML`](#user-content-reference_instance_renderComponentToHTML) method to render the Blaze Component
+to a HTML string. For Blaze Components to work well on the server side they have to use pure Blaze reactivity
+to render its content, and do not manipulate rendered DOM in the [`onRendered`](#user-content-reference_instance_onRendered)
+life-cycle hook (the hook is not even called when using `renderComponentToHTML`). Such Blaze Components are recommended
+anyway: use instance-bound reactive variables to keep the component's state and manipulate those variables to change how
+the component is rendered by Blaze. For animations and other special effects, use Blaze Components'
+[support for animations](#animations) (animations are not called when rendering to a HTML string, too).
+
+Because it is possible to use Blaze Components on both client and server side it is important to be conscious
+to which target(s) you add HTML template file and Blaze Component code file for your Blaze Component. In general
+it is not a problem if you add files to the server side even if you do not plan to use Blaze Components on the server
+side, but be careful to not expose server side only components to your clients.
+
+As a [reminder](http://docs.meteor.com/#/full/structuringyourapp), put files into the `client` directory in your app if
+you want them to be available only on the client side, into the `server` directory if you want them to be available only
+on the server side, and elsewhere (like `lib` directory) if you want them to be available both on the client and server
+side. For packages, use `architecture` argument to your [`addFiles`](http://docs.meteor.com/#/full/pack_addFiles) calls
+to control where are added files available, `'client'`, `'server'`, and `['client', 'server']`, respectivelly.
+
+*Currently, server side HTML template files do not support `<head>` or `<body>` tags.*
+
 Use with existing classes
 -------------------------
 
@@ -1093,6 +1119,24 @@ var OurComponent = MyComponent.extendComponent({
 ```
 
 In ES2015 and CoffeeScript you do not have to use `__super__` but can use languages' `super`.
+
+<a name="reference_class_renderComponent"></a>
+```javascript
+static renderComponent([parentComponent])
+```
+
+This is a complementary class method to the [`renderComponent`](#user-content-reference_instance_renderComponent)
+instance method. It automatically instantiates the component before calling `renderComponent` on it.
+
+*Despite being documented, `renderComponent` method is not yet considered public and is subject to change.*
+
+<a name="reference_class_renderComponentToHTML"></a>
+```javascript
+renderComponentToHTML([parentComponent], [parentView], [data])
+```
+
+This is a complementary class method to the [`renderComponentToHTML`](#user-content-reference_instance_renderComponentToHTML)
+instance method. It automatically instantiates the component before calling `renderComponentToHTML` on it.
 
 ### Instance methods ###
 
@@ -1549,7 +1593,7 @@ are then rendered by Blaze to DOM.
 
 <a name="reference_instance_renderComponent"></a>
 ```javascript
-renderComponent(parentComponent)
+renderComponent([parentComponent])
 ```
 
 Renders a Blaze Component into a Blaze template.
@@ -1597,6 +1641,24 @@ You should call this method only if you have previously programmatically rendere
 [`Blaze.renderWithData`](http://docs.meteor.com/#/full/blaze_renderwithdata)). In all other cases Blaze Components
 will be removed from DOM and destroyed automatically by Blaze: you should not interfere with Blaze by removing
 rendered DOM by yourself.
+
+<a name="reference_instance_renderComponentToHTML"></a>
+```javascript
+renderComponentToHTML([parentComponent], [parentView], [data])
+```
+
+Renders a Blaze Component into a HTML string. If you pass `data`, it is used as a data context for rendering.
+
+It works both on the client and [server side](#server-side-rendering). But you have to add your HTML template
+file and Blaze Component code file to the target (or targets) you want to call this method on.
+
+When using this method to render a Blaze Component, [life-cycle](#life-cycle-hooks-1) of a component is different:
+the component is created and destroyed, but not rendered (its [`onRendered`](#user-content-reference_instance_onRendered)
+life-cycle hook is also not called). This allows you to put into the [`onCreated`](#user-content-reference_instance_onCreated)
+life-cycle hook initialization of the component which does not depend on the fact that the component is being
+rendered to the DOM, and you put into the `onRendered` logic which needs access to the rendered DOM.
+Of course, the best is if you do not access DOM directly and do not use `onRendered`. Then such a component
+can work both on the client and server side the same.
 
 #### Utilities ####
 

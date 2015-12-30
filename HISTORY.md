@@ -15,6 +15,8 @@
 * Allow binding of event handlers in templates instead of through event maps.
   Fixes [#99](https://github.com/peerlibrary/meteor-blaze-components/issues/99).
 * Fixed missing animation hooks in some cases.
+* Preliminary support for server side rendering.
+  See [#110](https://github.com/peerlibrary/meteor-blaze-components/issues/110).
 
 ## v0.15.1, 2015-Oct-27
 
