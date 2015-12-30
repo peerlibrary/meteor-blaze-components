@@ -378,6 +378,70 @@ HTML.ToHTMLVisitor::visitTag = (tag) ->
 
   originalVisitTag.call @, tag
 
+currentViewIfRendering = ->
+  view = Blaze.currentView
+  if view?._isInRender
+    view
+  else
+    null
+
+contentAsView = (content) ->
+  # We do not check content for validity.
+
+  if content instanceof Blaze.Template
+    content.constructView()
+  else if content instanceof Blaze.View
+    content
+  else
+    func = content
+    unless _.isFunction func
+      func = ->
+        content
+
+    Blaze.View 'render', func
+
+HTMLJSExpander = Blaze._HTMLJSExpander.extend()
+HTMLJSExpander.def
+  # Based on Blaze._HTMLJSExpander, but calls our expandView.
+  visitObject: (x) ->
+    if x instanceof Blaze.Template
+      x = x.constructView()
+    if x instanceof Blaze.View
+      return expandView x, @parentView
+
+    HTML.TransformingVisitor.prototype.visitObject.call @, x
+
+# Based on Blaze._expand, but uses our HTMLJSExpander.
+expand = (htmljs, parentView) ->
+  parentView = parentView or currentViewIfRendering()
+
+  (new HTMLJSExpander parentView: parentView).visit htmljs
+
+# Based on Blaze._expandView, but with flushing.
+expandView = (view, parentView) ->
+  Blaze._createView view, parentView, true
+
+  view._isInRender = true
+  htmljs = Blaze._withCurrentView view, ->
+    view._render()
+  view._isInRender = false
+
+  Tracker.flush()
+
+  result = expand htmljs, view
+
+  Tracker.flush()
+
+  if Tracker.active
+    Tracker.onInvalidate ->
+      Blaze._destroyView view
+  else
+    Blaze._destroyView view
+
+  Tracker.flush()
+
+  result
+
 class BlazeComponent extends BaseComponent
   # TODO: Figure out how to do at the BaseComponent level?
   @getComponentForElement: (domElement) ->
@@ -741,6 +805,28 @@ class BlazeComponent extends BaseComponent
 
   removeComponent: ->
     Blaze.remove @_componentInternals.templateInstance().view if @isRendered()
+
+  @renderComponentToHTML: (parentComponent, parentView) ->
+    component = Tracker.nonreactive =>
+      componentClass = @
+
+      parentView = parentView or currentViewIfRendering() or (parentComponent?.isRendered() and parentComponent._componentInternals.templateInstance().view) or null
+
+      wrapViewAndTemplate parentView, =>
+        new componentClass()
+
+    component.renderComponentToHTML parentComponent, parentView
+
+  renderComponentToHTML: (parentComponent, parentView) ->
+    template = Tracker.nonreactive =>
+      parentView = parentView or currentViewIfRendering() or (parentComponent?.isRendered() and parentComponent._componentInternals.templateInstance().view) or null
+
+      wrapViewAndTemplate parentView, =>
+        @renderComponent parentComponent
+
+    expandedView = expandView contentAsView(template), parentView
+
+    HTML.toHTML expandedView
 
   template: ->
     @callFirstWith(@, 'template') or @constructor.componentName()
