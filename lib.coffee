@@ -385,6 +385,15 @@ currentViewIfRendering = ->
   else
     null
 
+contentAsFunc = (content) ->
+  # We do not check content for validity.
+
+  if !_.isFunction content
+    return ->
+      content
+
+  content
+
 contentAsView = (content) ->
   # We do not check content for validity.
 
@@ -393,12 +402,7 @@ contentAsView = (content) ->
   else if content instanceof Blaze.View
     content
   else
-    func = content
-    unless _.isFunction func
-      func = ->
-        content
-
-    Blaze.View 'render', func
+    Blaze.View 'render', contentAsFunc content
 
 HTMLJSExpander = Blaze._HTMLJSExpander.extend()
 HTMLJSExpander.def
@@ -806,7 +810,7 @@ class BlazeComponent extends BaseComponent
   removeComponent: ->
     Blaze.remove @_componentInternals.templateInstance().view if @isRendered()
 
-  @renderComponentToHTML: (parentComponent, parentView) ->
+  @renderComponentToHTML: (parentComponent, parentView, data) ->
     component = Tracker.nonreactive =>
       componentClass = @
 
@@ -815,16 +819,22 @@ class BlazeComponent extends BaseComponent
       wrapViewAndTemplate parentView, =>
         new componentClass()
 
-    component.renderComponentToHTML parentComponent, parentView
+    if arguments.length > 2
+      component.renderComponentToHTML parentComponent, parentView, data
+    else
+      component.renderComponentToHTML parentComponent, parentView
 
-  renderComponentToHTML: (parentComponent, parentView) ->
+  renderComponentToHTML: (parentComponent, parentView, data) ->
     template = Tracker.nonreactive =>
       parentView = parentView or currentViewIfRendering() or (parentComponent?.isRendered() and parentComponent._componentInternals.templateInstance().view) or null
 
       wrapViewAndTemplate parentView, =>
         @renderComponent parentComponent
 
-    expandedView = expandView contentAsView(template), parentView
+    if arguments.length > 2
+      expandedView = expandView Blaze._TemplateWith(data, contentAsFunc template), parentView
+    else
+      expandedView = expandView contentAsView(template), parentView
 
     HTML.toHTML expandedView
 

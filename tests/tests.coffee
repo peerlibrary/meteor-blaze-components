@@ -1074,11 +1074,7 @@ class BasicTestCase extends ClassyTestCase
     ]
 
   testComponents: ->
-    componentTemplate = BlazeComponent.getComponent('MainComponent').renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = BlazeComponent.getComponent('MainComponent').renderComponentToHTML null, null,
       top: '42'
 
     @assertEqual trim(output), trim """
@@ -1087,11 +1083,7 @@ class BasicTestCase extends ClassyTestCase
       #{COMPONENT_CONTENT 'SubComponent'}
     """
 
-    componentTemplate = new (BlazeComponent.getComponent('MainComponent'))().renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = new (BlazeComponent.getComponent('MainComponent'))().renderComponentToHTML null, null,
       top: '42'
 
     @assertEqual trim(output), trim """
@@ -1100,38 +1092,22 @@ class BasicTestCase extends ClassyTestCase
       #{COMPONENT_CONTENT 'SubComponent'}
     """
 
-    componentTemplate = BlazeComponent.getComponent('FooComponent').renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = BlazeComponent.getComponent('FooComponent').renderComponentToHTML null, null,
       top: '42'
 
     @assertEqual trim(output), trim FOO_COMPONENT_CONTENT()
 
-    componentTemplate = new (BlazeComponent.getComponent('FooComponent'))().renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = new (BlazeComponent.getComponent('FooComponent'))().renderComponentToHTML null, null,
       top: '42'
 
     @assertEqual trim(output), trim FOO_COMPONENT_CONTENT()
 
-    componentTemplate = BlazeComponent.getComponent('SubComponent').renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = BlazeComponent.getComponent('SubComponent').renderComponentToHTML null, null,
       top: '42'
 
     @assertEqual trim(output), trim COMPONENT_CONTENT 'SubComponent'
 
-    componentTemplate = new (BlazeComponent.getComponent('SubComponent'))().renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = new (BlazeComponent.getComponent('SubComponent'))().renderComponentToHTML null, null,
       top: '42'
 
     @assertEqual trim(output), trim COMPONENT_CONTENT 'SubComponent'
@@ -1152,39 +1128,23 @@ class BasicTestCase extends ClassyTestCase
     @assertTrue BlazeComponent.getComponent 'SelfRegisterComponent'
 
   testUnregisteredComponent: ->
-    componentTemplate = UnregisteredComponent.renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = UnregisteredComponent.renderComponentToHTML null, null,
       top: '42'
 
     @assertEqual trim(output), trim COMPONENT_CONTENT 'UnregisteredComponent'
 
-    componentTemplate = new UnregisteredComponent().renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = new UnregisteredComponent().renderComponentToHTML null, null,
       top: '42'
 
     @assertEqual trim(output), trim COMPONENT_CONTENT 'UnregisteredComponent'
 
-    componentTemplate = SelfNameUnregisteredComponent.renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = SelfNameUnregisteredComponent.renderComponentToHTML null, null,
       top: '42'
 
     # We have not extended any helper on purpose, so they should still use "UnregisteredComponent".
     @assertEqual trim(output), trim COMPONENT_CONTENT 'SelfNameUnregisteredComponent', 'UnregisteredComponent'
 
-    componentTemplate = new SelfNameUnregisteredComponent().renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = new SelfNameUnregisteredComponent().renderComponentToHTML null, null,
       top: '42'
 
     # We have not extended any helper on purpose, so they should still use "UnregisteredComponent".
@@ -1209,12 +1169,12 @@ class BasicTestCase extends ClassyTestCase
     class WithoutTemplateComponent extends BlazeComponent
 
     @assertThrows =>
-      Blaze.toHTML WithoutTemplateComponent.renderComponent()
+      WithoutTemplateComponent.renderComponentToHTML()
     ,
       /Template for the component 'unnamed' not provided/
 
     @assertThrows =>
-      Blaze.toHTML new WithoutTemplateComponent().renderComponent()
+      new WithoutTemplateComponent().renderComponentToHTML()
     ,
       /Template for the component 'unnamed' not provided/
 
@@ -1225,12 +1185,12 @@ class BasicTestCase extends ClassyTestCase
         'TemplateWhichDoesNotExist'
 
     @assertThrows =>
-      Blaze.toHTML WithUnknownTemplateComponent.renderComponent()
+      WithUnknownTemplateComponent.renderComponentToHTML()
     ,
       /Template 'TemplateWhichDoesNotExist' cannot be found/
 
     @assertThrows =>
-      Blaze.toHTML new WithUnknownTemplateComponent().renderComponent()
+      new WithUnknownTemplateComponent().renderComponentToHTML()
     ,
       /Template 'TemplateWhichDoesNotExist' cannot be found/
 
@@ -1858,11 +1818,7 @@ class BasicTestCase extends ClassyTestCase
     # We want to allow one to reuse existing class hierarchy they might already have and only
     # add the Meteor components "nature" to it. This is simply done by extending the base class
     # and base class prototype with those from a wanted base class and prototype.
-    componentTemplate = BlazeComponent.getComponent('ExistingClassHierarchyComponent').renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = BlazeComponent.getComponent('ExistingClassHierarchyComponent').renderComponentToHTML null, null,
       top: '42'
 
     @assertEqual trim(output), trim COMPONENT_CONTENT 'ExistingClassHierarchyComponent', 'ExistingClassHierarchyComponent', 'ExistingClassHierarchyBase'
@@ -1870,11 +1826,7 @@ class BasicTestCase extends ClassyTestCase
   testMixins: ->
     DependencyMixin.calls = []
 
-    componentTemplate = BlazeComponent.getComponent('WithMixinsComponent').renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = BlazeComponent.getComponent('WithMixinsComponent').renderComponentToHTML null, null,
       top: '42'
 
     @assertEqual trim(output), trim """
@@ -1885,11 +1837,7 @@ class BasicTestCase extends ClassyTestCase
 
     @assertEqual DependencyMixin.calls, [true]
 
-    componentTemplate = new (BlazeComponent.getComponent('WithMixinsComponent'))().renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = new (BlazeComponent.getComponent('WithMixinsComponent'))().renderComponentToHTML null, null,
       top: '42'
 
     @assertEqual trim(output), trim """
@@ -1953,11 +1901,7 @@ class BasicTestCase extends ClassyTestCase
 
   testAfterCreateValue: ->
     # We want to test that also properties added in onCreated hook are available in the template.
-    componentTemplate = BlazeComponent.getComponent('AfterCreateValueComponent').renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTML componentTemplate
+    output = BlazeComponent.getComponent('AfterCreateValueComponent').renderComponentToHTML()
 
     @assertEqual trim(output), trim """
       <p>42</p>
@@ -2379,6 +2323,43 @@ class BasicTestCase extends ClassyTestCase
 
       Blaze.remove @renderedComponent
   ]
+
+  testOnDestroyedOrder: ->
+    OuterComponent.calls = []
+
+    @outerComponent = new (BlazeComponent.getComponent('OuterComponent'))()
+
+    @states = []
+
+    @autorun =>
+      @states.push ['outer', @outerComponent.isCreated(), @outerComponent.isRendered(), @outerComponent.isDestroyed()]
+
+    @autorun =>
+      @states.push ['inner', @outerComponent.childComponents()[0]?.isCreated(), @outerComponent.childComponents()[0]?.isRendered(), @outerComponent.childComponents()[0]?.isDestroyed()]
+
+    output = @outerComponent.renderComponentToHTML()
+
+    @assertEqual trim(output), trim """
+      <div class="outerComponent">
+        <p class="innerComponent">Content.</p>
+      </div>
+    """
+
+    @assertEqual OuterComponent.calls, [
+      'OuterComponent onCreated'
+      'InnerComponent onCreated'
+      'InnerComponent onDestroyed'
+      'OuterComponent onDestroyed'
+    ]
+
+    @assertEqual @states, [
+      ['outer', false, false, false]
+      ['inner', undefined, undefined, undefined]
+      ['outer', true, false, false]
+      ['inner', true, false, false]
+      ['inner', undefined, undefined, undefined]
+      ['outer', false, false, true]
+    ]
 
   testClientOnDestroyedOrder: [
     ->
@@ -2862,11 +2843,7 @@ class BasicTestCase extends ClassyTestCase
 
   # Test for https://github.com/peerlibrary/meteor-blaze-components/issues/30.
   testTemplateDynamic: ->
-    componentTemplate = BlazeComponent.getComponent('TemplateDynamicTestComponent').renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = BlazeComponent.getComponent('TemplateDynamicTestComponent').renderComponentToHTML null, null,
       top: '42'
 
     @assertEqual trim(output), trim """
@@ -2875,11 +2852,7 @@ class BasicTestCase extends ClassyTestCase
       #{COMPONENT_CONTENT 'SubComponent'}
     """
 
-    componentTemplate = new (BlazeComponent.getComponent('TemplateDynamicTestComponent'))().renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = new (BlazeComponent.getComponent('TemplateDynamicTestComponent'))().renderComponentToHTML null, null,
       top: '42'
 
     @assertEqual trim(output), trim """
@@ -2888,38 +2861,22 @@ class BasicTestCase extends ClassyTestCase
       #{COMPONENT_CONTENT 'SubComponent'}
     """
 
-    componentTemplate = BlazeComponent.getComponent('FooComponent').renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = BlazeComponent.getComponent('FooComponent').renderComponentToHTML null, null,
       top: '42'
 
     @assertEqual trim(output), trim FOO_COMPONENT_CONTENT()
 
-    componentTemplate = new (BlazeComponent.getComponent('FooComponent'))().renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = new (BlazeComponent.getComponent('FooComponent'))().renderComponentToHTML null, null,
       top: '42'
 
     @assertEqual trim(output), trim FOO_COMPONENT_CONTENT()
 
-    componentTemplate = BlazeComponent.getComponent('SubComponent').renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = BlazeComponent.getComponent('SubComponent').renderComponentToHTML null, null,
       top: '42'
 
     @assertEqual trim(output), trim COMPONENT_CONTENT 'SubComponent'
 
-    componentTemplate = new (BlazeComponent.getComponent('SubComponent'))().renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = new (BlazeComponent.getComponent('SubComponent'))().renderComponentToHTML null, null,
       top: '42'
 
     @assertEqual trim(output), trim COMPONENT_CONTENT 'SubComponent'
@@ -2948,11 +2905,7 @@ class BasicTestCase extends ClassyTestCase
 
     @assertTrue component
 
-    componentTemplate = component.renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = component.renderComponentToHTML null, null,
       top: '42'
 
     @assertEqual trim(output), trim(TEST_BLOCK_COMPONENT_CONTENT())
@@ -3067,11 +3020,7 @@ class BasicTestCase extends ClassyTestCase
     @assertEqual trim(output), trim """0"""
 
   testLexicalArgumentsComponent: ->
-    componentTemplate = BlazeComponent.getComponent('LexicalArgumentsComponent').renderComponent()
-
-    @assertTrue componentTemplate
-
-    output = Blaze.toHTMLWithData componentTemplate,
+    output = BlazeComponent.getComponent('LexicalArgumentsComponent').renderComponentToHTML null, null,
       test: [1, 2, 3]
 
     @assertEqual trim(output), trim """
