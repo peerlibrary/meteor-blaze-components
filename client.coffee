@@ -1,25 +1,40 @@
+originalInsertNodeWithHooks = Blaze._DOMRange._insertNodeWithHooks
+Blaze._DOMRange._insertNodeWithHooks = (node, parent, next) ->
+  node._uihooks = _.extend {}, parent._uihooks, parentNode: node unless node._uihooks
+  originalInsertNodeWithHooks node, parent, next
+
+originalMoveNodeWithHooks = Blaze._DOMRange._moveNodeWithHooks
+Blaze._DOMRange._moveNodeWithHooks = (node, parent, next) ->
+  node._uihooks = _.extend {}, parent._uihooks, parentNode: node unless node._uihooks
+  originalMoveNodeWithHooks node, parent, next
+
 createUIHooks = (component, parentNode) ->
-  insertElement: (node, before) =>
-    node._uihooks ?= createUIHooks component, node
-    component.insertDOMElement parentNode, node, before
+  parentNode: parentNode
 
-  moveElement: (node, before) =>
-    node._uihooks ?= createUIHooks component, node
-    component.moveDOMElement parentNode, node, before
+  insertElement: (node, before) ->
+    component.insertDOMElement @parentNode, node, before
 
-  removeElement: (node) =>
-    node._uihooks ?= createUIHooks component, node
+  moveElement: (node, before) ->
+    component.moveDOMElement @parentNode, node, before
+
+  removeElement: (node) ->
     component.removeDOMElement node.parentNode, node
 
 originalDOMRangeAttach = Blaze._DOMRange::attach
 Blaze._DOMRange::attach = (parentElement, nextNode, _isMove, _isReplace) ->
-  if component = @view._templateInstance?.component
+  if component = @view?._templateInstance?.component
+    for member in @members when member not instanceof Blaze._DOMRange
+      member._uihooks = createUIHooks component, member
+
     oldUIHooks = parentElement._uihooks
     try
       parentElement._uihooks = createUIHooks component, parentElement
       return originalDOMRangeAttach.apply @, arguments
     finally
-      parentElement._uihooks = oldUIHooks if oldUIHooks
+      if oldUIHooks
+        parentElement._uihooks = oldUIHooks
+      else
+        delete parentElement._uihooks
 
   originalDOMRangeAttach.apply @, arguments
 
