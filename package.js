@@ -70,9 +70,9 @@ Package.onUse(function (api) {
   api.export('BlazeComponentDebug');
 
   api.addFiles([
-    'lookup.js',
-    'attrs.js',
-    'materializer.js',
+    'compatibility/lookup.js',
+    'compatibility/attrs.js',
+    'compatibility/materializer.js',
     'lib.coffee',
     'template.coffee',
     'debug.coffee'
