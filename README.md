@@ -55,6 +55,10 @@ If you get an error that two packages are trying to handle `*.html` files, you h
 or a package does not depend on the `templating` packages (often through the `blaze-html-templates` package).
 Blaze Components supersedes the `templating` package and provides its functionality as well.
 
+Blaze Components compile `*.html` files both on the client and server side. If you have previously been adding
+HTML files on the server side as well, you might want to limit those to the client side only. Moreover, server
+side `*.html` templates do not support `<head>` or `<body>` tags.
+
 Additional packages
 -------------------
 
