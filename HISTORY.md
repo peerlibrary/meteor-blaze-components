@@ -1,5 +1,7 @@
 ## vNEXT
 
+## v0.16.0, 2015-Dec-30
+
 * `this` inside a `component.autorun` computation is bound automatically to the component.
 * `currentComponent` inside template content wrapped with a block helper component returns
   the closest block helper component.

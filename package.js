@@ -1,7 +1,7 @@
 Package.describe({
   name: 'peerlibrary:blaze-components',
   summary: "Reusable components for Blaze",
-  version: '0.15.1',
+  version: '0.16.0',
   git: 'https://github.com/peerlibrary/meteor-blaze-components.git'
 });
 
@@ -9,11 +9,11 @@ Package.describe({
 Package.registerBuildPlugin({
   name: "compileBlazeComponentsTemplatesBatch",
   use: [
-    'caching-html-compiler',
-    'ecmascript',
-    'templating-tools',
-    'spacebars-compiler',
-    'html-tools'
+    'caching-html-compiler@1.0.2',
+    'ecmascript@0.1.6',
+    'templating-tools@1.0.0',
+    'spacebars-compiler@1.0.7',
+    'html-tools@1.0.5'
   ],
   sources: [
     'patch-compiling.js',
