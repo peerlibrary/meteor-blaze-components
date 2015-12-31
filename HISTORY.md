@@ -1,5 +1,7 @@
 ## vNEXT
 
+## v0.16.1, 2015-Dec-31
+
 * Blaze Components can now process `<body>` tags in the server side templates, and ignore
   `<head>` tags (which are already rendered on the server side).
 
