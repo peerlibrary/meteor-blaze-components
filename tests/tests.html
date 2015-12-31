@@ -111,12 +111,17 @@
 </template>
 
 <template name="AnimatedListComponent">
-  <ul>
-    {{> DummyComponent}}
-    {{#each list}}
-      <li>{{_id}}</li>
-    {{/each}}
-  </ul>
+  <div>
+    {{#if false}}
+    {{else}}
+      <ul>
+        {{> DummyComponent}}
+        {{#each list}}
+          <li>{{_id}}</li>
+        {{/each}}
+      </ul>
+    {{/if}}
+  </div>
 </template>
 
 <template name="DummyComponent">

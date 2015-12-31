@@ -1,5 +1,7 @@
 ## vNEXT
 
+* Fixed missing animation hooks in more cases.
+
 ## v0.16.1, 2015-Dec-31
 
 * Blaze Components can now process `<body>` tags in the server side templates, and ignore

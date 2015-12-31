@@ -1248,7 +1248,7 @@ class BasicTestCase extends ClassyTestCase
       AnimatedListComponent.calls = []
 
       expectedCalls = [
-        ['insertDOMElement', 'AnimatedListComponent', '<div class="animationTestTemplate"></div>', '<ul><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li></ul>', '']
+        ['insertDOMElement', 'AnimatedListComponent', '<div class="animationTestTemplate"></div>', '<div><ul><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li></ul></div>', '']
         ['removeDOMElement', 'AnimatedListComponent', '<ul><li>1</li><li>2</li><li>3</li><li>4</li><li>5</li></ul>', '<li>1</li>']
         ['moveDOMElement', 'AnimatedListComponent', '<ul><li>2</li><li>3</li><li>4</li><li>5</li></ul>', '<li>5</li>', '']
         ['insertDOMElement', 'AnimatedListComponent', '<ul><li>5</li><li>2</li><li>3</li><li>4</li></ul>', '<li>6</li>', '']

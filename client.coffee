@@ -1,11 +1,24 @@
+propagateUIHooks = (parent, node) ->
+  return if not parent._uihooks or node._uihooks
+
+  node._uihooks = _.extend {}, parent._uihooks, parentNode: node
+
+  return unless node.hasChildNodes()
+
+  for childNode in node.childNodes when childNode.nodeType is Node.ELEMENT_NODE
+    propagateUIHooks node, childNode
+
+  # To optimize.
+  return
+
 originalInsertNodeWithHooks = Blaze._DOMRange._insertNodeWithHooks
 Blaze._DOMRange._insertNodeWithHooks = (node, parent, next) ->
-  node._uihooks = _.extend {}, parent._uihooks, parentNode: node unless node._uihooks
+  propagateUIHooks parent, node
   originalInsertNodeWithHooks node, parent, next
 
 originalMoveNodeWithHooks = Blaze._DOMRange._moveNodeWithHooks
 Blaze._DOMRange._moveNodeWithHooks = (node, parent, next) ->
-  node._uihooks = _.extend {}, parent._uihooks, parentNode: node unless node._uihooks
+  propagateUIHooks parent, node
   originalMoveNodeWithHooks node, parent, next
 
 createUIHooks = (component, parentNode) ->
@@ -25,6 +38,11 @@ Blaze._DOMRange::attach = (parentElement, nextNode, _isMove, _isReplace) ->
   if component = @view?._templateInstance?.component
     for member in @members when member not instanceof Blaze._DOMRange
       member._uihooks = createUIHooks component, member
+
+      continue unless member.hasChildNodes()
+
+      for childNode in member.childNodes when childNode.nodeType is Node.ELEMENT_NODE
+        propagateUIHooks member, childNode
 
     oldUIHooks = parentElement._uihooks
     try
