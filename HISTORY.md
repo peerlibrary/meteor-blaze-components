@@ -1,5 +1,7 @@
 ## vNEXT
 
+## v0.16.2, 2015-Dec-31
+
 * Fixed missing animation hooks in more cases.
 
 ## v0.16.1, 2015-Dec-31
