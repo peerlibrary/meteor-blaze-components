@@ -1,5 +1,8 @@
 ## vNEXT
 
+* Blaze Components can now process `<body>` tags in the server side templates, and ignore
+  `<head>` tags (which are already rendered on the server side).
+
 ## v0.16.0, 2015-Dec-30
 
 * `this` inside a `component.autorun` computation is bound automatically to the component.

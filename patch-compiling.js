@@ -73,3 +73,23 @@ SpacebarsCompiler.CodeGen.prototype.codeGenMustache = function (path, args, must
     return originalCodeGenMustache.call(self, path, args, mustacheType);
   }
 };
+
+// From tools/utils/archinfo.js.
+var matches = function (host, program) {
+  return host.substr(0, program.length) === program &&
+    (host.length === program.length ||
+     host.substr(program.length, 1) === ".");
+};
+
+// <head> tag in server side templates should not be processed. Because client side
+// templates already add <head> content to what Meteor renders on the server side.
+// See: https://github.com/meteor/meteor/issues/5913
+var originalAddCompileResult = CachingHtmlCompiler.prototype.addCompileResult;
+CachingHtmlCompiler.prototype.addCompileResult = function (inputFile, compileResult) {
+  if (compileResult.head && !matches(inputFile.getArch(), 'web')) {
+    // Head can only be emitted to web targets.
+    delete compileResult.head;
+  }
+
+  originalAddCompileResult.call(this, inputFile, compileResult);
+};

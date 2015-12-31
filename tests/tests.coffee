@@ -3139,4 +3139,19 @@ class BasicTestCase extends ClassyTestCase
     ,
       /Invalid event handler/
 
+  testClientBody: ->
+    output = Blaze.toHTML Template.body
+
+    @assertTrue $($.parseHTML(output)).is('.bodyTest')
+
+  testServerBody: ->
+    output = Blaze.toHTML Template.body
+
+    @assertEqual trim(output), trim """
+      <div class="bodyTest">Body test.</div>
+    """
+
+  testClientHead: ->
+    @assertTrue jQuery('head').find('noscript').length
+
 ClassyTestCase.addTest new BasicTestCase()

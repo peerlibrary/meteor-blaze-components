@@ -57,8 +57,7 @@ or a package does not depend on the `templating` packages (often through the `bl
 Blaze Components supersedes the `templating` package and provides its functionality as well.
 
 Blaze Components compile HTML template files both on the client and server side. If you have previously been adding
-HTML files on the server side as well, you might want to limit those to the client side only. Moreover, server
-side HTML template files do not support `<head>` or `<body>` tags.
+HTML files on the server side as well, you might want to limit those to the client side only.
 
 Additional packages
 -------------------
@@ -1012,8 +1011,6 @@ you want them to be available only on the client side, into the `server` directo
 on the server side, and elsewhere (like `lib` directory) if you want them to be available both on the client and server
 side. For packages, use `architecture` argument to your [`addFiles`](http://docs.meteor.com/#/full/pack_addFiles) calls
 to control where are added files available, `'client'`, `'server'`, and `['client', 'server']`, respectivelly.
-
-*Currently, server side HTML template files do not support `<head>` or `<body>` tags.*
 
 Use with existing classes
 -------------------------
