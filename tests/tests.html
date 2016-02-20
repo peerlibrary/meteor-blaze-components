@@ -483,6 +483,10 @@
       {{#with a='9' b='10'}}
         <button class="button5" type="button" {{extraArgs}}>Button 5</button>
       {{/with}}
+      {{#with a='11' b='12'}}
+        {{! Removing space before / throws an error. See: https://github.com/peerlibrary/meteor-blaze-components/issues/117 }}
+        <input type="text" onClick={{onTextClick}} />
+      {{/with}}
       <textarea onChange></textarea>
     </div>
   </form>

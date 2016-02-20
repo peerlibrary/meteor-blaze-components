@@ -877,6 +877,9 @@ class InlineEventsComponent extends BlazeComponent
   onChange: (event) ->
     @constructor.calls.push [@componentName(), 'InlineEventsComponent.onChange', @data(), @currentData(), @currentComponent().componentName()]
 
+  onTextClick: (event) ->
+    @constructor.calls.push [@componentName(), 'InlineEventsComponent.onTextClick', @data(), @currentData(), @currentComponent().componentName()]
+
   extraArgs1: (event) ->
     @constructor.calls.push [@componentName(), 'InlineEventsComponent.extraArgs1', @data(), @currentData(), @currentComponent().componentName()]
 
@@ -3044,6 +3047,7 @@ class BasicTestCase extends ClassyTestCase
             <button class="button3 dynamic" type="button">Button 3</button>
             <button class="button4 dynamic" type="button">Button 4</button>
             <button class="button5" type="button" title="Foobar">Button 5</button>
+            <input type="text">
             <textarea></textarea>
           </div>
         </form>
@@ -3069,6 +3073,7 @@ class BasicTestCase extends ClassyTestCase
             <button class="button3 dynamic" type="button">Button 3</button>
             <button class="button4 dynamic" type="button">Button 4</button>
             <button class="button5" type="button" title="Foobar">Button 5</button>
+            <input type="text">
             <textarea></textarea>
           </div>
         </form>
@@ -3081,8 +3086,11 @@ class BasicTestCase extends ClassyTestCase
       $('.inlineEventsTestTemplate button').each (i, button) =>
         $(button).click()
 
-      $('.inlineEventsTestTemplate textarea').each (i, textare) =>
-        $(textare).change()
+      $('.inlineEventsTestTemplate textarea').each (i, textarea) =>
+        $(textarea).change()
+
+      $('.inlineEventsTestTemplate input').each (i, input) =>
+        $(input).click()
 
       @assertEqual InlineEventsComponent.calls, [
         ['InlineEventsComponent', 'InlineEventsComponent.onButton1Click', {top: '42'}, {a: '1', b: '2'}, 'InlineEventsComponent']
@@ -3093,6 +3101,7 @@ class BasicTestCase extends ClassyTestCase
         ['InlineEventsComponent', 'InlineEventsComponent.extraArgs1', {top: '42'}, {a: '9', b: '10'}, 'InlineEventsComponent']
         ['InlineEventsComponent', 'InlineEventsComponent.extraArgs2', {top: '42'}, {a: '9', b: '10'}, 'InlineEventsComponent']
         ['InlineEventsComponent', 'InlineEventsComponent.onChange', {top: '42'}, {top: '42'}, 'InlineEventsComponent']
+        ['InlineEventsComponent', 'InlineEventsComponent.onTextClick', {top: '42'}, {a: '11', b: '12'}, 'InlineEventsComponent']
       ]
 
       InlineEventsComponent.calls = []
@@ -3105,9 +3114,11 @@ class BasicTestCase extends ClassyTestCase
       $('.inlineEventsTestTemplate button').each (i, button) =>
         $(button).click()
 
-      $('.inlineEventsTestTemplate textarea').each (i, textare) =>
-        $(textare).change()
+      $('.inlineEventsTestTemplate textarea').each (i, textarea) =>
+        $(textarea).change()
 
+      $('.inlineEventsTestTemplate input').each (i, input) =>
+        $(input).click()
 
       @assertEqual InlineEventsComponent.calls, [
         ['InlineEventsComponent', 'InlineEventsComponent.onButton1Click', {top: '42'}, {a: '1', b: '2'}, 'InlineEventsComponent']
@@ -3118,6 +3129,7 @@ class BasicTestCase extends ClassyTestCase
         ['InlineEventsComponent', 'InlineEventsComponent.extraArgs1', {top: '42'}, {a: '9', b: '10'}, 'InlineEventsComponent']
         ['InlineEventsComponent', 'InlineEventsComponent.extraArgs2', {top: '42'}, {a: '9', b: '10'}, 'InlineEventsComponent']
         ['InlineEventsComponent', 'InlineEventsComponent.onChange', {top: '42'}, {top: '42'}, 'InlineEventsComponent']
+        ['InlineEventsComponent', 'InlineEventsComponent.onTextClick', {top: '42'}, {a: '11', b: '12'}, 'InlineEventsComponent']
       ]
 
       InlineEventsComponent.calls = []
