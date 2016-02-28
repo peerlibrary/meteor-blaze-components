@@ -64,7 +64,9 @@ Additional packages
 
 * [peerlibrary:blaze-layout-component](https://github.com/peerlibrary/blaze-layout-component) – A
   simple [Blaze Component](https://github.com/peerlibrary/meteor-blaze-components) for use with
-  [Flow Router](https://github.com/kadirahq/flow-router)'s [layout manager](https://github.com/kadirahq/blaze-layout)
+  [Flow Router](https://github.com/peerlibrary/flow-router)'s [layout manager](https://github.com/kadirahq/blaze-layout)
+* [peerlibrary:blaze-common-component](https://github.com/peerlibrary/meteor-blaze-common-component) – An
+  extended base Blaze Component with common features
 
 Components
 ----------
