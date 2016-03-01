@@ -651,21 +651,50 @@ try to call mixins. So for components where you want to enable mixin animations 
 with something like:
 
 ```javascript
-insertDOMElement(parent, node, before) {
-  this.callFirstWith(this, 'insertDOMElement', parent, node, before);
-  super.insertDOMElement(parent, node, before);
+insertDOMElement(parent, node, before, next) {
+  next = next || () => {
+    super.insertDOMElement(parent, node, before);
+    return true;
+  }
+
+  if (!this.callFirstWith(this, 'insertDOMElement', parent, node, before, next)) {
+    return next();
+  }
+
+  // It has been handled.
+  return true;
 }
 
-moveDOMElement(parent, node, before) {
-  this.callFirstWith(this, 'moveDOMElement', parent, node, before);
-  super.moveDOMElement(parent, node, before);
+moveDOMElement(parent, node, before, next) {
+  next = next || () => {
+    super.moveDOMElement(parent, node, before);
+    return true;
+  }
+
+  if (!this.callFirstWith(this, 'moveDOMElement', parent, node, before, next)) {
+    return next();
+  }
+
+  // It has been handled.
+  return true;
 }
 
-removeDOMElement(parent, node) {
-  this.callFirstWith(this, 'removeDOMElement', parent, node);
-  super.removeDOMElement(parent, node);
+removeDOMElement(parent, node, next) {
+  next = next || () => {
+    super.removeDOMElement(parent, node);
+    return true;
+  }
+
+  if (!this.callFirstWith(this, 'removeDOMElement', parent, node, next)) {
+    return next();
+  }
+
+  // It has been handled.
+  return true;
 }
 ```
+
+Your method should return `true` if it has handled insertion/move/removal of the DOM element.
 
 *See [Momentum Meteor package](https://github.com/percolatestudio/meteor-momentum) for more information on how to
 use these hooks to animate DOM elements.*
@@ -1131,7 +1160,7 @@ instance method. It automatically instantiates the component before calling `ren
 
 <a name="reference_class_renderComponentToHTML"></a>
 ```javascript
-renderComponentToHTML([parentComponent], [parentView], [data])
+static renderComponentToHTML([parentComponent], [parentView], [data])
 ```
 
 This is a complementary class method to the [`renderComponentToHTML`](#user-content-reference_instance_renderComponentToHTML)
