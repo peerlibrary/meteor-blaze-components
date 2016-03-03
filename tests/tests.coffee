@@ -359,6 +359,9 @@ class SecondMixin extends BlazeComponent
   template: ->
     assert not Tracker.active
 
+    @_template()
+
+  _template: ->
     'MainComponent2'
 
   foobar: ->
@@ -386,6 +389,8 @@ class SecondMixin extends BlazeComponent
     # to call onCreated on the added dependency as well.
     @mixinParent().requireMixin DependencyMixin
 
+SecondMixin.componentName 'SecondMixin'
+
 class DependencyMixin extends BlazeComponent
   @calls: []
 
@@ -395,10 +400,29 @@ class DependencyMixin extends BlazeComponent
     @constructor.calls.push true
 
 class WithMixinsComponent extends BlazeComponent
+  @output: []
+
   mixins: ->
     assert not Tracker.active
 
     [SecondMixin, FirstMixin]
+
+  onDestroyed: ->
+    firstMixin = @getMixin FirstMixin
+    @constructor.output.push @
+    @constructor.output.push firstMixin
+    @constructor.output.push @getMixin firstMixin
+    @constructor.output.push @getMixin @
+    @constructor.output.push @getMixin DependencyMixin
+    @constructor.output.push @getMixin 'FirstMixin'
+    @constructor.output.push @getMixin 'SecondMixin'
+    @constructor.output.push @getFirstWith null, 'isMainComponent'
+    @constructor.output.push @getFirstWith null, (child, parent) =>
+      !!child.constructor.output
+    @constructor.output.push @getFirstWith null, (child, parent) =>
+      child is parent
+    @constructor.output.push @getFirstWith null, (child, parent) =>
+      child._template?() is 'MainComponent2'
 
 BlazeComponent.register 'WithMixinsComponent', WithMixinsComponent
 
@@ -1828,6 +1852,7 @@ class BasicTestCase extends ClassyTestCase
 
   testMixins: ->
     DependencyMixin.calls = []
+    WithMixinsComponent.output = []
 
     output = BlazeComponent.getComponent('WithMixinsComponent').renderComponentToHTML null, null,
       top: '42'
@@ -1839,6 +1864,17 @@ class BasicTestCase extends ClassyTestCase
     """
 
     @assertEqual DependencyMixin.calls, [true]
+
+    @assertInstanceOf WithMixinsComponent.output[1], FirstMixin
+    @assertEqual WithMixinsComponent.output[2], WithMixinsComponent.output[1]
+    @assertEqual WithMixinsComponent.output[3], null
+    @assertInstanceOf WithMixinsComponent.output[4], DependencyMixin
+    @assertEqual WithMixinsComponent.output[5], null
+    @assertInstanceOf WithMixinsComponent.output[6], SecondMixin
+    @assertEqual WithMixinsComponent.output[7], WithMixinsComponent.output[1]
+    @assertEqual WithMixinsComponent.output[8], WithMixinsComponent.output[0]
+    @assertEqual WithMixinsComponent.output[9], WithMixinsComponent.output[0]
+    @assertEqual WithMixinsComponent.output[10], WithMixinsComponent.output[6]
 
     output = new (BlazeComponent.getComponent('WithMixinsComponent'))().renderComponentToHTML null, null,
       top: '42'

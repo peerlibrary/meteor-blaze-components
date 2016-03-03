@@ -618,6 +618,7 @@ class BlazeComponent extends BaseComponent
 
   getFirstWith: (afterComponentOrMixin, propertyOrMatcherOrFunction) ->
     assert @_componentInternals?.mixins
+    assert propertyOrMatcherOrFunction
 
     propertyOrMatcherOrFunction = createMatcher propertyOrMatcherOrFunction
 
