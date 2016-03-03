@@ -1,20 +1,32 @@
+# TODO: Deduplicate between base component, blaze component, and common component packages.
 createMatcher = (propertyOrMatcherOrFunction) ->
   if _.isString propertyOrMatcherOrFunction
     property = propertyOrMatcherOrFunction
     propertyOrMatcherOrFunction = (child, parent) =>
-      property of child
+      # If child is parent, we might get into an infinite loop if this is
+      # called from getFirstWith, so in that case we do not use getFirstWith.
+      if child isnt parent and child.getFirstWith
+        !!child.getFirstWith null, property
+      else
+        property of child
 
   else if not _.isFunction propertyOrMatcherOrFunction
     assert _.isObject propertyOrMatcherOrFunction
     matcher = propertyOrMatcherOrFunction
     propertyOrMatcherOrFunction = (child, parent) =>
       for property, value of matcher
-        return false unless property of child
-
-        if _.isFunction child[property]
-          return false unless child[property]() is value
+        # If child is parent, we might get into an infinite loop if this is
+        # called from getFirstWith, so in that case we do not use getFirstWith.
+        if child isnt parent and child.getFirstWith
+          childWithProperty = child.getFirstWith null, property
         else
-          return false unless child[property] is value
+          childWithProperty = child if property of child
+        return false unless childWithProperty
+
+        if _.isFunction childWithProperty[property]
+          return false unless childWithProperty[property]() is value
+        else
+          return false unless childWithProperty[property] is value
 
       true
 
@@ -565,41 +577,44 @@ class BlazeComponent extends BaseComponent
     @
 
   getMixin: (nameOrMixin) ->
-    assert @_componentInternals?.mixins
-
     if _.isString nameOrMixin
-      for mixin in @_componentInternals.mixins
+      # By passing @ as the first argument, we traverse only mixins.
+      @getFirstWith @, (child, parent) =>
         # We do not require mixins to be components, but if they are, they can
         # be referenced based on their component name.
-        mixinComponentName = mixin.componentName?() or null
-        return mixin if mixinComponentName and mixinComponentName is nameOrMixin
-
+        mixinComponentName = child.componentName?() or null
+        return mixinComponentName and mixinComponentName is nameOrMixin
     else
-      for mixin in @_componentInternals.mixins
+      # By passing @ as the first argument, we traverse only mixins.
+      @getFirstWith @, (child, parent) =>
         # nameOrMixin is a class.
-        if mixin.constructor is nameOrMixin
-          return mixin
+        return true if child.constructor is nameOrMixin
 
         # nameOrMixin is an instance, or something else.
-        else if mixin is nameOrMixin
-          return mixin
+        return true if child is nameOrMixin
 
-    null
+        false
 
   # Calls the component (if afterComponentOrMixin is null) or the first next mixin
   # after afterComponentOrMixin it finds, and returns the result.
   callFirstWith: (afterComponentOrMixin, propertyName, args...) ->
     assert _.isString propertyName
 
-    mixin = @getFirstWith afterComponentOrMixin, propertyName
+    componentOrMixin = @getFirstWith afterComponentOrMixin, propertyName
 
     # TODO: Should we throw an error here? Something like calling a function which does not exist?
-    return unless mixin
+    return unless componentOrMixin
 
-    if _.isFunction mixin[propertyName]
-      return mixin[propertyName] args...
+    # If it is current component, we do not call callFirstWith, to prevent an infinite loop.
+    # componentOrMixin might not have callFirstWith if it is a mixin which does not inherit
+    # from the Blaze Component.
+    if componentOrMixin is @ or not componentOrMixin.callFirstWith
+      if _.isFunction componentOrMixin[propertyName]
+        return componentOrMixin[propertyName] args...
+      else
+        return componentOrMixin[propertyName]
     else
-      return mixin[propertyName]
+      return componentOrMixin.callFirstWith null, propertyName, args...
 
   getFirstWith: (afterComponentOrMixin, propertyOrMatcherOrFunction) ->
     assert @_componentInternals?.mixins
