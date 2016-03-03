@@ -1,5 +1,7 @@
 ## vNEXT
 
+* `getFirstWith` now accepts a predicate as well.
+
 ## v0.16.2, 2015-Dec-31
 
 * Fixed missing animation hooks in more cases.

@@ -1788,14 +1788,22 @@ You can use it to check if a given mixin is used by the component.
 
 <a name="reference_instance_getFirstWith"></a>
 ```javascript
-getFirstWith(afterComponentOrMixin, propertyName)
+getFirstWith(afterComponentOrMixin, propertyOrMatcherOrFunction)
 ```
 
-It searchers the component and its mixins in order to find the first with a property `propertyName`. If
-`afterComponentOrMixin` is `null`, it starts with the component itself. If `afterComponentOrMixin` is the component,
+It searchers the component and its mixins in order to find the first which matches a `propertyOrMatcherOrFunction`
+predicate. If `afterComponentOrMixin` is `null`, it starts with the component itself. If `afterComponentOrMixin` is the component,
 it starts with the first mixin. Otherwise it starts with the mixin after `afterComponentOrMixin`.
 
 Returns `null` if such component or mixin is not found.
+
+A `propertyOrMatcherOrFunction` predicate can be:
+* a property name string, in this case the first component or mixin which has a property with the given name is matched
+* a matcher object specifying mapping between property names and their values, in this case the first component or mixin
+which has all properties fom the matcher object equal to given values is matched (if a property is a function, it
+is called and its return value is compared instead)
+* a function which receives `(mixin, component)` with `this` bound to `component`, in this case the first component or
+mixin for which the function returns a true value is matched
 
 <a name="reference_instance_callFirstWith"></a>
 ```javascript

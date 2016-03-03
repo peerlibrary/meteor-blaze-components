@@ -1,3 +1,25 @@
+createMatcher = (propertyOrMatcherOrFunction) ->
+  if _.isString propertyOrMatcherOrFunction
+    property = propertyOrMatcherOrFunction
+    propertyOrMatcherOrFunction = (child, parent) =>
+      property of child
+
+  else if not _.isFunction propertyOrMatcherOrFunction
+    assert _.isObject propertyOrMatcherOrFunction
+    matcher = propertyOrMatcherOrFunction
+    propertyOrMatcherOrFunction = (child, parent) =>
+      for property, value of matcher
+        return false unless property of child
+
+        if _.isFunction child[property]
+          return false unless child[property]() is value
+        else
+          return false unless child[property] is value
+
+      true
+
+  propertyOrMatcherOrFunction
+
 getTemplateInstance = (view, skipBlockHelpers) ->
   while view and not view._templateInstance
     if skipBlockHelpers
@@ -567,6 +589,8 @@ class BlazeComponent extends BaseComponent
   # Calls the component (if afterComponentOrMixin is null) or the first next mixin
   # after afterComponentOrMixin it finds, and returns the result.
   callFirstWith: (afterComponentOrMixin, propertyName, args...) ->
+    assert _.isString propertyName
+
     mixin = @getFirstWith afterComponentOrMixin, propertyName
 
     # TODO: Should we throw an error here? Something like calling a function which does not exist?
@@ -577,12 +601,14 @@ class BlazeComponent extends BaseComponent
     else
       return mixin[propertyName]
 
-  getFirstWith: (afterComponentOrMixin, propertyName) ->
+  getFirstWith: (afterComponentOrMixin, propertyOrMatcherOrFunction) ->
     assert @_componentInternals?.mixins
+
+    propertyOrMatcherOrFunction = createMatcher propertyOrMatcherOrFunction
 
     # If afterComponentOrMixin is not provided, we start with the component.
     if not afterComponentOrMixin
-      return @ if propertyName of @
+      return @ if propertyOrMatcherOrFunction.call @, @, @
       # And continue with mixins.
       found = true
     # If afterComponentOrMixin is the component, we start with mixins.
@@ -593,7 +619,7 @@ class BlazeComponent extends BaseComponent
 
     # TODO: Implement with a map between mixin -> position, so that we do not have to seek to find a mixin.
     for mixin in @_componentInternals.mixins
-      return mixin if found and propertyName of mixin
+      return mixin if found and propertyOrMatcherOrFunction.call @, mixin, @
 
       found = true if mixin is afterComponentOrMixin
 
