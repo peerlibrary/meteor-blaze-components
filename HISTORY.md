@@ -1,5 +1,7 @@
 ## vNEXT
 
+## v0.17.0, 2016-Mar-03
+
 * `getFirstWith` now accepts a predicate as well.
 * When searching for a property on a component with `getFirstWith` and `callFirstWith`,
   we now traverse also mixins of mixins recursively.
