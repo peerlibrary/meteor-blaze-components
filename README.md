@@ -1810,7 +1810,7 @@ mixin for which the function returns a true value is matched
 callFirstWith(afterComponentOrMixin, propertyName, [args...])
 ```
 
-It searchers the component and its mixins in order to find the first with a property `propertyName`
+It searchers the component and its mixins in order to find the first with a property `propertyName`,
 and if it is a function, calls it with `args` as arguments, otherwise returns the value of the property.
 If `afterComponentOrMixin` is `null`, it starts with the component itself. If `afterComponentOrMixin` is the component,
 it starts with the first mixin. Otherwise it starts with the mixin after `afterComponentOrMixin`.
