@@ -160,6 +160,7 @@ Blaze._getTemplateHelper = (template, name, templateInstance) ->
 
   # Maybe a preexisting template helper on the component's base template.
   if component
+    # We know that component is really a component.
     if (helper = component._componentInternals?.templateBase?.__helpers.get name)?
       return wrapHelper bindDataContext(helper), templateInstance
 
@@ -233,11 +234,8 @@ getTemplateBase = (component) ->
     templateBase
 
 callTemplateBaseHooks = (component, hookName) ->
-  component._componentInternals ?= {}
-
-  # In mixins we do not have a template instance. There is also
-  # no reason for a template instance to extend a Blaze template.
-  return unless component._componentInternals.templateInstance
+  # We want to call template base hooks only when we are calling this function on a component itself.
+  return unless component is component.component()
 
   templateInstance = Tracker.nonreactive ->
     component._componentInternals.templateInstance()
@@ -549,15 +547,17 @@ class BlazeComponent extends BaseComponent
       # Maybe mixin has its own mixins as well.
       mixinInstance.createMixins?()
 
-      @_componentInternals.templateInstance ?= new ReactiveField null, (a, b) -> a is b
+      if component = @component()
+        component._componentInternals ?= {}
+        component._componentInternals.templateInstance ?= new ReactiveField null, (a, b) -> a is b
 
-      # If a mixin is adding a dependency using requireMixin after its mixinParent class (for example, in onCreate)
-      # and this is this dependency mixin, the view might already be created or rendered and callbacks were
-      # already called, so we should call them manually here as well. But only if he view has not been destroyed
-      # already. For those mixins we do not call anything, there is little use for them now.
-      unless @_componentInternals.templateInstance()?.view.isDestroyed
-        mixinInstance.onCreated?() if not @_componentInternals.inOnCreated and @_componentInternals.templateInstance()?.view.isCreated
-        mixinInstance.onRendered?() if not @_componentInternals.inOnRendered and @_componentInternals.templateInstance()?.view.isRendered
+        # If a mixin is adding a dependency using requireMixin after its mixinParent class (for example, in onCreate)
+        # and this is this dependency mixin, the view might already be created or rendered and callbacks were
+        # already called, so we should call them manually here as well. But only if he view has not been destroyed
+        # already. For those mixins we do not call anything, there is little use for them now.
+        unless component._componentInternals.templateInstance()?.view.isDestroyed
+          mixinInstance.onCreated?() if not component._componentInternals.inOnCreated and component._componentInternals.templateInstance()?.view.isCreated
+          mixinInstance.onRendered?() if not component._componentInternals.inOnRendered and component._componentInternals.templateInstance()?.view.isRendered
 
     # To allow chaining.
     @
@@ -724,7 +724,7 @@ class BlazeComponent extends BaseComponent
     # when structure change in rendered DOM. You can change the component you are including (or pass
     # different arguments) reactively though.
     Tracker.nonreactive =>
-      component = @
+      component = @component()
 
       # If mixins have not yet been created.
       component.createMixins()
@@ -850,7 +850,7 @@ class BlazeComponent extends BaseComponent
       template
 
   removeComponent: ->
-    Blaze.remove @_componentInternals.templateInstance().view if @isRendered()
+    Blaze.remove @component()._componentInternals.templateInstance().view if @isRendered()
 
   @renderComponentToHTML: (parentComponent, parentView, data) ->
     component = Tracker.nonreactive =>
@@ -893,22 +893,28 @@ class BlazeComponent extends BaseComponent
     callTemplateBaseHooks @, 'destroyed'
 
   isCreated: ->
-    @_componentInternals ?= {}
-    @_componentInternals.isCreated ?= new ReactiveField false
+    component = @component()
 
-    @_componentInternals.isCreated()
+    component._componentInternals ?= {}
+    component._componentInternals.isCreated ?= new ReactiveField false
+
+    component._componentInternals.isCreated()
 
   isRendered: ->
-    @_componentInternals ?= {}
-    @_componentInternals.isRendered ?= new ReactiveField false
+    component = @component()
 
-    @_componentInternals.isRendered()
+    component._componentInternals ?= {}
+    component._componentInternals.isRendered ?= new ReactiveField false
+
+    component._componentInternals.isRendered()
 
   isDestroyed: ->
-    @_componentInternals ?= {}
-    @_componentInternals.isDestroyed ?= new ReactiveField false
+    component = @component()
 
-    @_componentInternals.isDestroyed()
+    component._componentInternals ?= {}
+    component._componentInternals.isDestroyed ?= new ReactiveField false
+
+    component._componentInternals.isDestroyed()
 
   insertDOMElement: (parent, node, before) ->
     before ?= null
@@ -931,11 +937,10 @@ class BlazeComponent extends BaseComponent
     return
 
   events: ->
-    @_componentInternals ?= {}
+    # In mixins there is no reason for a template instance to extend a Blaze template.
+    return [] unless @ is @component()
 
-    # In mixins we do not have a template instance. There is also
-    # no reason for a template instance to extend a Blaze template.
-    return [] unless @_componentInternals.templateInstance
+    @_componentInternals ?= {}
 
     view = Tracker.nonreactive =>
       @_componentInternals.templateInstance().view
@@ -962,10 +967,12 @@ class BlazeComponent extends BaseComponent
   # provided, it returns only the value under that path, with reactivity
   # limited to changes of that value only.
   data: (path, equalsFunc) ->
-    @_componentInternals ?= {}
-    @_componentInternals.templateInstance ?= new ReactiveField null, (a, b) -> a is b
+    component = @component()
 
-    if view = @_componentInternals.templateInstance()?.view
+    component._componentInternals ?= {}
+    component._componentInternals.templateInstance ?= new ReactiveField null, (a, b) -> a is b
+
+    if view = component._componentInternals.templateInstance()?.view
       if path?
         return DataLookup.get =>
           Blaze.getData view
@@ -1009,9 +1016,17 @@ class BlazeComponent extends BaseComponent
   currentData: (path, equalsFunc) ->
     @constructor.currentData path, equalsFunc
 
-  # Useful in templates to get a reference to the component.
+  # Useful in templates or mixins to get a reference to the component.
   component: ->
-    @
+    component = @
+
+    loop
+      # If we are on a mixin without mixinParent, we cannot really get to the component, return null.
+      return null unless component.mixinParent
+
+      # Return current component unless there is a mixin parent.
+      return component unless mixinParent = component.mixinParent()
+      component = mixinParent
 
   # Caller-level component. In most cases the same as @, but in event handlers
   # it returns the component at the place where event originated (target component).
@@ -1028,19 +1043,19 @@ class BlazeComponent extends BaseComponent
     @constructor.currentComponent()
 
   firstNode: ->
-    return @_componentInternals.templateInstance().view._domrange.firstNode() if @isRendered()
+    return @component()._componentInternals.templateInstance().view._domrange.firstNode() if @isRendered()
 
     undefined
 
   lastNode: ->
-    return @_componentInternals.templateInstance().view._domrange.lastNode() if @isRendered()
+    return @component()._componentInternals.templateInstance().view._domrange.lastNode() if @isRendered()
 
     undefined
 
   # The same as it would be generated automatically, only that the runFunc gets bound to the component.
   autorun: (runFunc) ->
     templateInstance = Tracker.nonreactive =>
-      @_componentInternals?.templateInstance?()
+      @component()._componentInternals?.templateInstance?()
 
     throw new Error "The component has to be created before calling 'autorun'." unless templateInstance
 
@@ -1062,24 +1077,26 @@ for methodName, method of (Blaze.TemplateInstance::) when methodName not of (Bla
   do (methodName, method) ->
     if methodName in SUPPORTS_REACTIVE_INSTANCE
       BlazeComponent::[methodName] = (args...) ->
-        @_componentInternals ?= {}
-        @_componentInternals.templateInstance ?= new ReactiveField null, (a, b) -> a is b
+        component = @component()
 
-        if templateInstance = @_componentInternals.templateInstance()
+        component._componentInternals ?= {}
+        component._componentInternals.templateInstance ?= new ReactiveField null, (a, b) -> a is b
+
+        if templateInstance = component._componentInternals.templateInstance()
           return templateInstance[methodName] args...
 
         undefined
 
     else if methodName in REQUIRE_RENDERED_INSTANCE
       BlazeComponent::[methodName] = (args...) ->
-        return @_componentInternals.templateInstance()[methodName] args... if @isRendered()
+        return @component()._componentInternals.templateInstance()[methodName] args... if @isRendered()
 
         undefined
 
     else
       BlazeComponent::[methodName] = (args...) ->
         templateInstance = Tracker.nonreactive =>
-          @_componentInternals?.templateInstance?()
+          @component()._componentInternals?.templateInstance?()
 
         throw new Error "The component has to be created before calling '#{methodName}'." unless templateInstance
 
