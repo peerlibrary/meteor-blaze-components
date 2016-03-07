@@ -1,11 +1,11 @@
-# TODO: Deduplicate between base component, blaze component, and common component packages.
-createMatcher = (propertyOrMatcherOrFunction) ->
+# TODO: Deduplicate between blaze component and common component packages.
+createMatcher = (propertyOrMatcherOrFunction, checkMixins) ->
   if _.isString propertyOrMatcherOrFunction
     property = propertyOrMatcherOrFunction
     propertyOrMatcherOrFunction = (child, parent) =>
       # If child is parent, we might get into an infinite loop if this is
       # called from getFirstWith, so in that case we do not use getFirstWith.
-      if child isnt parent and child.getFirstWith
+      if checkMixins and child isnt parent and child.getFirstWith
         !!child.getFirstWith null, property
       else
         property of child
@@ -17,7 +17,7 @@ createMatcher = (propertyOrMatcherOrFunction) ->
       for property, value of matcher
         # If child is parent, we might get into an infinite loop if this is
         # called from getFirstWith, so in that case we do not use getFirstWith.
-        if child isnt parent and child.getFirstWith
+        if checkMixins and child isnt parent and child.getFirstWith
           childWithProperty = child.getFirstWith null, property
         else
           childWithProperty = child if property of child
@@ -493,6 +493,15 @@ class BlazeComponent extends BaseComponent
     templateInstance = getTemplateInstanceFunction Blaze.getView(domElement), true
     templateInstanceToComponent templateInstance, true
 
+  # A version of childComponentsWith which knows about mixins.
+  # When checking for properties it checks mixins as well.
+  childComponentsWith: (propertyOrMatcherOrFunction) ->
+    assert propertyOrMatcherOrFunction
+
+    propertyOrMatcherOrFunction = createMatcher propertyOrMatcherOrFunction, true
+
+    super propertyOrMatcherOrFunction
+
   mixins: ->
     []
 
@@ -605,22 +614,16 @@ class BlazeComponent extends BaseComponent
     # TODO: Should we throw an error here? Something like calling a function which does not exist?
     return unless componentOrMixin
 
-    # If it is current component, we do not call callFirstWith, to prevent an infinite loop.
-    # componentOrMixin might not have callFirstWith if it is a mixin which does not inherit
-    # from the Blaze Component.
-    if componentOrMixin is @ or not componentOrMixin.callFirstWith
-      if _.isFunction componentOrMixin[propertyName]
-        return componentOrMixin[propertyName] args...
-      else
-        return componentOrMixin[propertyName]
+    if _.isFunction componentOrMixin[propertyName]
+      return componentOrMixin[propertyName] args...
     else
-      return componentOrMixin.callFirstWith null, propertyName, args...
+      return componentOrMixin[propertyName]
 
   getFirstWith: (afterComponentOrMixin, propertyOrMatcherOrFunction) ->
     assert @_componentInternals?.mixins
     assert propertyOrMatcherOrFunction
 
-    propertyOrMatcherOrFunction = createMatcher propertyOrMatcherOrFunction
+    propertyOrMatcherOrFunction = createMatcher propertyOrMatcherOrFunction, false
 
     # If afterComponentOrMixin is not provided, we start with the component.
     if not afterComponentOrMixin

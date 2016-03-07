@@ -1450,9 +1450,11 @@ Returns an array of component's children components which match a `propertyOrMat
 data source. The order of children components in the array is arbitrary.
 
 A `propertyOrMatcherOrFunction` predicate can be:
-* a property name string, in this case all children components which have a property with the given name are matched
+* a property name string, in this case all children components which have a property with the given name (or their
+  mixins do) are matched
 * a matcher object specifying mapping between property names and their values, in this case all children components
-which have all properties fom the matcher object equal to given values are matched (if a property is a function, it
+which (or their mixins) have all properties from the matcher object equal to given values are matched (if a property
+is a function, it
 is called and its return value is compared instead)
 * a function which receives `(child, parent)` with `this` bound to `parent`, in this case all children components
 for which the function returns a true value are matched
@@ -1800,7 +1802,7 @@ Returns `null` if such component or mixin is not found.
 A `propertyOrMatcherOrFunction` predicate can be:
 * a property name string, in this case the first component or mixin which has a property with the given name is matched
 * a matcher object specifying mapping between property names and their values, in this case the first component or mixin
-which has all properties fom the matcher object equal to given values is matched (if a property is a function, it
+which has all properties from the matcher object equal to given values is matched (if a property is a function, it
 is called and its return value is compared instead)
 * a function which receives `(mixin, component)` with `this` bound to `component`, in this case the first component or
 mixin for which the function returns a true value is matched

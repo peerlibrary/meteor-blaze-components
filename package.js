@@ -53,7 +53,7 @@ Package.onUse(function (api) {
 
   // Internal dependencies.
   api.use([
-    'peerlibrary:base-component@0.15.1'
+    'peerlibrary:base-component@0.16.0'
   ]);
 
   // 3rd party dependencies.
