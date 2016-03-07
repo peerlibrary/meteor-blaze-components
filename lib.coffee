@@ -614,6 +614,8 @@ class BlazeComponent extends BaseComponent
     # TODO: Should we throw an error here? Something like calling a function which does not exist?
     return unless componentOrMixin
 
+    # We are not calling callFirstWith on the componentOrMixin because here we
+    # are already traversing mixins so we do not recurse once more.
     if _.isFunction componentOrMixin[propertyName]
       return componentOrMixin[propertyName] args...
     else
@@ -623,6 +625,7 @@ class BlazeComponent extends BaseComponent
     assert @_componentInternals?.mixins
     assert propertyOrMatcherOrFunction
 
+    # Here we are already traversing mixins so we do not recurse once more.
     propertyOrMatcherOrFunction = createMatcher propertyOrMatcherOrFunction, false
 
     # If afterComponentOrMixin is not provided, we start with the component.
