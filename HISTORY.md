@@ -1,5 +1,7 @@
 ## vNEXT
 
+## v0.18.0, 2016-Mar-07
+
 * Reverted searching of mixins of mixins. `getFirstWith` and `callFirstWith` traverse mixins, so this is
   enough.
 * But `childComponentsWith` does check for mixin properties now, when properties are being matched.
