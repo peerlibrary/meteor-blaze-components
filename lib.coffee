@@ -493,14 +493,41 @@ class BlazeComponent extends BaseComponent
     templateInstance = getTemplateInstanceFunction Blaze.getView(domElement), true
     templateInstanceToComponent templateInstance, true
 
+  childComponents: (nameOrComponent) ->
+    if (component = @component()) isnt @
+      component.childComponents nameOrComponent
+    else
+      super
+
   # A version of childComponentsWith which knows about mixins.
   # When checking for properties it checks mixins as well.
   childComponentsWith: (propertyOrMatcherOrFunction) ->
-    assert propertyOrMatcherOrFunction
+    if (component = @component()) isnt @
+      component.childComponentsWith propertyOrMatcherOrFunction
+    else
+      assert propertyOrMatcherOrFunction
 
-    propertyOrMatcherOrFunction = createMatcher propertyOrMatcherOrFunction, true
+      propertyOrMatcherOrFunction = createMatcher propertyOrMatcherOrFunction, true
 
-    super propertyOrMatcherOrFunction
+      super propertyOrMatcherOrFunction
+
+  parentComponent: (parentComponent) ->
+    if (component = @component()) isnt @
+      component.parentComponent parentComponent
+    else
+      super
+
+  addChildComponent: (childComponent) ->
+    if (component = @component()) isnt @
+      component.addChildComponent childComponent
+    else
+      super
+
+  removeChildComponent: (childComponent) ->
+    if (component = @component()) isnt @
+      component.removeChildComponent childComponent
+    else
+      super
 
   mixins: ->
     []
@@ -877,7 +904,7 @@ class BlazeComponent extends BaseComponent
       parentView = parentView or currentViewIfRendering() or (parentComponent?.isRendered() and parentComponent._componentInternals.templateInstance().view) or null
 
       wrapViewAndTemplate parentView, =>
-        @renderComponent parentComponent
+        @component().renderComponent parentComponent
 
     if arguments.length > 2
       expandedView = expandView Blaze._TemplateWith(data, contentAsFunc template), parentView
