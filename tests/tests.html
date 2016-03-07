@@ -515,3 +515,17 @@
 <head>
   <noscript>JavaScript required.</noscript>
 </head>
+
+<template name="LevelOneComponent">
+ {{> LevelTwoComponent}}
+</template>
+
+<template name="LevelTwoComponent">
+  {{> ComponentWithNestedMixins}}
+</template>
+
+<template name="ComponentWithNestedMixins">
+  <span>{{topValue}}</span>
+  <span>{{hasValue}}</span>
+  <span>{{hasNoValue}}</span>
+</template>

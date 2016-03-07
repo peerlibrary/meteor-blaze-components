@@ -921,6 +921,48 @@ class InlineEventsComponent extends BlazeComponent
 class InvalidInlineEventsComponent extends BlazeComponent
   @register 'InvalidInlineEventsComponent'
 
+class LevelOneComponent extends BlazeComponent
+  @register 'LevelOneComponent'
+
+class LevelTwoComponent extends BlazeComponent
+  @children: []
+
+  @register 'LevelTwoComponent'
+
+  onCreated: ->
+    super
+
+    @autorun =>
+      @constructor.children.push all: @childComponents().length
+    @autorun =>
+      @constructor.children.push topValue: @childComponentsWith(topValue: 41).length
+    @autorun =>
+      @constructor.children.push hasValue: @childComponentsWith(hasValue: 42).length
+    @autorun =>
+      @constructor.children.push hasNoValue: @childComponentsWith(hasNoValue: 43).length
+
+class LevelOneMixin extends BlazeComponent
+  mixins: ->
+    [LevelTwoMixin]
+
+  # This one should be resolved in the template.
+  hasValue: ->
+    42
+
+class LevelTwoMixin extends BlazeComponent
+  # This one should not be resolved in the template.
+  hasNoValue: ->
+    43
+
+class ComponentWithNestedMixins extends BlazeComponent
+  @register 'ComponentWithNestedMixins'
+
+  mixins: ->
+    [LevelOneMixin]
+
+  topValue: ->
+    41
+
 class BasicTestCase extends ClassyTestCase
   @testName: 'blaze-components - basic'
 
@@ -3201,5 +3243,38 @@ class BasicTestCase extends ClassyTestCase
 
   testClientHead: ->
     @assertTrue jQuery('head').find('noscript').length
+
+  testNestedMixins: ->
+    LevelTwoComponent.children = []
+
+    output = BlazeComponent.getComponent('LevelOneComponent').renderComponentToHTML null, null
+
+    @assertEqual trim(output), trim """
+      <span>41</span>
+      <span>42</span>
+      <span></span>
+    """
+
+    @assertEqual LevelTwoComponent.children, [
+      all: 0
+    ,
+      topValue: 0
+    ,
+      hasValue: 0
+    ,
+      hasNoValue: 0
+    ,
+      all: 1
+    ,
+      topValue: 1
+    ,
+      hasValue: 1
+    ,
+      all: 0
+    ,
+      topValue: 0
+    ,
+      hasValue: 0
+    ]
 
 ClassyTestCase.addTest new BasicTestCase()
