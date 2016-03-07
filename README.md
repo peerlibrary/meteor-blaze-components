@@ -756,7 +756,7 @@ class FirstMixin extends FirstMixinBase {
   }
 
   dataContext() {
-    return EJSON.stringify(this.mixinParent().data());
+    return EJSON.stringify(this.data());
   }
 
   events() {
@@ -902,11 +902,12 @@ upwards.
 
 ```javascript
 dataContext() {
-  return EJSON.stringify(this.mixinParent().data());
+  return EJSON.stringify(this.data());
 }
 ```
 
-To access the data context used for the component you first access the component, and then its data context.
+The method to access the data context used for the component automatically first finds the mixin's component and
+then accesses its data context.
 
 ```javascript
 onCreated() {
@@ -1828,6 +1829,9 @@ When called without a `mixinParent` argument it returns the mixin's parent. For 
 returns the component instance.
 
 When called with a `mixinParent` argument it sets the mixin's parent.
+
+To access the mixin's component, it is better to use [`component`](#user-content-reference_instance_component)
+instead, which traverses multiple levels of mixins automatically.
 
 *Setting the mixin's parent is done automatically by calling this method when creating component's mixins. Extend
 (or provide) this method if you want to do any action when parent is set, for example, add dependency mixins to
