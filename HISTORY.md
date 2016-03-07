@@ -3,6 +3,11 @@
 * Reverted searching of mixins of mixins. `getFirstWith` and `callFirstWith` traverse mixins, so this is
   enough.
 * But `childComponentsWith` does check for mixin properties now, when properties are being matched.
+* `component` now always resolves to the component, even when called from a mixin.
+  Many methods which expect to operate on the component and previously failed when called on a mixin
+  now automatically assure that they are called on the component, if it is available.
+  This allows better code reuse between mixins and components.
+
 ## v0.17.0, 2016-Mar-03
 
 * `getFirstWith` now accepts a predicate as well.

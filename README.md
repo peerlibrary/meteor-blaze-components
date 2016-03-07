@@ -1396,7 +1396,7 @@ ListComponent.register('ListComponent');
 component()
 ```
 
-Returns the component. Useful in templates to get a reference to the component.
+Returns the component. Useful in templates and mixins to get a reference to the component.
 
 <a name="reference_instance_currentComponent"></a>
 ```javascript
