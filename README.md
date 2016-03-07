@@ -907,7 +907,10 @@ dataContext() {
 ```
 
 The method to access the data context used for the component automatically first finds the mixin's component and
-then accesses its data context.
+then accesses its data context. All Blaze Components methods which can operate only on components and not mixins
+automatically assure that they are called on the mixin's component. For methods which can operate on both components
+and mixins this is not done automatically. You should first call [`component`](#user-content-reference_instance_component)
+to get an instance of the mixin's component and then call the method on it.
 
 ```javascript
 onCreated() {
