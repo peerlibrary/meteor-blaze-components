@@ -438,8 +438,8 @@ class ExampleComponent extends BlazeComponent {
 }
 ```
 
-Blaze Components will recognize any element attribute beginning with "on" followed by a capital letter as an event binding attribute.
-In these examples `onClick` will be recognized as a binding for the `click` event, but `onclick` will be passed on as it is to the DOM. `onKeyup` will be recognized as a binding for the `keyup` event, and so on.
+Blaze Components will recognize as an event binding attribute any element attribute beginning with `on` followed by a event name starting with a capital letter.
+In these examples, `onClick` is recognized as a binding for the `click` event, but `onclick` would be passed on as it is as an attribute to the DOM. `onKeyup` would be recognized as a binding for the `keyup` event, and so on.
 
 Moreover, observe the [`callFirstWith`](#user-content-reference_instance_callFirstWith) call. This allows
 [mixins](#mixins-1) to hook into the same event. Only the first resolved event handler with a given name is
