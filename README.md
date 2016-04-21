@@ -1913,3 +1913,4 @@ system and its power shows exactly because you can build such features through o
 Blaze, allowing one to pass data from the top to the bottom. These ideas are inspired by React.
 A proposed way to limit rerenders in Blaze Components if one wants to pass data from the top to the bottom is to use
 [computed field](https://github.com/peerlibrary/meteor-computed-field) package.
+* [TemplateController](https://github.com/meteor-space/template-controller) – Wrapping some of the same best practices Blaze Components do, but into only a thin layer without much extra features one can find in Blaze Components.
