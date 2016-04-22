@@ -1901,7 +1901,7 @@ input fields
 like data contexts and template helpers; Flow Components on the other hand still use template-based event handlers
 while Blaze Components make them class methods so it easier to extend or override them through inheritance; in
 general Blaze Components seems to be more OOP oriented; Flow Components are not yet officially released
-* [ViewModel](http://viewmodel.meteor.com/) – instead of using event handlers to imperatively respond to user
+* [ViewModel](https://github.com/ManuelDeLeon/viewmodel) – instead of using event handlers to imperatively respond to user
 interactions, ViewModel provides a two-way data binding between the model and DOM elements, like form input elements,
 if data changes, form input element updates, if user modifies form input element, data is updated; alongside, ViewModel
 can be used as components; Blaze Components are in this way lower level and they do not prescribe the way you
