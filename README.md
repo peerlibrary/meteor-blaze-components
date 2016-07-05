@@ -71,7 +71,7 @@ Additional packages
 Components
 ----------
 
-While Blaze Components are build on top of [Blaze](https://www.meteor.com/blaze), Meteor's a powerful library
+While Blaze Components are built on top of [Blaze](https://www.meteor.com/blaze), Meteor's a powerful library
 for creating live-updating user interfaces, its public API and semantics are different with the goal of providing
 extensible and composable components through unified and consistent interface.
 
