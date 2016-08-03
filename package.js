@@ -60,7 +60,7 @@ Package.onUse(function (api) {
   api.use([
     'peerlibrary:assert@0.2.5',
     'peerlibrary:reactive-field@0.1.0',
-    'peerlibrary:computed-field@0.3.0',
+    'peerlibrary:computed-field@0.3.1',
     'peerlibrary:data-lookup@0.1.0'
   ]);
 
