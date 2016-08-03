@@ -71,7 +71,7 @@ Additional packages
 Components
 ----------
 
-While Blaze Components are build on top of [Blaze](https://www.meteor.com/blaze), Meteor's a powerful library
+While Blaze Components are built on top of [Blaze](https://www.meteor.com/blaze), Meteor's a powerful library
 for creating live-updating user interfaces, its public API and semantics are different with the goal of providing
 extensible and composable components through unified and consistent interface.
 
@@ -1901,7 +1901,7 @@ input fields
 like data contexts and template helpers; Flow Components on the other hand still use template-based event handlers
 while Blaze Components make them class methods so it easier to extend or override them through inheritance; in
 general Blaze Components seems to be more OOP oriented; Flow Components are not yet officially released
-* [ViewModel](http://viewmodel.meteor.com/) – instead of using event handlers to imperatively respond to user
+* [ViewModel](https://github.com/ManuelDeLeon/viewmodel) – instead of using event handlers to imperatively respond to user
 interactions, ViewModel provides a two-way data binding between the model and DOM elements, like form input elements,
 if data changes, form input element updates, if user modifies form input element, data is updated; alongside, ViewModel
 can be used as components; Blaze Components are in this way lower level and they do not prescribe the way you
@@ -1913,3 +1913,4 @@ system and its power shows exactly because you can build such features through o
 Blaze, allowing one to pass data from the top to the bottom. These ideas are inspired by React.
 A proposed way to limit rerenders in Blaze Components if one wants to pass data from the top to the bottom is to use
 [computed field](https://github.com/peerlibrary/meteor-computed-field) package.
+* [TemplateController](https://github.com/meteor-space/template-controller) – Wrapping some of the same best practices Blaze Components do, but into only a thin layer without much extra features one can find in Blaze Components and without support for code reusability and sharing.

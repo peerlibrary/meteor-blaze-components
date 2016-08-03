@@ -784,7 +784,7 @@ class BlazeComponent extends BaseComponent
             # component.parentComponent is reactive, so we use Tracker.nonreactive just to make sure we do not leak any reactivity here.
             Tracker.nonreactive =>
               # TODO: Should we support that the same component can be rendered multiple times in parallel? How could we do that? For different component parents or only the same one?
-              assert not component.parentComponent()
+              assert not component.parentComponent(), "Component '#{component.componentName() or 'unnamed'}' parent component '#{component.parentComponent()?.componentName() or 'unnamed'}' already set."
 
               # We set the parent only when the component is created, not just constructed.
               component.parentComponent parentComponent
