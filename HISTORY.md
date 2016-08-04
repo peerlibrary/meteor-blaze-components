@@ -1,5 +1,11 @@
 ## vNEXT
 
+## v0.19.0, 2016-Aug-03
+
+* Correctly cache `<head>` tag. Our workaround for the
+  [Meteor issue](https://github.com/meteor/meteor/issues/5913) was breaking the cache
+  because it made empty head to be cached even for the client target.
+
 ## v0.18.0, 2016-Mar-07
 
 * Reverted searching of mixins of mixins. `getFirstWith` and `callFirstWith` traverse mixins, so this is
