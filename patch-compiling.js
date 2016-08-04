@@ -86,10 +86,19 @@ var matches = function (host, program) {
 // See: https://github.com/meteor/meteor/issues/5913
 var originalAddCompileResult = CachingHtmlCompiler.prototype.addCompileResult;
 CachingHtmlCompiler.prototype.addCompileResult = function (inputFile, compileResult) {
+  var head = compileResult.head;
+
   if (compileResult.head && !matches(inputFile.getArch(), 'web')) {
     // Head can only be emitted to web targets.
-    delete compileResult.head;
+    compileResult.head = '';
   }
 
-  originalAddCompileResult.call(this, inputFile, compileResult);
+  try {
+    originalAddCompileResult.call(this, inputFile, compileResult);
+  }
+  finally {
+    // Restore whatever was initially stored for head. We have to restore because
+    // the cache is shared between targets and an empty head is cached otherwise.
+    compileResult.head = head;
+  }
 };
