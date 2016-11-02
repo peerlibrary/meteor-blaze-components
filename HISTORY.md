@@ -1,5 +1,7 @@
 ## vNEXT
 
+## v0.20.0, 2016-Nov-01
+
 * Updated code to support the new version of [computed field](https://github.com/peerlibrary/meteor-computed-field).
 
 ## v0.19.0, 2016-Aug-03
