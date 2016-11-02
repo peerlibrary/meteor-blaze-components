@@ -1007,10 +1007,15 @@ class BlazeComponent extends BaseComponent
 
     if view = component._componentInternals.templateInstance()?.view
       if path?
-        return DataLookup.get =>
-          Blaze.getData view
-        ,
-          path, equalsFunc
+        # DataLookup uses internally computed field, which uses view's autorun, but
+        # data might be used inside render() method, where it is forbidden to use
+        # view's autorun. So we temporary hide the fact that we are inside a view
+        # to make computed field use normal autorun.
+        return Blaze._withCurrentView null, =>
+          DataLookup.get =>
+            Blaze.getData view
+          ,
+            path, equalsFunc
       else
         return Blaze.getData view
 
@@ -1033,17 +1038,22 @@ class BlazeComponent extends BaseComponent
     else if not _.isArray path
       return Blaze.getData currentView
 
-    DataLookup.get =>
-      if Blaze._lexicalBindingLookup and lexicalData = Blaze._lexicalBindingLookup currentView, path[0]
-        # We return custom data object so that we can reuse the same
-        # lookup logic for both lexical and the normal data context case.
-        result = {}
-        result[path[0]] = lexicalData
-        return result
+    # DataLookup uses internally computed field, which uses view's autorun, but
+    # currentData might be used inside render() method, where it is forbidden to use
+    # view's autorun. So we temporary hide the fact that we are inside a view
+    # to make computed field use normal autorun.
+    Blaze._withCurrentView null, =>
+      DataLookup.get =>
+        if Blaze._lexicalBindingLookup and lexicalData = Blaze._lexicalBindingLookup currentView, path[0]
+          # We return custom data object so that we can reuse the same
+          # lookup logic for both lexical and the normal data context case.
+          result = {}
+          result[path[0]] = lexicalData
+          return result
 
-      Blaze.getData currentView
-    ,
-      path, equalsFunc
+        Blaze.getData currentView
+      ,
+        path, equalsFunc
 
   # Method should never be overridden. The implementation should always be exactly the same as class method implementation.
   currentData: (path, equalsFunc) ->
