@@ -1,5 +1,9 @@
 ## vNEXT
 
+* Provide internal `_renderComponentTo` method to allow serialization of Blaze's intermediate HTMLJS
+  to a custom output. This allows, for example, serialization of Blaze Components to a plain-text rendering
+  useful for plain-text e-mails.
+
 ## v0.20.0, 2016-Nov-01
 
 * Updated code to support the new version of [computed field](https://github.com/peerlibrary/meteor-computed-field).

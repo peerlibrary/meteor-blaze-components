@@ -885,7 +885,7 @@ class BlazeComponent extends BaseComponent
   removeComponent: ->
     Blaze.remove @component()._componentInternals.templateInstance().view if @isRendered()
 
-  @renderComponentToHTML: (parentComponent, parentView, data) ->
+  @_renderComponentTo: (visitor, parentComponent, parentView, data) ->
     component = Tracker.nonreactive =>
       componentClass = @
 
@@ -895,11 +895,17 @@ class BlazeComponent extends BaseComponent
         new componentClass()
 
     if arguments.length > 2
-      component.renderComponentToHTML parentComponent, parentView, data
+      component._renderComponentTo visitor, parentComponent, parentView, data
     else
-      component.renderComponentToHTML parentComponent, parentView
+      component._renderComponentTo visitor, parentComponent, parentView
 
-  renderComponentToHTML: (parentComponent, parentView, data) ->
+  @renderComponentToHTML: (parentComponent, parentView, data) ->
+    if arguments.length > 2
+      @_renderComponentTo new HTML.ToHTMLVisitor(), parentComponent, parentView, data
+    else
+      @_renderComponentTo new HTML.ToHTMLVisitor(), parentComponent, parentView
+
+  _renderComponentTo: (visitor, parentComponent, parentView, data) ->
     template = Tracker.nonreactive =>
       parentView = parentView or currentViewIfRendering() or (parentComponent?.isRendered() and parentComponent._componentInternals.templateInstance().view) or null
 
@@ -911,7 +917,13 @@ class BlazeComponent extends BaseComponent
     else
       expandedView = expandView contentAsView(template), parentView
 
-    HTML.toHTML expandedView
+    visitor.visit expandedView
+
+  renderComponentToHTML: (parentComponent, parentView, data) ->
+    if arguments.length > 2
+      @_renderComponentTo new HTML.ToHTMLVisitor(), parentComponent, parentView, data
+    else
+      @_renderComponentTo new HTML.ToHTMLVisitor(), parentComponent, parentView
 
   template: ->
     @callFirstWith(@, 'template') or @constructor.componentName()
