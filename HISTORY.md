@@ -1,5 +1,7 @@
 ## vNEXT
 
+## v0.21.0, 2017-Feb-06
+
 * Provide internal `_renderComponentTo` method to allow serialization of Blaze's intermediate HTMLJS
   to a custom output. This allows, for example, serialization of Blaze Components to a plain-text rendering
   useful for plain-text e-mails.
