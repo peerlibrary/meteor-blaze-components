@@ -9,11 +9,11 @@ Package.describe({
 Package.registerBuildPlugin({
   name: "compileBlazeComponentsTemplatesBatch",
   use: [
-    'caching-html-compiler@1.0.2',
-    'ecmascript@0.1.6',
-    'templating-tools@1.0.0',
-    'spacebars-compiler@1.0.7',
-    'html-tools@1.0.5'
+    'caching-html-compiler@1.1.2',
+    'ecmascript@0.8.2',
+    'templating-tools@1.1.2',
+    'spacebars-compiler@1.1.2',
+    'html-tools@1.0.11'
   ],
   sources: [
     'patch-compiling.js',
@@ -22,7 +22,7 @@ Package.registerBuildPlugin({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom('METEOR@1.0.3.1');
+  api.versionsFrom('METEOR@1.4.1');
 
   // Core dependencies.
   api.use([
@@ -59,8 +59,8 @@ Package.onUse(function (api) {
   // 3rd party dependencies.
   api.use([
     'peerlibrary:assert@0.2.5',
-    'peerlibrary:reactive-field@0.1.0',
-    'peerlibrary:computed-field@0.3.1',
+    'peerlibrary:reactive-field@0.3.0',
+    'peerlibrary:computed-field@0.7.0',
     'peerlibrary:data-lookup@0.1.0'
   ]);
 
@@ -91,6 +91,8 @@ Package.onUse(function (api) {
 });
 
 Package.onTest(function (api) {
+  api.versionsFrom('METEOR@1.4.1');
+
   // Core dependencies.
   api.use([
     'coffeescript',
@@ -109,9 +111,9 @@ Package.onTest(function (api) {
 
   // 3rd party dependencies.
   api.use([
-    'peerlibrary:classy-test@0.2.25',
+    'peerlibrary:classy-test@0.2.26',
     'mquandalle:harmony@1.3.79',
-    'peerlibrary:reactive-field@0.1.0',
+    'peerlibrary:reactive-field@0.3.0',
     'peerlibrary:assert@0.2.5'
   ]);
 
