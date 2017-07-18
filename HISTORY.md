@@ -1,5 +1,9 @@
 ## vNEXT
 
+## v0.22.0, 2017-Jul-18
+
+* Updated dependencies to newer versions.
+
 ## v0.21.0, 2017-Feb-06
 
 * Provide internal `_renderComponentTo` method to allow serialization of Blaze's intermediate HTMLJS
