@@ -497,7 +497,7 @@ class BlazeComponent extends BaseComponent
     if (component = @component()) isnt @
       component.childComponents nameOrComponent
     else
-      super
+      super arguments...
 
   # A version of childComponentsWith which knows about mixins.
   # When checking for properties it checks mixins as well.
@@ -515,19 +515,19 @@ class BlazeComponent extends BaseComponent
     if (component = @component()) isnt @
       component.parentComponent parentComponent
     else
-      super
+      super arguments...
 
   addChildComponent: (childComponent) ->
     if (component = @component()) isnt @
       component.addChildComponent childComponent
     else
-      super
+      super arguments...
 
   removeChildComponent: (childComponent) ->
     if (component = @component()) isnt @
       component.removeChildComponent childComponent
     else
-      super
+      super arguments...
 
   mixins: ->
     []

@@ -1,11 +1,11 @@
 class BlazeComponentDebug extends BaseComponentDebug
   @startComponent: (component) ->
-    super
+    super arguments...
 
     console.log component.data()
 
   @startMarkedComponent: (component) ->
-    super
+    super arguments...
 
     console.log component.data()
 
@@ -13,13 +13,13 @@ class BlazeComponentDebug extends BaseComponentDebug
     if 'nodeType' of rootComponentOrElement and rootComponentOrElement.nodeType is Node.ELEMENT_NODE
       rootComponentOrElement = BlazeComponent.getComponentForElement rootComponentOrElement
 
-    super
+    super arguments...
 
   @dumpComponentTree: (rootComponentOrElement) ->
     if 'nodeType' of rootComponentOrElement and rootComponentOrElement.nodeType is Node.ELEMENT_NODE
       rootComponentOrElement = BlazeComponent.getComponentForElement rootComponentOrElement
 
-    super
+    super arguments...
 
   @dumpAllComponents: ->
     allRootComponents = []
