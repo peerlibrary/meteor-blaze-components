@@ -27,7 +27,7 @@ Package.onUse(function (api) {
   // Core dependencies.
   api.use([
     'blaze',
-    'coffeescript',
+    'coffeescript@2.2.1_1',
     'underscore',
     'tracker',
     'reactive-var',
