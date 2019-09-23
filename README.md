@@ -163,12 +163,12 @@ Example above in vanilla JavaScript:
 ```javascript
 var ExampleComponent = BlazeComponent.extendComponent({
   onCreated: function () {
-    ExampleComponent.__super__.onCreated.call(this);
+    Object.getPrototypeOf(ExampleComponent).prototype.onCreated.call(this);
     this.counter = new ReactiveField(0);
   },
 
   events: function () {
-    return ExampleComponent.__super__.events.call(this).concat({
+    return Object.getPrototypeOf(ExampleComponent).prototype.events.call(this).concat({
       'click .increment': this.onClick
     });
   },
@@ -1059,12 +1059,12 @@ Example:
 
 ```javascript
 for (let property in BlazeComponent) {
-  if (property === '__super__') continue;
+  if (!(property in YourBaseClass)) continue;
   YourBaseClass[property] = BlazeComponent[property];
 }
 
 for (let property in BlazeComponent.prototype) {
-  if (property === 'constructor') continue;
+  if (!(property in YourBaseClass.prototype)) continue;
   YourBaseClass.prototype[property] = BlazeComponent.prototype[property];
 }
 ```
@@ -1137,20 +1137,21 @@ prototype-based inheritance and assigns properties and values from `methods` to 
 It accepts an optional `constructor` function to be used instead of a default one which just calls the constructor
 of the parent component.
 
-Inside a method you can use `this.constructor` to access the class. Parent class prototype is stored into `__super__`
-for you convenience. You can use it to do `super` calls.
+Inside a method you can use `this.constructor` to access the class. Parent class prototype is available at
+`Object.getPrototypeOf(this.constructor).prototype`. You can use it to do `super` calls.
 
 Example (in vanilla JavaScript):
 
 ```javascript
 var OurComponent = MyComponent.extendComponent({
   values: function () {
-    return '>>>' + OurComponent.__super__.values.call(this) + '<<<';
+    return '>>>' + Object.getPrototypeOf(OurComponent).prototype.values.call(this) + '<<<';
   }
 });
 ```
 
-In ES2015 and CoffeeScript you do not have to use `__super__` but can use languages' `super`.
+In ES2015 and CoffeeScript you do not have to use `Object.getPrototypeOf(this.constructor).prototype` but can use
+languages' `super`.
 
 <a name="reference_class_renderComponent"></a>
 ```javascript
