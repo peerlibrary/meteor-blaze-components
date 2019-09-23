@@ -1,3 +1,13 @@
+getAllProperties = (obj) ->
+  names = new Set()
+  properties = []
+  while obj
+    for name in Object.getOwnPropertyNames(obj) when name not in names and name not in ['caller', 'callee', 'arguments']
+      properties.push([name, obj[name]])
+      names.add(name)
+    obj = Object.getPrototypeOf(obj)
+  properties
+
 trim = (html) =>
   html = html.replace />\s+/g, '>'
   html = html.replace /\s+</g, '<'
@@ -125,19 +135,19 @@ class AnimatedListComponent extends BlazeComponent
     assert not Tracker.active
 
     @constructor.calls.push ['insertDOMElement', @componentName(), trim(parent.outerHTML), trim(node.outerHTML), trim(before?.outerHTML or '')]
-    super
+    super arguments...
 
   moveDOMElement: (parent, node, before) ->
     assert not Tracker.active
 
     @constructor.calls.push ['moveDOMElement', @componentName(), trim(parent.outerHTML), trim(node.outerHTML), trim(before?.outerHTML or '')]
-    super
+    super arguments...
 
   removeDOMElement: (parent, node) ->
     assert not Tracker.active
 
     @constructor.calls.push ['removeDOMElement', @componentName(), trim(parent.outerHTML), trim(node.outerHTML)]
-    super
+    super arguments...
 
 BlazeComponent.register 'AnimatedListComponent', AnimatedListComponent
 
@@ -157,6 +167,8 @@ class ArgumentsComponent extends BlazeComponent
   constructor: ->
     assert not Tracker.active
 
+    super()
+
     @constructor.calls.push arguments[0]
     @arguments = arguments
 
@@ -169,7 +181,7 @@ class ArgumentsComponent extends BlazeComponent
   onCreated: ->
     assert not Tracker.active
 
-    super
+    super()
 
     @collectStateChanges @constructor.onCreatedStateChanges
 
@@ -206,7 +218,7 @@ class ArgumentsComponent extends BlazeComponent
   onDestroyed: ->
     assert not Tracker.active
 
-    super
+    super()
 
     Tracker.afterFlush =>
       while handle = @handles.pop()
@@ -310,9 +322,9 @@ class ExistingClassHierarchyChild extends ExistingClassHierarchyBase
 
 class ExistingClassHierarchyBaseComponent extends ExistingClassHierarchyChild
 
-for property, value of BlazeComponent when property not in ['__super__']
+for [property, value] in getAllProperties(BlazeComponent) when property not of ExistingClassHierarchyBaseComponent
   ExistingClassHierarchyBaseComponent[property] = value
-for property, value of (BlazeComponent::) when property not in ['constructor']
+for [property, value] in getAllProperties(BlazeComponent::) when property not of ExistingClassHierarchyBaseComponent::
   ExistingClassHierarchyBaseComponent::[property] = value
 
 class ExistingClassHierarchyComponent extends ExistingClassHierarchyBaseComponent
@@ -495,6 +507,8 @@ class ChildComponent extends BlazeComponent
   constructor: (@childName) ->
     assert not Tracker.active
 
+    super()
+
   onCreated: ->
     assert not Tracker.active
 
@@ -503,7 +517,7 @@ class ChildComponent extends BlazeComponent
   insertDOMElement: (parent, node, before) ->
     assert not Tracker.active
 
-    super
+    super arguments...
 
     @domChanged Tracker.nonreactive =>
       @domChanged() + 1
@@ -511,7 +525,7 @@ class ChildComponent extends BlazeComponent
   moveDOMElement: (parent, node, before) ->
     assert not Tracker.active
 
-    super
+    super arguments...
 
     @domChanged Tracker.nonreactive =>
       @domChanged() + 1
@@ -519,7 +533,7 @@ class ChildComponent extends BlazeComponent
   removeDOMElement: (parent, node) ->
     assert not Tracker.active
 
-    super
+    super arguments...
 
     @domChanged Tracker.nonreactive =>
       @domChanged() + 1
@@ -545,6 +559,8 @@ class CaseComponent extends BlazeComponent
 
   constructor: (kwargs) ->
     assert not Tracker.active
+
+    super()
 
     @cases = kwargs.hash
 
@@ -606,7 +622,7 @@ class FirstMixinBase extends BlazeComponent
 
 class FirstMixin2 extends FirstMixinBase
   extendedHelper: ->
-    super + 2
+    super() + 2
 
   values: ->
     'b' + (@mixinParent().callFirstWith(@, 'values') or '')
@@ -617,7 +633,7 @@ class FirstMixin2 extends FirstMixinBase
   events: ->
     assert not Tracker.active
 
-    super.concat
+    super().concat
       'click': @onClick
 
   onCreated: ->
@@ -643,13 +659,13 @@ class ExampleComponent extends BlazeComponent
   onCreated: ->
     assert not Tracker.active
 
-    super
+    super()
     @counter = new ReactiveField 0
 
   events: ->
     assert not Tracker.active
 
-    super.concat
+    super().concat
       'click .increment': @onClick
 
   onClick: (event) ->
@@ -930,7 +946,7 @@ class LevelTwoComponent extends BlazeComponent
   @register 'LevelTwoComponent'
 
   onCreated: ->
-    super
+    super()
 
     @autorun =>
       @constructor.children.push all: @childComponents().length
@@ -3001,7 +3017,7 @@ class BasicTestCase extends ClassyTestCase
       @assertEqual trim($('.extraTestBlockComponent').html()), trim(TEST_BLOCK_COMPONENT_CONTENT())
 
       TestingComponentDebug.structure = {}
-      TestingComponentDebug.dumpComponentTree $('.extraTestBlockComponent table').get(0)
+      TestingComponentDebug.dumpComponentTree BlazeComponent.getComponentForElement($('.extraTestBlockComponent table').get(0))
 
       @assertEqual TestingComponentDebug.structure, TEST_BLOCK_COMPONENT_STRUCTURE()
 

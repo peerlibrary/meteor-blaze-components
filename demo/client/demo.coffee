@@ -51,7 +51,7 @@ class AutoSelectTextareaComponent extends AutoSelectInputComponent
     'AutoSelectTextareaComponent'
 
   events: ->
-    super.concat
+    super().concat
       'change textarea': @onChange
       'click textarea': @onClick
 
@@ -61,7 +61,7 @@ class RealTimeInputComponent extends AutoSelectInputComponent
   @register 'RealTimeInputComponent'
 
   events: ->
-    super.concat
+    super().concat
       'keyup input': @onKeyup
 
   onKeyup: (event) ->
@@ -78,10 +78,10 @@ class PersistentInputComponent extends AutoSelectInputComponent
 
   value: ->
     # Return stored value during editing or normal otherwise.
-    @storedValue() or super
+    @storedValue() or super()
 
   events: ->
-    super.concat
+    super().concat
       'focus input': @onFocus
       'blur input': @onBlur
 
@@ -193,6 +193,7 @@ class FormFieldMixin extends BlazeComponent
 
 class StorageMixin extends BlazeComponent
   constructor: (@collection, @fieldName, @selector) ->
+    super()
 
   getValue: ->
     @collection.findOne(@selector())?[@fieldName]
@@ -206,7 +207,7 @@ class CancelableInputMixin extends BlazeComponent
   mixinParent: (mixinParent) ->
     # We rely on the persistent input mixin to obtain the stored value.
     mixinParent.requireMixin PersistentInputMixin2 if mixinParent
-    super
+    super arguments...
 
   events: -> [
     'keydown input': @onKeyDown

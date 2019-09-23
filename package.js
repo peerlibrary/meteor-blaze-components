@@ -1,7 +1,7 @@
 Package.describe({
   name: 'peerlibrary:blaze-components',
   summary: "Reusable components for Blaze",
-  version: '0.22.0',
+  version: '0.23.0',
   git: 'https://github.com/peerlibrary/meteor-blaze-components.git'
 });
 
@@ -9,10 +9,10 @@ Package.describe({
 Package.registerBuildPlugin({
   name: "compileBlazeComponentsTemplatesBatch",
   use: [
-    'caching-html-compiler@1.1.2',
-    'ecmascript@0.8.2',
+    'caching-html-compiler@1.1.3',
+    'ecmascript@0.12.7',
     'templating-tools@1.1.2',
-    'spacebars-compiler@1.1.2',
+    'spacebars-compiler@1.1.3',
     'html-tools@1.0.11'
   ],
   sources: [
@@ -22,18 +22,18 @@ Package.registerBuildPlugin({
 });
 
 Package.onUse(function (api) {
-  api.versionsFrom('METEOR@1.4.1');
+  api.versionsFrom('METEOR@1.8.1');
 
   // Core dependencies.
   api.use([
-    'blaze',
-    'coffeescript@2.2.1_1',
+    'blaze@2.3.3',
+    'coffeescript@2.4.1',
     'underscore',
     'tracker',
     'reactive-var',
     'ejson',
-    'spacebars',
-    'jquery'
+    'spacebars@1.0.15',
+    'jquery@1.11.11'
   ]);
 
   // If templating package is among dependencies, we want it to be loaded before
@@ -53,15 +53,15 @@ Package.onUse(function (api) {
 
   // Internal dependencies.
   api.use([
-    'peerlibrary:base-component@0.16.0'
+    'peerlibrary:base-component@0.17.1'
   ]);
 
   // 3rd party dependencies.
   api.use([
-    'peerlibrary:assert@0.2.5',
-    'peerlibrary:reactive-field@0.3.0',
-    'peerlibrary:computed-field@0.7.0',
-    'peerlibrary:data-lookup@0.1.0'
+    'peerlibrary:assert@0.3.0',
+    'peerlibrary:reactive-field@0.6.0',
+    'peerlibrary:computed-field@0.10.0',
+    'peerlibrary:data-lookup@0.3.0'
   ]);
 
   api.export('Template');
@@ -91,12 +91,12 @@ Package.onUse(function (api) {
 });
 
 Package.onTest(function (api) {
-  api.versionsFrom('METEOR@1.4.1');
+  api.versionsFrom('METEOR@1.8.1');
 
   // Core dependencies.
   api.use([
-    'coffeescript',
-    'jquery',
+    'coffeescript@2.4.1',
+    'jquery@1.11.11',
     'reactive-var',
     'underscore',
     'tracker',
@@ -111,17 +111,16 @@ Package.onTest(function (api) {
 
   // 3rd party dependencies.
   api.use([
-    'peerlibrary:classy-test@0.2.26',
-    'mquandalle:harmony@1.3.79',
-    'peerlibrary:reactive-field@0.3.0',
-    'peerlibrary:assert@0.2.5'
+    'peerlibrary:classy-test@0.4.0',
+    'peerlibrary:reactive-field@0.6.0',
+    'peerlibrary:assert@0.3.0'
   ]);
 
   api.addFiles([
     'tests/tests.html',
     'tests/tests.coffee',
     'tests/tests.js',
-    'tests/tests.next.js',
+    'tests/tests.es2015.js',
     'tests/tests.css'
    ]);
 });
