@@ -411,7 +411,7 @@ onClick(event) {
   },
 
   events: function () {
-    return AutoSelectTextareaComponent.__super__.events.call(this).concat({
+    return Object.getPrototypeOf(AutoSelectTextareaComponent).prototype.events.call(this).concat({
       'change textarea': this.onChange,
       'click textarea': this.onClick
     });
@@ -492,7 +492,7 @@ textarea as well.</p>
 
 {{#withJavaScript}}var RealTimeInputComponent = AutoSelectInputComponent.extendComponent({
   events: function () {
-    return RealTimeInputComponent.__super__.events.call(this).concat({
+    return Object.getPrototypeOf(RealTimeInputComponent).prototype.events.call(this).concat({
       'keyup input': this.onKeyup
     });
   },
@@ -578,11 +578,11 @@ editing it. To enable this, we'll store the current value (using
 
   value: function () {
     // Return stored value during editing or normal otherwise.
-    return this.storedValue() || PersistentInputComponent.__super__.value.call(this);
+    return this.storedValue() || Object.getPrototypeOf(PersistentInputComponent).prototype.value.call(this);
   },
 
   events: function () {
-    return PersistentInputComponent.__super__.events.call(this).concat({
+    return Object.getPrototypeOf(PersistentInputComponent).prototype.events.call(this).concat({
       'focus input': this.onFocus,
       'blur input': this.onBlur
     });
@@ -810,7 +810,7 @@ SmartInputComponent.register('SmartInputComponent');{{/withES2015}}
   if (doc) return doc.value;
 }{{/withES2015}}
 
-<p>In inheritance we need to {{#if isCoffeeScript}}call <code class="language-coffeescript">super</code>{{/if}}{{#if isJavaScript}}use <code class="language-javascript">__super__</code>{{/if}}{{#if isES2015}}use <code class="language-javascript">super</code>{{/if}}
+<p>In inheritance we need to {{#if isCoffeeScript}}call <code class="language-coffeescript">super</code>{{/if}}{{#if isJavaScript}}use <code class="language-javascript">Object.getPrototypeOf(this.constructor).prototype</code>{{/if}}{{#if isES2015}}use <code class="language-javascript">super</code>{{/if}}
   to get the result of a method
   we are overriding &mdash; otherwise the child completely shadows that method. With mixins we have to perform the same
   thing to get the result from a mixin's implementation. That's what the
@@ -1203,7 +1203,7 @@ ExtremeInputComponent.register('ExtremeInputComponent');{{/withES2015}}
     if (mixinParent) {
       mixinParent.requireMixin(PersistentInputMixin);
     }
-    return CancelableInputMixin.__super__.mixinParent.apply(this, arguments);
+    return Object.getPrototypeOf(CancelableInputMixin).prototype.mixinParent.apply(this, arguments);
   },
 
   events: function () {

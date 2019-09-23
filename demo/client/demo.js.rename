@@ -69,7 +69,7 @@ var AutoSelectTextareaComponent = AutoSelectInputComponent.extendComponent({
   },
 
   events: function () {
-    return AutoSelectTextareaComponent.__super__.events.call(this).concat({
+    return Object.getPrototypeOf(AutoSelectTextareaComponent).prototype.events.call(this).concat({
       'change textarea': this.onChange,
       'click textarea': this.onClick
     });
@@ -80,7 +80,7 @@ var AutoSelectTextareaComponent = AutoSelectInputComponent.extendComponent({
 
 var RealTimeInputComponent = AutoSelectInputComponent.extendComponent({
   events: function () {
-    return RealTimeInputComponent.__super__.events.call(this).concat({
+    return Object.getPrototypeOf(RealTimeInputComponent).prototype.events.call(this).concat({
       'keyup input': this.onKeyup
     });
   },
@@ -100,11 +100,11 @@ var PersistentInputComponent = AutoSelectInputComponent.extendComponent({
 
   value: function () {
     // Return stored value during editing or normal otherwise.
-    return this.storedValue() || PersistentInputComponent.__super__.value.call(this);
+    return this.storedValue() || Object.getPrototypeOf(PersistentInputComponent).prototype.value.call(this);
   },
 
   events: function () {
-    return PersistentInputComponent.__super__.events.call(this).concat({
+    return Object.getPrototypeOf(PersistentInputComponent).prototype.events.call(this).concat({
       'focus input': this.onFocus,
       'blur input': this.onBlur
     });
@@ -284,7 +284,7 @@ var CancelableInputMixin = BlazeComponent.extendComponent({
     if (mixinParent) {
       mixinParent.requireMixin(PersistentInputMixin2);
     }
-    return CancelableInputMixin.__super__.mixinParent.apply(this, arguments);
+    return Object.getPrototypeOf(CancelableInputMixin).prototype.mixinParent.apply(this, arguments);
   },
 
   events: function () {
