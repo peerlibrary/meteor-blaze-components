@@ -40,7 +40,7 @@ Package.onUse(function (api) {
   // us to not override our augmented functions. But we cannot make a real dependency
   // because of a plugin conflict (both us and templating are registering a *.html plugin).
   api.use([
-    'templating'
+    'templating@1.3.2'
   ], {weak: true});
 
   api.imply([
