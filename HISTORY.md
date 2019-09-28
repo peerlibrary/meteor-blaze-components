@@ -1,5 +1,9 @@
 ## vNEXT
 
+## v0.23.0, 2019-Sep-22
+
+* Updated dependencies to Meteor 1.8.1.
+
 ## v0.22.0, 2017-Jul-18
 
 * Updated dependencies to newer versions.
